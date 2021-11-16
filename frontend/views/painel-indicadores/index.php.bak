@@ -1,0 +1,262 @@
+<?php
+use yii\helpers\Json;
+use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\helpers\ArrayHelper;
+use kartik\widgets\Select2;
+use yii\web\JsExpression;
+use kartik\grid\GridView;
+use yii\data\ArrayDataProvider;
+use yii\widgets\Pjax;
+use kartik\daterange\DateRangePicker;
+use common\models\SolicitacaoTransporte;
+use common\models\SolicitacaoCredito;
+use common\models\Escola;
+use common\models\Condutor;
+
+$this->title = 'Valor transferido em Passe Escolar';
+$this->params['breadcrumbs'][] = ['label' => 'Painel de indicadores', 'url' => ['index']];
+// $this->params['breadcrumbs'][] = $this->title;
+$arrayAnos = [];
+
+?>
+<div class="row">
+	<div class="col-md-12">
+		<div class="box box-solid">
+		
+			<div class="box-body">
+			    <?= Html::beginForm(['painel-indicadores/index'], 'GET', ['id' => 'formFilter']); ?>
+			    <div class="row form-group">
+				    <div class="col-md-3">
+					    <?php
+					    	echo Html::label('Período', 'periodo');
+					    	echo DateRangePicker::widget([
+							    'name' => 'periodo',
+							    'value' => isset($_GET['periodo'])?$_GET['periodo']:'',
+							    'attribute'=>'datetime_range',
+							    'convertFormat'=>true,
+							    'pluginOptions'=>[
+							        'timePicker'=>false,
+							        'timePickerIncrement'=>30,
+							        'locale'=>[
+							            'format'=>'d/m/Y'
+							        ]
+							    ],
+							    'options' => [
+							    	'autocomplete' => 'off',
+							    	'class' => 'form-control'
+							    ]
+							]);
+					    ?>
+				    </div>
+
+						<div class="col-md-3">
+					    <?php
+					    	echo Html::label('Escola', 'escola');
+								echo Select2::widget([
+									'name' => 'escola',
+							    'attribute' => 'idEscola',
+							    'data' => $escolas,
+									'value' => isset($_GET['escola']) ? $_GET['escola'] : '',
+							    'options' => ['placeholder' => 'Selecione as escolas'],
+							    'pluginOptions' => [
+							        'allowClear' => true
+							    ],
+								]);
+					    ?>
+				    </div>
+
+						<div class="col-md-3">
+					    <?php
+					    	echo Html::label('Unidade', 'unidade');
+								echo Select2::widget([
+									'name' => 'unidade',
+							    'attribute' => 'unidade',
+									'value' => isset($_GET['unidade']) ? $_GET['unidade'] : '',
+							    'data' => $unidades,
+							    'options' => ['placeholder' => 'Selecione as escolas'],
+							    'pluginOptions' => [
+							        'allowClear' => true
+							    ],
+								]);
+					    ?>
+				    </div>
+				</div>
+
+			    <div class="row">
+				    <div class="col-md-12">
+				    	<?= Html::submitButton('Filtrar', ['class' => 'btn btn-primary pull-right']) ?>
+					
+				    </div>
+				</div>
+
+			    <?php echo Html::endForm(); ?>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<section class="col-md-12">
+		<div class="box box-solid">
+		  <div class="box-body">
+		    <?php Pjax::begin(); ?>
+		      <?= GridView::widget([
+				'panel' => [
+					'heading'=>false,
+					'type'=>false,
+					'showFooter'=>false
+				],
+				'toolbar' =>  [
+					'{export}{toggleData}',
+				],
+		        'dataProvider' => new ArrayDataProvider([
+		          'allModels' => $solicitacoes,
+		          'sort' => [
+		              'attributes' => [
+		                'idEscola',
+		                'status',
+		                'inicio',
+		                'fim',
+		                'criado',
+		                'creditoAdministrativo',
+		                'total'
+		              ],
+		          ],
+		          'pagination' => [
+		              'pageSize' => 10,
+		          ],
+		        ]),
+		        'columns' => [
+		          [
+		            'attribute' => 'idEscola',
+		            'value' => 'escola.nome'
+		          ],
+		          [
+		          	'attribute' => 'status',
+		          	'value' => function($model) {
+		          		return SolicitacaoCredito::ARRAY_STATUS[$model->status];
+		          	}
+		          ],
+		          [
+		            'attribute' => 'inicio',
+		            'value' => function ($model) {
+		              $data = explode('-', $model->inicio);
+		              return $data[2] . '/' . $data[1] . '/' . $data[0];
+		            }
+		          ],
+		          [
+		            'attribute' => 'fim',
+		            'value' => function ($model) {
+		              $data = explode('-', $model->fim);
+		              return $data[2] . '/' . $data[1] . '/' . $data[0];
+		            }
+		          ],
+		          [
+		            'attribute' => 'criado',
+		            'value' => function ($model) {
+		              $dateTime = explode(' ', $model->criado);
+		              $data = explode('-', $dateTime[0]);
+		              $hora = $dateTime[1];
+		              return $data[2] . '/' . $data[1] . '/' . $data[0] . ' ' . $hora;
+		            }
+		          ],
+		          'creditoAdministrativo',
+		          [
+		            'attribute' => 'total',
+		            'label' => 'Total',
+		            'value' => function ($model) {
+		              if ($model->solicitacaoCreditoAlunos) {
+		                $valor = 0;
+		                foreach ($model->solicitacaoCreditoAlunos as $key => $value) {
+		                  $valor += $value->valor;
+		                }
+		                return $valor;
+		              } else {
+		                return 0;
+		              }
+		            }
+		          ]
+				],
+				'exportConfig' => [
+					GridView::HTML => true,
+					GridView::CSV => true,
+					GridView::TEXT => true,
+					GridView::EXCEL => true,
+					GridView::PDF=> [
+						'config' => [
+							'mode' => 'c',
+							'format' => 'A4-L',
+							'destination' => 'D',
+							'marginTop' => 40,
+							'marginBottom' => 20,
+							'marginLeft' => 5,
+							'marginRight' => 5,
+							'cssInline' => 
+								'.img {float:right !important;}'.
+								'.table{font-size:10px}' .
+								'.kv-wrap{padding:20px;}' .
+								'.kv-align-center{text-align:center;}' .
+								'.kv-align-left{text-align:left;}' .
+								'.kv-align-right{text-align:right;}' .
+								'.kv-align-top{vertical-align:top!important;}' .
+								'.kv-align-bottom{vertical-align:bottom!important;}' .
+								'.kv-align-middle{vertical-align:middle!important;}' .
+								'.kv-page-summary{border-top:4px double #ddd;font-weight: bold;}' .
+								'.kv-table-footer{border-top:4px double #ddd;font-weight: bold;}' .
+								'.kv-table-caption{font-size:1.5em;padding:8px;border:1px solid #ddd;border-bottom:none;}'.
+								'.texto{text-align:left!important;}',
+							'methods' => [
+								'SetHeader' => '
+								<table width="100%">
+									<tr>
+								
+										<Td align="center">
+										<table width="40%">
+										<tr>
+											<td align="right"><img width="100" src="img/brasaoCompleto.png"></td>
+											<td align="left">											<b>Secretaria de Educação e Cidadania</b><br>Setor de Transporte Escolar<br>E-mail: transporte.escolar@sjc.sp.gov.br<br>Telefone: 3901-2165</td>
+										</tr>
+										</table>
+										</Td>
+									</tr>
+								</table>
+								',
+								'SetFooter' => [
+									['odd' => $pdfFooter, 'even' => $pdfFooter]
+								],
+							],
+							'options' => [
+								'title' => $title,
+								'subject' => 'xx1',
+								'keywords' => 'xx3',
+							],
+							'contentBefore'=>'',
+							'contentAfter'=>''
+						]
+					],
+				]
+			]); ?>
+		    <?php Pjax::end(); ?>
+		  </div>
+		</div>
+	</section>
+</div>
+
+<script type="text/javascript">
+	$( "#mesFim").change(function () {
+		if ($(this).val() < $("#mesInicio").val())
+		{
+			alert('O mês final deve ser maior ou igual ao mês inicial');
+			$(this).val('12');
+		}
+	})
+
+	$( "#mesInicio").change(function () {
+		if ($(this).val() > $("#mesFim").val())
+		{
+			alert('O mês inicial deve ser menor ou igual ao mês final');
+			$(this).val('12');
+		}
+	})
+
+</script>

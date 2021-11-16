@@ -1,0 +1,124 @@
+<?php
+
+use yii\helpers\Html;
+use yii\widgets\Pjax;
+use kartik\grid\GridView;
+
+use common\models\Escola;
+use common\models\EscolaHomologacao;
+use kartik\select2\Select2;
+use yii\helpers\ArrayHelper;
+/* @var $this yii\web\View */
+/* @var $searchModel common\models\EscolaSearch */
+/* @var $dataProvider yii\data\ActiveDataProvider */
+use yii\helpers\Url;
+use common\models\Usuario;
+
+$this->title = 'Escolas';
+$this->params['breadcrumbs'][] = $this->title;
+function escolasAlteradas($id, $nome)
+{
+    return '<a target="_new" href="' . Url::toRoute(["escola/view", 'id' => $id]) . '">' . $nome . '</a>';
+}
+?>
+
+<div class="row">
+
+    <div class="col-md-12">
+        <div class="box box-solid">
+
+
+            <div class="box-header with-border">
+                <?php
+                $escolas = EscolaHomologacao::find()->all();
+                if (Usuario::permissoes([USUARIO::PERFIL_DRE, USUARIO::PERFIL_SUPER_ADMIN]) && $escolas) : ?>
+                    <div class="alert alert-light" role="alert">
+                        Escolas com solicitação de alteração:
+                        <?php
+                        $str = '';
+                        foreach ($escolas as $escola)
+                            $str .= ' ' . escolasAlteradas($escola->idEscola, $escola->nome) . ', ';
+                        echo substr($str, 0, -2) . '.';
+                        ?>
+
+                    </div>
+                <?php endif; ?>
+                <?= Escola::permissaoCriar() ? Html::a('Nova Escola', ['create'], ['class' => 'btn btn-success pull-right']) : ''; ?>
+            </div>
+
+            <div class="box-body">
+
+                <?= GridView::widget([
+                    'dataProvider' => $dataProvider,
+                    'filterModel' => $searchModel,
+                    'columns' => [
+                        // ['class' => 'yii\grid\SerialColumn'],
+
+                        // 'id',
+                        [
+                            'attribute' => 'unidade',
+                            'value' => function ($model) {
+                                return $model->unidade ? Escola::ARRAY_UNIDADE[$model->unidade] : '-';
+                            },
+                            'filterType' => GridView::FILTER_SELECT2,
+                            'filter' =>  Escola::ARRAY_UNIDADE,
+                            'filterWidgetOptions' => [
+                                'pluginOptions' => ['allowClear' => true],
+                            ],
+                            'filterInputOptions' => [
+                                'placeholder' => '-',
+
+                            ]
+                        ],
+                        [
+                            'attribute' => 'tipo',
+                            'value' => function ($model) {
+                                return $model->tipo ? Escola::ARRAY_TIPO[$model->tipo] : '-';
+                            },
+                            'filterType' => GridView::FILTER_SELECT2,
+                            'filter' =>  Escola::ARRAY_TIPO,
+                            'filterWidgetOptions' => [
+                                'pluginOptions' => ['allowClear' => true],
+                            ],
+                            'filterInputOptions' => [
+                                'placeholder' => '-',
+
+                            ]
+                        ],
+
+                        'nome',
+                        'endereco',
+                        // 'lat',
+                        // 'lng',
+                        'telefone',
+                        'email:email',
+                        'codigoCie',
+
+                        [
+                            'contentOptions' => ['style' => 'min-width:80px;'],  //Largura coluna
+                            'class' => 'yii\grid\ActionColumn',
+                            'template' => Escola::permissaoActions(),
+                            'buttons' => [
+                                'delete' => function ($url, $model) {
+                                    return Html::a(
+                                        '<span class="glyphicon glyphicon-trash"></span>',
+                                        $url,
+                                        [
+                                            'data' => [
+                                                'confirm' => 'Tem certeza que deseja excluir este item?',
+                                                'method' => 'post',
+                                                'pjax' => 0,
+                                                'ok' => Yii::t('yii', 'Confirm'),
+                                                'cancel' => Yii::t('yii', 'Cancel'),
+                                            ],
+                                        ]
+                                    );
+                                }
+                            ]
+                        ]
+                    ],
+                ]); ?>
+            </div>
+        </div>
+    </div>
+</div>

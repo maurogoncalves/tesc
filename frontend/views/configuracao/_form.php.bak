@@ -1,0 +1,39 @@
+<?php
+
+use yii\helpers\Html;
+use yii\widgets\ActiveForm;
+use kartik\date\DatePicker;
+
+/* @var $this yii\web\View */
+/* @var $model common\models\Configuracao */
+/* @var $form yii\widgets\ActiveForm */
+?>
+
+<div class="box-body">
+
+    <?php $form = ActiveForm::begin(); ?>
+
+    <?= $form->field($model, 'valeTransporte')->textInput(['maxlength' => true]) ?>
+
+    <?= $form->field($model, 'passeEscolar')->textInput(['maxlength' => true]) ?>
+
+    <?php 
+        echo $form->field($model, 'dataVigente')->widget(DatePicker::classname(), [
+            'type' => DatePicker::TYPE_COMPONENT_APPEND,
+            'value' =>  $model->dataVigente,
+            'options' => ['placeholder' => 'Data'],
+            'pluginOptions' => [
+                'orientation' => 'bottom left',
+                'autoclose'=>true,
+                'format' => 'dd/mm/yyyy',
+                'startDate' => 'today',
+            ]
+        ]);
+    ?>
+    <div class="form-group">
+        <?= Html::submitButton($model->isNewRecord ? 'Salvar' : 'Atualizar', ['class' => $model->isNewRecord ? 'btn btn-success pull-right' : 'btn btn-primary pull-right']) ?>
+    </div>
+
+    <?php ActiveForm::end(); ?>
+
+</div>

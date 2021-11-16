@@ -1,0 +1,681 @@
+<?php
+
+namespace frontend\controllers;
+
+use Yii;
+use common\models\AgrupamentoBairro;
+use common\models\AgrupamentoBairroSearch;
+use yii\web\Controller;
+use yii\web\NotFoundHttpException;
+use yii\filters\VerbFilter;
+use common\models\Bairro;
+use common\models\Escola;
+use common\models\Aluno;
+
+use kartik\mpdf\Pdf;
+use common\models\SolicitacaoTransporte;
+use yii\helpers\Url;
+
+;
+
+/**
+ * AgrupamentoBairroController implements the CRUD actions for AgrupamentoBairro model.
+ */
+class AgrupamentoBairroController extends Controller
+{
+    public $bairrosUrbanos;
+    public $bairrosRurais;
+    public $tabela1;
+    public $tabela2;
+    public $tabela3;
+    public $tabela4;
+    public $tabela5;
+    public $tabela6;
+
+    public $total;
+
+    public function init()
+    {
+        parent::init();
+        $this->bairrosUrbanos = AgrupamentoBairro::zonaUrbana();
+        $this->bairrosRurais = AgrupamentoBairro::zonaRural();
+        $this->tabela1 = [
+            'Rede Municipal' =>  ['Rural' => 0, 'Urbana' => 0],
+            'Rede Estadual' =>  ['Rural' => 0, 'Urbana' => 0],
+            'Rede Filantrópica' => ['Rural' => 0, 'Urbana' => 0],
+        ];
+        $this->tabela2 = [
+            'Rede Municipal - Educação Infantil' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Municipal - Ensino Fundamental' => ['Rural' => 0, 'Urbana' => 0],     
+            'Rede Estadual - Ensino Fundamental' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Estadual - Ensino Médio' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Filantrópica - Educação Infantil' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Filantrópica - Ensino Fundamental' => ['Rural' => 0, 'Urbana' => 0],
+        ];
+        
+
+        $this->tabela3 = [
+            'Rede Municipal - Frete' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Municipal - Passe Escolar' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Estadual - Frete' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Estadual - Passe Escolar' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Filantrópica - Frete' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Filantrópica - Passe Escolar' => ['Rural' => 0, 'Urbana' => 0],
+        ];
+    
+        $this->tabela4 = [
+            'Rede Municipal' =>  ['Rural' => 0, 'Urbana' => 0],
+            'Rede Estadual' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Filantrópica' => ['Rural' => 0, 'Urbana' => 0],
+        ];
+        $this->tabela5 = [
+            'Rede Municipal' =>  ['Rural' => 0, 'Urbana' => 0],
+            'Rede Estadual' => ['Rural' => 0, 'Urbana' => 0],
+            'Rede Filantrópica' => ['Rural' => 0, 'Urbana' => 0],
+        ];
+
+        $this->tabela6 = [
+            'Frete' =>  ['Rural' => 0, 'Urbana' => 0],
+            'Passe Escolar' => ['Rural' => 0, 'Urbana' => 0],
+        ];
+
+        $this->total = [
+            'tabela1' =>  ['Rural' => 0, 'Urbana' => 0],
+            'tabela2' =>  ['Rural' => 0, 'Urbana' => 0],
+            'tabela3' =>  ['Rural' => 0, 'Urbana' => 0],
+            'tabela4' =>  ['Rural' => 0, 'Urbana' => 0],
+            'tabela5' =>  ['Rural' => 0, 'Urbana' => 0],
+            'tabela6' =>  ['Rural' => 0, 'Urbana' => 0],
+        ];
+    }
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        return [
+            'verbs' => [
+                'class' => VerbFilter::className(),
+                'actions' => [
+                    'delete' => ['POST'],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Lists all AgrupamentoBairro models.
+     * @return mixed
+     */
+    public function actionIndex()
+    {
+        
+        $searchModel = new AgrupamentoBairroSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('index', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    /**
+     * Displays a single AgrupamentoBairro model.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionView($id)
+    {
+        return $this->render('view', [
+            'model' => $this->findModel($id),
+        ]);
+    }
+
+    /**
+     * Creates a new AgrupamentoBairro model.
+     * If creation is successful, the browser will be redirected to the 'view' page.
+     * @return mixed
+     */
+    private function bairrosDisponiveis(){
+        $bairrosIndisponiveis  = [];
+        foreach(AgrupamentoBairro::find()->all() as $bairro) {
+            $bairrosIndisponiveis[] = $bairro->idBairro;
+        } 
+        return $bairrosDisponiveis = Bairro::bairrosDisponiveis($bairrosIndisponiveis);
+    }
+    public function actionBairros() {
+        $bairros = Bairro::bairrosDisponiveis([]);
+
+        foreach($bairros as $bairro) {
+            print "'".$bairro->BAIRRO."',";
+        }
+
+        return '';
+    }
+    private function salvarBairros($post, $agrupamento){
+       
+        ini_set('max_execution_time', 300); //300 seconds = 5 minutes
+
+        if( !empty($post['AgrupamentoBairro']['bairrosDisponiveis']) ) {
+            foreach ($post['AgrupamentoBairro']['bairrosDisponiveis'] as $key => $value) {
+                $bairro = Bairro::findOne($value);
+                $modelGrupo = new AgrupamentoBairro();
+                $modelGrupo->idBairro = $bairro->ID_BAIRRO; 
+                $modelGrupo->nome =  $bairro->BAIRRO;
+                $modelGrupo->agrupamento = $agrupamento;
+                $modelGrupo->bairrosDisponiveis = 1;
+                // $modelGrupo->idUsuario = $model->id;
+                // $modelGrupo->idGrupo = $value;
+                if (!$modelGrupo->save())
+                {
+                    // print_r($modelGrupo->getErrors());
+                    // \Yii::$app->getSession()->setFlash('error', 'Erro ao salvar bairros');
+                }
+            }
+        }
+    }
+    protected function td(&$table, $tamanho,$content, $style=''){
+        return $table .= '<td  width="'.$tamanho.'%"  style="'.$style.'; padding:5px;">'.$content.'</td>';
+      }
+      protected function tdBorder(&$table, $tamanho,$content, $style=''){
+        return $this->td($table, $tamanho, $content, 'border: 0.7px solid #000;'.$style);
+      }
+    protected function setHeader($titulo='-'){
+        $c = '';
+        $c .= '<tr style="background:#0070C0;">';
+        $c .= '<th style="border: 0.7px solid #000;color:white; padding:10px">'.$titulo.'</th>';
+        $c .= '<th style="border: 0.7px solid #000;color:white; padding:10px">Alunos atendidos - Zona Urbana</th>';
+        $c .= '<th style="border: 0.7px solid #000;color:white; padding:10px">Alunos atendidos - Zona Rural</th>';
+        $c .= '</tr>';
+        return $c;
+    }
+    public function gerarSolicitacoes(){
+        // $solicitacoesFrete = [];
+        $solicitacoesFrete = SolicitacaoTransporte::find()
+        ->andWhere(['status' => SolicitacaoTransporte::STATUS_ATENDIDO])
+        ->andWhere(['modalidadeBeneficio' => Aluno::MODALIDADE_FRETE])
+        ->andWhere(['tipoSolicitacao' => SolicitacaoTransporte::SOLICITACAO_BENEFICIO])
+        // ->orWhere(['status' => SolicitacaoTransporte::STATUS_DEFERIDO])
+        ->all();
+        
+        $solicitacoesPasse = SolicitacaoTransporte::find()
+        ->andWhere(['status' => SolicitacaoTransporte::STATUS_DEFERIDO])
+        ->andWhere(['tipoSolicitacao' => SolicitacaoTransporte::SOLICITACAO_BENEFICIO])
+        ->andWhere(['modalidadeBeneficio' => Aluno::MODALIDADE_PASSE])
+        ->all();
+
+        $solicitacoes = array_merge($solicitacoesFrete, $solicitacoesPasse);;
+        
+        return $solicitacoes;
+    }
+    public function actionTratamento(){
+        print '<h1> Alunos com bairros divergentes </h1>';
+        $solicitacoes = $this->gerarSolicitacoes();
+
+        foreach($solicitacoes as $solicitacao) {
+            $zona = '';
+            if(in_array($solicitacao->aluno->bairro, $this->bairrosUrbanos)){
+                $zona = 'Urbana';
+            } else if(in_array($solicitacao->aluno->bairro, $this->bairrosRurais)){
+                $zona = 'Rural';
+            } 
+            if(!$zona){
+                // Pega alunos com problemas de bairro
+                // print_r($solicitacao);
+                print 'Cód: '.$solicitacao->id;
+                print '<br>';
+                print 'Nome: '.$solicitacao->aluno->bairro;
+                print '<a target="_new" href="'.Url::toRoute(['aluno/update', 'id' =>  $solicitacao->aluno->id]).'">Editar</a>';                
+
+                print '<br>';
+                print '<hr>';
+                // return null;
+            }
+        }
+        print '<h1>Alunos sem tipo de ensino</h1>';
+        foreach($solicitacoes as $solicitacao) {
+            if(!$solicitacao->aluno->ensino) {
+                print 'Nome: '.$solicitacao->aluno->nome;
+                print '<br>';
+                print 'Cód: '.$solicitacao->aluno->id;
+                print '<a target="_new" href="'.Url::toRoute(['aluno/update', 'id' =>  $solicitacao->aluno->id]).'">Editar</a>';                
+                print '<br>';
+                print '<hr>';
+            }
+        }
+        
+    }
+    protected function somarZona($key, $solicitacao){
+        $zona = '';
+        if(in_array($solicitacao->aluno->bairro, $this->bairrosUrbanos)){
+            $zona = 'Urbana';
+        } else if(in_array($solicitacao->aluno->bairro, $this->bairrosRurais)){
+            $zona = 'Rural';
+        } 
+
+        if(!$zona){
+
+            // Pega alunos com problemas de bairro
+            // print_r($solicitacao);
+            // print $solicitacao->id;
+            // print $solicitacao->aluno->bairro;
+            // print '<br><Br>';
+            // return null;
+        }
+            
+        
+        // Tabela 1
+        $this->tabela1[$key][$zona]++;
+        $this->total['tabela1'][$zona]++;
+        //
+
+        //Tabela 2
+        // $atendimentos = $solicitacao->escola->atendimento;
+        // if(!$atendimentos) {
+        //     // Pega escolas sem atendimento
+        //     // print $solicitacao->escola->id;
+        //     // print '<hr>';
+        // }
+        switch($solicitacao->aluno->ensino) {
+
+            case Escola::ENSINO_INFANTIL:
+                // Tabela 2
+                $this->tabela2[$key.' - Educação Infantil'][$zona]++;
+                $this->total['tabela2'][$zona]++;
+                //
+                break;
+            case Escola::ENSINO_FUNDAMENTAL:
+                // Tabela 2
+                $this->tabela2[$key.' - Ensino Fundamental'][$zona]++;
+                $this->total['tabela2'][$zona]++;
+                //
+
+                break;
+            case Escola::ENSINO_MEDIO:
+                // Tabela 2
+                $this->tabela2[$key.' - Ensino Médio'][$zona]++;
+                $this->total['tabela2'][$zona]++;
+                //
+                break;
+            default:
+            break;
+        }
+        //
+
+        // Tabela 3, 4, 5
+        if($solicitacao->modalidadeBeneficio == Aluno::MODALIDADE_FRETE) {
+            // Tabela 3
+            $this->tabela3[$key.' - Frete'][$zona]++;
+            $this->total['tabela3'][$zona]++;
+            //
+            // Tabela 4
+            $this->tabela4[$key][$zona]++;
+            $this->total['tabela4'][$zona]++;
+            //
+            //Tabela 6
+            $this->tabela6['Frete'][$zona]++;
+
+        } else if($solicitacao->modalidadeBeneficio == Aluno::MODALIDADE_PASSE) {
+            // Tabela 3
+            $this->tabela3[$key.' - Passe Escolar'][$zona]++;
+            $this->total['tabela3'][$zona]++;
+            //
+            // Tabela 5
+            $this->tabela5[$key][$zona]++;
+            $this->total['tabela5'][$zona]++;
+            //
+
+            //Tabela 6
+            $this->tabela6['Passe Escolar'][$zona]++;
+        } 
+        //
+
+
+    }
+    protected function hasValue(&$field, $column){
+        if($field && $field[$column]){
+            return $field[$column];
+        }
+        return '0';
+    }
+    protected function gerarTotal($tabela){
+        $c= '';
+        $RIGHT = 'text-align:right;padding-right:7px;';
+        $LEFT = 'text-align:left;padding-left:7px;';
+
+        $CENTER = 'text-align:center';
+        $c .= '<tr>';
+            $this->tdBorder($c, 50, 'Total Geral', $LEFT);
+            $this->tdBorder($c, 25, $this->total[$tabela]['Urbana'], $CENTER);
+            $this->tdBorder($c, 25, $this->total[$tabela]['Rural'], $CENTER);
+        return $c .= '</tr>';
+    }
+    protected function montarPdf(&$pdf){
+
+        $mpdf = $pdf->api;
+        $mpdf->setHTMLHeader('
+        <table width="100%">
+        <tr>
+          <Td align="center">
+          <img src="img/brasaoFull.png">
+          </Td>
+        </tr>
+        <tr>
+          <td align="center">
+              <i>Emitido em '.date("d/m/Y H:i").'</i>
+          </td>
+        </tr>
+      </table>');
+        $c = '';
+        $RIGHT = 'text-align:right;padding-right:7px;';
+        $LEFT = 'text-align:left;padding-left:7px;';
+
+        $CENTER = 'text-align:center';
+        $c .= '<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><div style="text-align:center;">';
+        $c .= '<b>RELATÓRIO</b><br>';
+        $c .= '<b>Agrupamento de bairros</b>';
+        $c .= '</div>';
+        // $mpdf->WriteHTML($c);
+        // $mpdf->addPage();
+  
+      
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        //  TABELA 1
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+
+        foreach($this->gerarSolicitacoes() as $solicitacao) {
+            switch($solicitacao->escola->unidade) {
+                case Escola::UNIDADE_MUNICIPAL: 
+                    // Tabela 1
+                    $this->somarZona('Rede Municipal', $solicitacao);
+                    break;
+                case Escola::UNIDADE_ESTADUAL:
+                    // Tabela 1
+                    $this->somarZona('Rede Estadual', $solicitacao);
+                    break;
+                case Escola::UNIDADE_FILANTROPICA:
+                    // Tabela 1
+                    $this->somarZona('Rede Filantrópica', $solicitacao);
+                    break;
+                default:  break;
+            }
+        }
+        $c = '<table style=" border-collapse:collapse;margin:20px;padding:0;width:100%;">';
+        $c .= $this->setHeader();
+        ksort($this->tabela1);
+        foreach($this->tabela1 as $key=>$value) {
+            $c .= '<tr>';
+                $this->tdBorder($c, 50, $key, $LEFT);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela1[$key], 'Urbana'), $CENTER);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela1[$key], 'Rural'), $CENTER);
+            $c .= '</tr>';
+        }
+   
+        $c .= $this->gerarTotal('tabela1');
+        
+
+        $c .= '</table>';
+        $c .= '<div style="text-align:center">Tabela 1 - Relatório Simplificado</div>';
+        $mpdf->WriteHTML($c);
+        
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        //  TABELA 2
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        
+        $c = '<table style=" border-collapse:collapse;margin:20px;padding:0;width:100%;">';
+        $c .= $this->setHeader();
+        // if(isset($_GET['teste'])) {
+        //     print '<pre>';
+        //     print_r($this->tabela2);
+        //     print '</pre>';
+        // }
+        // print '<pre>';
+        // print_r($this->tabela2);
+        // print '</pre>';
+        ksort($this->tabela2);
+        foreach($this->tabela2 as $key=>$value) {
+            $c .= '<tr>';
+                $this->tdBorder($c, 50, $key, $LEFT);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela2[$key], 'Urbana'), $CENTER);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela2[$key], 'Rural'), $CENTER);
+            $c .= '</tr>';
+        }
+   
+        $c .= $this->gerarTotal('tabela2');
+
+        $c .= '</table>';
+        $c .= '<div style="text-align:center">Tabela 2 - Relatório por Tipo de Rede/Ensino</div>';
+            
+        $mpdf->WriteHTML($c);
+        $c = '<br><br>';
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        //  TABELA 3
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        $c = '<table style=" border-collapse:collapse;margin:20px;padding:0;width:100%;">';
+        $c .= $this->setHeader();
+        ksort($this->tabela3);
+        foreach($this->tabela3 as $key=>$value) {
+            $c .= '<tr>';
+                $this->tdBorder($c, 50, $key, $LEFT);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela3[$key], 'Urbana'), $CENTER);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela3[$key], 'Rural'), $CENTER);
+            $c .= '</tr>';
+        }
+        $c .= $this->gerarTotal('tabela3');
+        $c .= '</table>';
+        $c .= '<div style="text-align:center">Tabela 3 - Relatório por Tipo de Rede/Modalidade Benefício</div>';
+        $mpdf->WriteHTML($c);
+        $c = '<br><br>';
+
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        //  TABELA 4
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        $c = '<table style=" border-collapse:collapse;margin:20px;padding:0;width:100%;">';
+        $c .= $this->setHeader('Modalidade Frete');
+        ksort($this->tabela4);
+        foreach($this->tabela4 as $key=>$value) {
+            $c .= '<tr>';
+                $this->tdBorder($c, 50, $key, $LEFT);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela4[$key], 'Urbana'), $CENTER);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela4[$key], 'Rural'), $CENTER);
+            $c .= '</tr>';
+        }
+        
+        $c .= $this->gerarTotal('tabela4');
+        $c .= '</table>';
+        $c .= '<div style="text-align:center">Tabela 4 - Relatório de Atendimento Modalidade Frete</div>';
+        
+        $mpdf->WriteHTML($c);
+        $c = '<br><br>';
+
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        //  TABELA 5
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        $c = '<table style=" border-collapse:collapse;margin:20px;padding:0;width:100%;">';
+        $c .= $this->setHeader('Modalidade Passe Escolar');
+        ksort($this->tabela5);
+        foreach($this->tabela5 as $key=>$value) {
+            $c .= '<tr>';
+                $this->tdBorder($c, 50, $key, $LEFT);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela5[$key], 'Urbana'), $CENTER);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela5[$key], 'Rural'), $CENTER);
+            $c .= '</tr>';
+        }
+        
+        $c .= $this->gerarTotal('tabela5');
+        $c .= '</table>';
+        $c .= '<div style="text-align:center">Tabela 5 - Relatório de Atendimento Modalidade Passe Escolar</div>';
+        
+        $mpdf->WriteHTML($c);
+        $c = '<br><br>';
+
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        //  TABELA 6
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        $c = '<table style=" border-collapse:collapse;margin:20px;padding:0;width:100%;">';
+        $c .= $this->setHeader('Transporte Público Escolar');
+        ksort($this->tabela6);
+        foreach($this->tabela6 as $key=>$value) {
+            $c .= '<tr>';
+                $this->tdBorder($c, 50, $key, $LEFT);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela6[$key], 'Urbana'), $CENTER);
+                $this->tdBorder($c, 25, $this->hasValue($this->tabela6[$key], 'Rural'), $CENTER);
+            $c .= '</tr>';
+        }
+        $c .= '</table>';
+        $c .= '<div style="text-align:center">Tabela 6 - Relatório Simplificado por Modalidade de Atendimento</div>';
+        
+        $mpdf->WriteHTML($c);
+        return $c;
+      }
+    
+    public function actionRelatorio(){
+        $pdf = new Pdf([
+            'mode' => 'c',
+            'marginTop' => 55,
+            'marginBottom' => 20,
+            // 'marginLeft' => 10,
+            // 'marginRight' => 10,
+            // set to use core fonts only
+            'mode' => Pdf::MODE_CORE, 
+            // A4 paper format
+            'format' => Pdf::FORMAT_A4, 
+            // portrait orientation
+            'orientation' => Pdf::ORIENT_PORTRAIT, 
+            // stream to browser inline
+            'destination' => Pdf::DEST_BROWSER, 
+            // your html content input
+            // 'content' => $this->montarPdf(), 
+            // format content from your own css file if needed or use the
+            // enhanced bootstrap css built by Krajee for mPDF formatting 
+            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+            // any css to be embedded if required
+            'cssInline' => '.kv-heading-1{font-size:18px} .table table { border-collapse: collapse; } .table table, .table th, .table td { border: 1px solid black;} .table th td { padding-left: 3px;} .thpref {
+                background:#0070C0;
+                color:#fff;
+            }', 
+             // set mPDF properties on the fly
+            'options' => ['title' => 'Krajee Report Title'],
+             // call mPDF methods on the fly
+            'methods' => [ 
+                'SetHeader'=>['
+                  <table width="100%">
+                  <tr>
+                    <Td align="center">
+                    <img src="img/brasaoFull.png">
+                    </Td>
+                  </tr>
+                  <tr>
+                    <td align="center">
+                        <i>Emitido em '.date("d/m/Y H:i").'</i>
+                    </td>
+                  </tr>
+                </table>'], 
+                'SetFooter'=>['{PAGENO}'],
+            ]
+        ]);
+        $this->montarPdf($pdf); 
+        if(!isset($_GET['teste']))
+            return $pdf->render(); 
+    }
+    public function actionCreate()
+    {
+        // print_r($bairrosDisponiveis);
+        $model = new AgrupamentoBairro();
+        $model->scenario = 'create';
+
+        if (Yii::$app->request->post()) {
+            $this->salvarBairros($_POST,  $_POST['AgrupamentoBairro']['agrupamento']);
+            return $this->redirect(['index']);
+        } else {
+            return $this->render('create', [
+                'model' => $model,
+                'bairrosDisponiveis' => $this->bairrosDisponiveis() 
+            ]);
+        }
+    }
+
+    /**
+     * Updates an existing AgrupamentoBairro model.
+     * If update is successful, the browser will be redirected to the 'view' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionUpdate($id)
+    {
+        $model = $this->findModel($id);
+        $model->scenario = 'update';
+
+        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            // print $model->agrupamento;
+            // AgrupamentoBairro::deleteAll(['agrupamento' => $model->agrupamento]);
+            // print $_POST['AgrupamentoBairro']['agrupamento'];
+            // $this->salvarBairros($_POST,  $model->agrupamento);
+            return $this->redirect(['index']);
+        } else {
+           
+            return $this->render('update', [
+                'model' => $model,
+                'bairrosDisponiveis' => $this->bairrosDisponiveis() ,
+                'bairrosPorZona' => $model->bairrosPorZona($model->agrupamento),
+            ]);
+        }
+    }
+
+    /**
+     * Deletes an existing AgrupamentoBairro model.
+     * If deletion is successful, the browser will be redirected to the 'index' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionDelete($id)
+    {
+        $this->findModel($id)->delete();
+
+        return $this->redirect(['index']);
+    }
+
+    /**
+     * Finds the AgrupamentoBairro model based on its primary key value.
+     * If the model is not found, a 404 HTTP exception will be thrown.
+     * @param integer $id
+     * @return AgrupamentoBairro the loaded model
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    protected function findModel($id)
+    {
+        if (($model = AgrupamentoBairro::findOne($id)) !== null) {
+            return $model;
+        } else {
+            throw new NotFoundHttpException('The requested page does not exist.');
+        }
+    }
+}
