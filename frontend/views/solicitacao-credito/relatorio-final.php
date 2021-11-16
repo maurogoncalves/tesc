@@ -36,13 +36,13 @@ function td($str)
     <div class="col-md-2">
         <div class="box box-solid p-10">
             <label class="control-label">Valor Necessário</label>
-            <input name="valorNecessarioTotal" id="valorNecessarioTotal"  readonly="true" class="form-control moneyWithMinus" value="<?= $model->valorNecessarioTotal ?>">
+            <input name="valorNecessarioTotal" id="valorNecessarioTotal"  readonly="true" class="form-control moneyWithMinus" value="<?= $model->valorNecessarioTotal ? $model->valorNecessarioTotal : 0;?>">
         </div>
     </div>
     <div class="col-md-2">
         <div class="box box-solid p-10">
             <label class="control-label">Saldo Restante na Escola</label>
-            <input name="saldoRestanteEscola" id="saldoRestanteEscola" readonly="true" class="form-control moneyWithMinus" value="<?= $model->saldoRestante ?>" class="form-control mt-15 moneyWithMinus">
+            <input name="saldoRestanteEscola" id="saldoRestanteEscola" readonly="true" class="form-control moneyWithMinus" value="<?= $model->saldoRestante ? $model->saldoRestante : 0; ?>" class="form-control mt-15 moneyWithMinus">
         </div>
     </div>
     <div class="col-md-2">
@@ -56,13 +56,13 @@ function td($str)
     <div class="col-md-2">
         <div class="box box-solid p-10">
             <label class="control-label">Saldo Restante nos Cartões</label>
-            <input type="text" name="saldoRestanteCartoes" id="saldoRestanteCartoes" readonly="true" class="form-control mt-15 moneyWithMinus"  value="<?= $model->saldoRestanteCartoes ?>" >
+            <input type="text" name="saldoRestanteCartoes" id="saldoRestanteCartoes" readonly="true" class="form-control mt-15 moneyWithMinus"  value="<?= $model->saldoRestanteCartoes ? $model->saldoRestanteCartoes : 0; ?>" >
         </div>
     </div>
     <div class="col-md-2">
         <div class="box box-solid p-10">
             <label class="control-label">Valor a ser Creditado</label>
-            <input type="text" name="valorCreditado" id="valorCreditado" readonly="true" class="form-control mt-15 moneyWithMinus"  value="<?= $model->valorCreditado ?>" >
+            <input type="text" name="valorCreditado" id="valorCreditado" readonly="true" class="form-control mt-15 moneyWithMinus"  value="<?= $model->valorCreditado ? $model->valorCreditado : 0; ?>" >
         </div>
     </div>
 
@@ -109,7 +109,7 @@ function td($str)
                     <td class="center-text"><?= $solAluno->aluno->turma ? Aluno::ARRAY_SERIES[$solAluno->aluno->serie].'/'.Aluno::ARRAY_TURMA[$solAluno->aluno->turma] : '-' ?></td>
                     <td class="center-text"><?= $model->tipoSolicitacao == SolicitacaoCredito::TIPO_PASSE_ESCOLAR ? $solAluno->aluno->solicitacaoAtivaPasse->cartaoPasseEscolar : $solAluno->aluno->solicitacaoAtivaPasse->cartaoValeTransporte ?></td>
                     <td class="center-text">
-                        <input type="text" class="form-control moneyWithMinus inputSaldoRestante"   value="<?= $solAluno->saldo ?>" readonly="true">
+                        <input type="text" class="form-control moneyWithMinus inputSaldoRestante"   value="<?= $solAluno->saldo ? $model->saldo : 0; ?>" readonly="true">
                     </td>
                     <td style="background:red; display:none;">
                         <input type="text" class="form-control inputDiasLetivosFecharMes" readonly="true">
@@ -123,7 +123,7 @@ function td($str)
                     <td class="center-text"><input type="text" class="form-control justificativa"  value="<?= $solAluno->justificativa ?>" readonly="true"></td>
                     <td class="center-text">
                         <div class="">
-                        <input type="text" class="form-control valorNecessario moneyWithMinus"  readonly="true"  value="<?= $solAluno->valor ?>" >
+                        <input type="text" class="form-control valorNecessario moneyWithMinus"  readonly="true"  value="<?= $solAluno->valor ? $model->valor : 0; ?>" >
                         </div>
                     </td>
                     <td class="center-td" style="max-width: 100px !important;">
