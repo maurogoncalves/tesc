@@ -168,7 +168,7 @@
 								'label' => 'Horário de Entrada',
 								'contentOptions' => ['style' => 'min-width:80px;'],
 								'value' => function($model) {
-									return $model->horarioEntrada; 
+									return $model->aluno->horarioEntrada; 
 								}
 							],
 							[
@@ -176,7 +176,7 @@
 								'label' => 'Horário de Saída',
 								'contentOptions' => ['style' => 'min-width:80px;'],
 								'value' => function($model) {
-									return $model->horarioSaida;
+									return $model->aluno->horarioSaida;
 								}
 							],
 							[
@@ -200,8 +200,14 @@
 								'value' => function($model) {
 									return $model->aluno->bairro;
 								}
-							], 
-								// [
+							],
+							[
+								'attribute' => 'escola',
+								'contentOptions' => ['style' => 'min-width:80px;'],
+								'value' => function($model) {	
+									return $model->aluno->escola->nome;
+								}
+							], 							
 								// 	'attribute' => 'id',
 								// 	'value' => function($model) {
 								// 		return $model->aluno->id;
@@ -225,7 +231,8 @@
 							GridView::HTML => true,
 							GridView::CSV => true,
 							GridView::TEXT => true,
-							GridView::EXCEL => true
+							GridView::EXCEL => true,
+							GridView::PDF => true
 						]
 					]); ?>
 					<?php Pjax::end(); ?>
@@ -235,6 +242,13 @@
 		</div>
 
 		<script type="text/javascript">
+			let condutorName = '';
+			let peridoPesquisa = '';
+
+			$(window).on("load", function(){
+				getCondutorAndPeriodo();			
+			});
+
 			var idCondutor = '<?= isset($get['idCondutor']) ?  $get['idCondutor'] : '' ?>';
 			var escola = '<?= isset($get['escola']) ?  $get['escola'] : '' ?>';
 			var page = '<?= isset($get['_tog7f728364']) ?  $get['_tog7f728364'] : '' ?>';
@@ -253,6 +267,35 @@
 					$(this).val('12');
 				}
 			})
+
+			function getCondutorAndPeriodo(){
+				condutorName = $('span[class=select2-selection__clear]').parent().text().split('×')[1]
+				peridoPesquisa = $('input[name="periodo"]').val().split(' - ');
+
+				if(condutorName == undefined)
+					condutorName = ''
+				
+				if(peridoPesquisa == undefined || peridoPesquisa == ''){
+					peridoPesquisa[0] = '';
+					peridoPesquisa[1] = '';
+				}else{
+					peridoPesquisa[0] = peridoPesquisa[0].replace("/20","/");
+					peridoPesquisa[1] = peridoPesquisa[1].replace("/20","/");
+				}
+
+
+				$('thead').prepend(`<tr >
+										<th></th>
+										<th style="font-size: 10px;">Período: ${peridoPesquisa[0]} a ${peridoPesquisa[1]}</th>
+										<th></th>
+										<th></th>
+										<th></th>
+										<th></th>
+										<th style="font-size: 10px;">Condutor:</th>
+										<th style="font-size: 10px;">${condutorName}</th>
+									<tr>`);
+
+			}
 
 
 			function gerenciadorPdf(){
