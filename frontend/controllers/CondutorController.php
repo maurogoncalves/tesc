@@ -568,6 +568,10 @@ class CondutorController extends Controller
 
             $filename = $base.'_Condutores_'.date('d-m-Y-H-i-s').'.txt';
             $fp = fopen($filename, 'a');
+
+            //corrige erro de exibição em UTF8 para CSV e TXT:
+        fwrite($fp, pack("CCC",0xef,0xbb,0xbf));                  
+
             $query = Condutor::find()->orderBy(['nome' => SORT_ASC]);
             if(isset($_GET['selecionados']) && $_GET['selecionados'] != '') {
                 $ids = explode(',',$_GET['selecionados']);
@@ -716,6 +720,10 @@ class CondutorController extends Controller
 
             $filename = $base.'_Condutores_'.date('d-m-Y-H-i-s').'.csv';
             $fp = fopen($filename, 'a');
+
+            //corrige erro de exibição em UTF8 para CSV e TXT:
+            fwrite($fp, pack("CCC",0xef,0xbb,0xbf));                  
+
             $query = Condutor::find()->orderBy(['nome' => SORT_ASC]);
             if(isset($_GET['selecionados']) && $_GET['selecionados'] != '') {
                 $ids = explode(',',$_GET['selecionados']);

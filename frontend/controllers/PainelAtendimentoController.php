@@ -257,6 +257,247 @@ class PainelAtendimentoController extends \yii\web\Controller
 
     public function actionReportPesquisaAtendimento()
     {
+		
+        $contentBefore = '';
+        $dados = $this->session->get('historicos');
+        $condutor = $this->session->get('condutor');
+        $periodo = $this->session->get('periodo');
+		$get = Yii::$app->request->get();
+		
+		$tipo = $get['tipo'];
+
+        $this->sortDadosHistoricoAtendimento($dados);
+        if (!$dados)
+            $dados = [];
+        if ($periodo) {
+            $d = $this->explodeData($periodo);
+            $periodo = date("d/m/Y", strtotime($d[0])) . ' - ' . date("d/m/Y", strtotime($d[1]));
+        } else {
+            $periodo = '-';
+        }
+		
+		$spreadsheet = new Spreadsheet();
+		$sheet = $spreadsheet->getActiveSheet();
+
+		$sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+
+		// $sheet->setCellValue('A1:N5', 'Logo');
+		$left = array(
+			'alignment' => array(
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+			)
+		);
+		$right = array(
+			'alignment' => array(
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+			)
+		);
+		$center = array(
+			'alignment' => array(
+				'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+				'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+			)
+		);
+
+		$borderHard = [
+			'borders' => [
+				'allBorders' => [
+					'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+					'color' => ['argb' => 'FF000000'],
+				],
+			],
+		];
+		$borderSoft = [
+			'borders' => [
+				'allBorders' => [
+					'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+					'color' => ['argb' => 'FF000000'],
+				],
+			],
+		];
+
+		$colorRed =  new \PhpOffice\PhpSpreadsheet\Style\Color( \PhpOffice\PhpSpreadsheet\Style\Color::COLOR_RED );
+		$colorWhite =  new \PhpOffice\PhpSpreadsheet\Style\Color( \PhpOffice\PhpSpreadsheet\Style\Color::COLOR_WHITE );
+
+		$drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+		$drawing->setPath(Yii::getAlias('@webroot').'/img/brasao.png'); // put your path and image here
+		$drawing->setCoordinates('A1');
+		$drawing->setOffsetX(50);
+		$drawing->setOffsetY(20);
+		$drawing->setRotation(0);
+		$drawing->setHeight(120);
+		$drawing->setWidth(150);
+		$drawing->setWorksheet($sheet);
+
+		$drawing2 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+		$drawing2->setPath(Yii::getAlias('@webroot').'/img/faixa.png'); // put your path and image here
+		$drawing2->setCoordinates('C1');
+		$drawing2->setOffsetX(0);
+		$drawing2->setOffsetY(0);
+		$drawing2->setRotation(0);
+		$drawing2->setWorksheet($sheet);
+
+
+		// SETUP DAS COLUNAS
+		$sheet->getColumnDimension('A')->setWidth(10);
+		$sheet->getColumnDimension('B')->setWidth(40);
+		$sheet->getColumnDimension('C')->setWidth(15);
+		$sheet->getColumnDimension('D')->setWidth(15);
+		$sheet->getColumnDimension('E')->setWidth(15);
+		$sheet->getColumnDimension('F')->setWidth(15);
+		$sheet->getColumnDimension('G')->setWidth(15);
+		$sheet->getColumnDimension('H')->setWidth(50);
+		$sheet->getColumnDimension('I')->setWidth(50);
+		$sheet->getColumnDimension('J')->setWidth(50);
+		
+		
+		
+		//
+		$i = 1;
+		// PRÓXIMA LINHA
+		
+		$content =  ' CONDUTOR: ' . $condutor->nome . ' - ALVARÁ: ' . $condutor->alvara . ' - TELEFONE: ' . $condutor->telefone . ' - PERÍODO: ' . $periodo;
+	    $sheet->mergeCells('A'.$i.':B'.($i+6));
+		$sheet->mergeCells('C'.$i.':J'.$i);
+		$sheet->mergeCells('C'.($i+1).':J'.($i+1));
+		$sheet->setCellValue('C'.($i+1), "Secretaria de Educação e Cidadania");
+		$sheet->getStyle('C'.($i+1))->applyFromArray($left)->getFont()->setBold(true);
+
+		$sheet->mergeCells('C'.($i+2).':J'.($i+6));
+		$sheet->setCellValue('C'.($i+2), "Setor de Transporte Escolar\nE-mail: transporte.escolar@sjc.sp.gov.br\nTelefone: (12) 3901-2165\n\n".$content);
+		$sheet->getStyle('C'.($i+2))->getAlignment()->setWrapText(true);
+
+		$sheet->getStyle('A'.($i+2).':J'.($i+2))->applyFromArray($left);
+		
+		
+		$i=8;
+		// $sheet->mergeCells('A'.$i.':B'.($i));
+		// $sheet->mergeCells('C'.$i.':J'.$i);
+		// $sheet->mergeCells('C'.($i+1).':J'.($i+1));
+		// $sheet->setCellValue('C'.($i), 'teste');
+		
+		// $sheet->getStyle('A'.($i).':J'.($i))->applyFromArray($left);
+		
+		// $i+=2;
+		
+		$sheet->getStyle('A'.$i.':I'.$i)->applyFromArray($center);  
+		$sheet->setCellValue('A'.$i, "Id");
+		$sheet->setCellValue('B'.$i, "Aluno");
+		$sheet->setCellValue('C'.$i, "RA");
+		$sheet->setCellValue('D'.$i, "Data");
+		$sheet->setCellValue('E'.$i, "Entrada");
+		$sheet->setCellValue('F'.$i, "Saída");
+		$sheet->setCellValue('G'.$i, "Ano/Série e Turma");
+		$sheet->setCellValue('H'.$i, "Endereço");	
+		$sheet->setCellValue('I'.$i, "Bairro");	
+		$sheet->setCellValue('J'.$i, "Escola");	
+		
+
+		$sheet->getStyle('A'.$i.':J'.$i)
+		->getAlignment()->setWrapText(true);
+		$sheet->getStyle('A'.$i.':J'.$i)->getFill()
+		->setFillType(Fill::FILL_SOLID)
+		->getStartColor()->setARGB('FF000000');
+
+		$sheet->getStyle('A'.$i.':J'.$i)->getFont()->setBold(true);
+
+		$sheet->getStyle('A'.$i.':J'.$i)->getFont()->setColor( $colorWhite );
+		$sheet->setAutoFilter('A'.$i.':J'.$i);
+			
+			foreach ($dados as $model) {
+				  $i++;
+				if($i % 2 == 0) {
+					$sheet->getStyle('A'.$i.':J'.$i)->getFill()
+					->setFillType(Fill::FILL_SOLID)
+					->getStartColor()->setRGB('F6F6F6');
+				
+				}
+				$sheet->getStyle('B'.$i.':J'.$i)->applyFromArray($center);
+				$sheet->getStyle('A'.$i.':J'.$i)->applyFromArray($borderSoft);
+				$sheet->getStyle('A'.$i.':J'.$i)->getAlignment()->setWrapText(true);
+				$sheet->setCellValue('A'.$i, $model['id']);
+				$sheet->setCellValue('B'.$i, $model['aluno']);
+				$sheet->setCellValue('C'.$i, $model['RA'].' '.$model['RAdigito']);
+				$sheet->setCellValue('D'.$i, $model['criacao']);
+				$sheet->setCellValue('E'.$i, $model['horarioEntrada']);
+				$sheet->setCellValue('F'.$i, $model['horarioSaida']);
+				$sheet->setCellValue('G'.$i, Aluno::ARRAY_SERIES[$model['serie']].'/'.Aluno::ARRAY_TURMA[$model['turma']]);
+				$sheet->setCellValue('H'.$i, $model['tipoLogradouro'].' '.$model['endereco'].', '.$model['numeroResidencia']);
+				$sheet->setCellValue('I'.$i, $model['bairro']);
+				$sheet->setCellValue('J'.$i, $model['escola']);
+			}
+			
+			
+		$base = "arquivos/_exportacoes/";
+		switch($tipo){		 
+			case 'EXCEL':
+                try {
+                    $writer = new Xlsx($spreadsheet);
+                    $filename = $base."Pesquisa_Atendimento_".date('d-m-Y-H-i-s').".xlsx";
+                    $writer->save($filename);
+                    header("Content-Disposition: attachment; filename=".$filename);
+                    $content = file_get_contents($filename);
+                    unlink($filename);
+                    exit($content);
+                
+                } catch(Exception $e) {
+                    exit($e->getMessage());
+                }
+                break;
+                case 'TXT':
+                    $this->actionReportPesquisaAtendimentoTxtECsv($base, $dados, $tipo, $condutor, $periodo);
+                break;	
+                case 'CSV':
+                    $this->actionReportPesquisaAtendimentoTxtECsv($base, $dados, $tipo, $condutor, $periodo);
+                break;
+		}	
+		
+    }
+
+    public function actionReportPesquisaAtendimentoTxtECsv($base, $dados, $tipo, $condutor, $periodo)
+    {
+        
+        $filename = $base . 'Pesquisa_Atendimento_' . date('d-m-Y-H-i-s') . '.'. strtolower($tipo);
+        $fp = fopen($filename, 'a');  
+
+        //corrige erro de exibição em UTF8 para CSV e TXT:
+        fwrite($fp, pack("CCC",0xef,0xbb,0xbf));                  
+
+        foreach ($dados as $model) {
+            $l = '';
+            $l .= $model['id'];
+            $l .= ';' . $model['aluno'];
+            $l .= ';' . $model['RA'].' '.$model['RAdigito'];
+            $l .= ';' . $model['criacao'];
+            $l .= ';' . $model['horarioEntrada'];
+            $l .= ';' . $model['horarioSaida'];
+            $l .= ';' . Aluno::ARRAY_SERIES[$model['serie']].'/'.Aluno::ARRAY_TURMA[$model['turma']];
+            $l .= ';' . $model['tipoLogradouro'].' '.$model['endereco'].', '.$model['numeroResidencia'];
+            $l .= ';' . $model['bairro'];
+            $l .= ';' . $model['escola'];
+            $l .= ';' . $condutor["nome"];
+            $l .= ';' . $periodo;
+            $l .= '
+';
+            fwrite($fp, $l);
+      }
+       
+        fclose($fp);
+        try {
+            // $writer = new Xlsx($spreadsheet);
+            header("Content-Disposition: attachment; filename=" . $filename);
+            $content = file_get_contents($filename);
+            unlink($filename);
+            exit($content);
+        } catch (\Exception $e) {
+            exit($e->getMessage());
+        }
+
+    }
+    
+	public function actionReportPesquisaAtendimentoPdf()
+    {
+		
         $contentBefore = '';
         $dados = $this->session->get('historicos');
         $condutor = $this->session->get('condutor');
@@ -286,36 +527,32 @@ class PainelAtendimentoController extends \yii\web\Controller
       </table>';
         $content .= '<table border="0" width="100%" class="table">';
         $content .= '
-        <tr>
-            <th align="center"><b>ESCOLA</b></th>
-            <th align="center"><b>NOME DO ALUNO</b></th>
+        <tr>			
+            <th align="center"><b>Id</b></th>
+            <th align="center"><b>Aluno</b></th>
             <th align="center"><b>RA</b></th>
-            <th align="center"><b>ENT</b></th>
-            <th align="center"><b>SAI</b></th>
-            <th align="center"><b>ANO/SÉRIE E TURMA</b></th>
-            <th align="center"><b>ENDEREÇO</b></th>
-            <th align="center"><b>BAIRRO</b></th>
-            <th align="center"><b>TEL.</b></th>
-            <th align="center"><b>NECESSIDADES</b></th>
-            <th align="center"><b>INÍCIO DO ATENDIMENTO</b></th>
-            <th align="center"><b>FIM DO ATENDIMENTO</b></th>
+            <th align="center"><b>Data</b></th>
+            <th align="center"><b>Entrada</b></th>
+            <th align="center"><b>Saída</b></th>
+			<th align="center"><b>Ano/Série e Turma</b></th>
+            <th align="center"><b>Endereço</b></th>
+            <th align="center"><b>Bairro</b></th>
+            <th align="center"><b>Escola</b></th>
         </tr>';
 
         foreach ($dados as $model) {
             $content .= '<tr>';
-            $content .= $this->td(15, $model->aluno->escola->nomeCompleto);
-            $content .= $this->td(20, $model->aluno->nome);
-            $content .= $this->td(5, $model->aluno->RA . '-' . $model->aluno->RAdigito);
-            $content .= $this->tdCenter(7, $model->entrada);
-            $content .= $this->tdCenter(7, $model->saida);
-            $content .= $this->tdCenter(7, Aluno::ARRAY_SERIES[$model->aluno->serie] . '/' . Aluno::ARRAY_TURMA[$model->aluno->turma]);
-            $content .= $this->td(20, $model->aluno->tipoLogradouro . ' ' . $model->aluno->endereco . ' Nº ' . $model->aluno->numeroResidencia);
-            $content .= $this->td(10, $model->aluno->bairro);
-            $content .= $this->td(7, Yii::$app->formatter->asTelefone($this->getTelefoneValido($model->aluno)));
-            // $content .= $this->td(7, $this->getTelefoneValido($model->aluno));
-            $content .= $this->tdCenter(10, $this->getNecessidades($model->aluno));
-            $content .= $this->tdCenter(10, $model->inicioAtendimento);
-            $content .= $this->tdCenter(10, $model->fimAtendimento);
+			$content .= $this->td(6, $model['id']);
+			$content .= $this->td(34, $model['aluno']);
+			$content .= $this->td(10, $model['RA'].' '.$model['RAdigito']);
+			$content .= $this->td(7, $model['criacao']);
+			$content .= $this->td(7, $model['horarioEntrada']);
+			$content .= $this->td(7, $model['horarioSaida']);
+			$content .= $this->td(15, Aluno::ARRAY_SERIES[$model['serie']].'/'.Aluno::ARRAY_TURMA[$model['turma']]);
+            $content .= $this->td(31,$model['tipoLogradouro'].' '.$model['endereco'].', '.$model['numeroResidencia']);
+			$content .= $this->td(20, $model['bairro']);
+			$content .= $this->td(20, $model['escola']);
+			
 
             $content .= '</tr>';
         }
@@ -329,6 +566,7 @@ class PainelAtendimentoController extends \yii\web\Controller
             'marginRight' => 5,
             // set to use core fonts only
             'mode' => Pdf::MODE_CORE,
+			 'filename' => 'Pesquisa_Atendimento',
             // A4 paper format
             'format' => Pdf::FORMAT_A4,
             // portrait orientation
@@ -343,7 +581,7 @@ class PainelAtendimentoController extends \yii\web\Controller
             // any css to be embedded if required
             'cssInline' => '.kv-heading-1{font-size:18px} .table table { border-collapse: collapse; } .table table, .table th, .table td { border: 1px solid black;} .table th td { padding-left: 3px;}',
             // set mPDF properties on the fly
-            'options' => ['title' => 'Krajee Report Title'],
+            'options' => ['title' => 'Pesquisa de Atendimento'],
             // call mPDF methods on the fly
             'methods' => [
                 'SetHeader' => ['
@@ -360,8 +598,10 @@ class PainelAtendimentoController extends \yii\web\Controller
 
         // return the pdf output as per the destination setting
         return $pdf->render();
+		$mpdf->Output('filename.pdf', \Mpdf\Output\Destination::FILE);
+
     }
-    
+	
     public function actionIndex()
     {
         $camposOrdenacao = [
@@ -773,6 +1013,7 @@ class PainelAtendimentoController extends \yii\web\Controller
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
+		
         $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);    
         // $sheet = $spreadsheet->createSheet();
         // $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
@@ -1337,73 +1578,26 @@ class PainelAtendimentoController extends \yii\web\Controller
 					$primeiroDiaAno = $ano.'-12-21';
 				}
 				
-				$sql="select h.id from HistoricoMovimentacaoRota h where h.idSolicitacaoTransporte in (
+				$sql="select h.id,al.id as id_aluno,al.nome as aluno,al.RA,al.RAdigito,al.horarioEntrada,al.horarioSaida,al.serie,al.turma,al.tipoLogradouro,al.endereco,al.bairro,al.numeroResidencia,e.nome as escola,c.nome as condutor,DATE_FORMAT(h.criacao,'%d/%m/%Y') as criacao
+							from HistoricoMovimentacaoRota h 
+							join Aluno al on h.idAluno = al.id
+							join Escola e on e.id = h.idEscola
+							join Condutor c on c.id = h.idCondutorAtual
+							where h.idSolicitacaoTransporte in (
 							select sta.idSolicitacaoTransporte from SolicitacaoStatus sta where sta.idSolicitacaoTransporte in (
 								select st.id from SolicitacaoTransporte st where st.idCondutor = {$condutor->id}  and  (st.`data` between '{$data[0]}' and '{$data[1]}' or st.ultimaMovimentacao between '{$data[0]}' and '{$data[1]}')
 									union 
 								select id from SolicitacaoTransporte st where st.`status` =6 and st.idCondutor = {$condutor->id} and anoVigente = {$ano})
-						and sta.`status` = 6) group by h.idAluno";
+							and sta.`status` = 6) group by h.idAluno";
 
-				// $sql3 ="select id from (select id,idAluno from HistoricoMovimentacaoRota h where h.idSolicitacaoTransporte in
-					// (select distinct(sta.idSolicitacaoTransporte) from SolicitacaoStatus sta where sta.idSolicitacaoTransporte in 
-					// (select st.idSolicitacaoTransporte from SolicitacaoStatus st  where idCondutor = {$condutor->id} and st.`status` = 6) and sta.dataCadastro between '{$data[0]}' and '{$data[1]}')) as aux group by idAluno";
-                // $sql2 = "select id from ( SELECT  `HistoricoMovimentacaoRota`.`id`
-                        // FROM  `HistoricoMovimentacaoRota`
-						// LEFT JOIN `HistoricoMovimentacaoRota` AS `saida` ON `saida`.`id` = `HistoricoMovimentacaoRota`.`idHistoricoMovimentacaoAssociado`
-						// LEFT JOIN SolicitacaoTransporte st on st.id = HistoricoMovimentacaoRota.idSolicitacaoTransporte
-						// WHERE ((`HistoricoMovimentacaoRota`.`idCondutorAnterior` = {$condutor->id}) OR (`HistoricoMovimentacaoRota`.`idCondutorAtual` = {$condutor->id}))
-                            // AND ((`HistoricoMovimentacaoRota`.`idAluno` > 0) AND (`HistoricoMovimentacaoRota`.`tipo` = ".HistoricoMovimentacaoRota::STATUS_ALUNO_INSERIDO."))
-							// AND `HistoricoMovimentacaoRota`.criacao between '{$primeiroDiaAno}' and '{$data[1]}' group by HistoricoMovimentacaoRota.idAluno ) as aux
-						// ";
-
-                // if ($get['periodo']) {
-
-                    // $sql .= " 
-                            // AND
-                            // (
-                                // (`HistoricoMovimentacaoRota`.`criacao` >= '{$data[0]}' AND `HistoricoMovimentacaoRota`.`criacao` <= '{$data[1]}')
-                                // OR 
-                                // (
-                                    // (`HistoricoMovimentacaoRota`.`criacao` >= '{$data[0]}')
-                                    // AND
-                                    // (`HistoricoMovimentacaoRota`.`geradoviasistema` = 1)
-                                // )
-                            // )";
-                // }
-
-                // $sql .= " ORDER BY HistoricoMovimentacaoRota.idEscola, HistoricoMovimentacaoRota.idAluno, HistoricoMovimentacaoRota.criacao DESC";
-                //$sql .= " ORDER BY HistoricoMovimentacaoRota.idEscola, HistoricoMovimentacaoRota.idAluno, HistoricoMovimentacaoRota.criacao DESC";
-                 //die($sql);
 				
-                $idHistoricos = Yii::$app->getDb()->createCommand($sql)->queryAll();
-
-                $historicos = HistoricoMovimentacaoRota::find()->where(['in','HistoricoMovimentacaoRota.id',array_column($idHistoricos, 'id')])->all();
-				//$historicos2 = HistoricoMovimentacaoRota::find()->where(['in','HistoricoMovimentacaoRota.id',array_column($idHistoricos, 'id')])->andWhere(['=', 'sentido', 2])->all();
-
-		
-                $regs = [];
-            	
-                foreach ($historicos as $historico) {
-					// $sqlStatus ="select count(*) as total from SolicitacaoStatus st where st.idSolicitacaoTransporte = '{$historico->idSolicitacaoTransporte}'   and st.dataCadastro between '{$primeiroDiaAno}' and '{$data[1]}' and st.status = 6";
-					// $ultimoStatus = Yii::$app->getDb()->createCommand($sqlStatus)->queryOne();
-					// if ($ultimoStatus['total'] <> 0){
-						// $regs[]=$historico;
-						
-					// }		
-					$regs[]=$historico;	
-                }
 				
-				// foreach ($historicos2 as $historico) {
-					// $sqlStatus ="select count(*) as total from SolicitacaoStatus st where st.idSolicitacaoTransporte = '{$historico->idSolicitacaoTransporte}'   and st.dataCadastro between '{$primeiroDiaAno}' and '{$data[1]}' and st.status = 6";
-					// $ultimoStatus = Yii::$app->getDb()->createCommand($sqlStatus)->queryOne();
-					// if ($ultimoStatus['total'] <> 0){
-						// $regs[]=$historico;
-						
-					// }					
-                // }
+                $dados = Yii::$app->getDb()->createCommand($sql)->queryAll();
+
+                				
 				
                 // throw new NotFoundHttpException(print_r($array));
-                $this->session->set('historicos', $regs);
+                $this->session->set('historicos', $dados);
                 $this->session->set('condutor', $condutor);
                 if (isset($_GET['sort'])) {
                     $sort = $_GET['sort'];
@@ -1417,8 +1611,8 @@ class PainelAtendimentoController extends \yii\web\Controller
             }
 
             return $this->render('pesquisa-atendimento', [
-                'historicos' => $regs,
-                'condutor' => $condutor,
+                'historicos' => $dados,
+				 'periodo' => $get['periodo'],
                 'condutores' => ArrayHelper::map(Condutor::find()->all(), 'id', 'nome'),
                 'get' => Yii::$app->request->get()
             ]);
