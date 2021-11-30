@@ -22,7 +22,7 @@ use kartik\select2\Select2;
     ]); ?>
     <?= $form->field($model, 'idEmpresa')->hiddenInput(['maxlength' => true])->label(false); ?>
     
-    <?php echo Yii::$app->controller->renderPartial('_inputs', ['form' => $form, 'model' => $model ]);  ?>
+    <?php echo Yii::$app->controller->renderPartial('_inputs', ['form' => $form, 'model' => $model, 'logData' => $logData ]);  ?>
 
     
     <?= Html::submitButton($model->isNewRecord ? 'Salvar' : 'Atualizar', ['class' => $model->isNewRecord ? 'btn btn-success pull-right' : 'btn btn-primary pull-right']) ?>
