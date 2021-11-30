@@ -17,6 +17,7 @@ use yii\filters\VerbFilter;
 use yii\helpers\BaseHtml;
 use yii\helpers\Html;
 use yii\helpers\Json;
+use common\models\Log;
 use yii\web\Response;
 use common\models\TipoDocumento;
 use yii\web\UploadedFile;
@@ -296,54 +297,104 @@ class CondutorController extends Controller
 
 
     // SETUP DAS COLUNAS
-    $sheet->getColumnDimension('A')->setWidth(50.14);
-    $sheet->getColumnDimension('B')->setWidth(14.5);
-    $sheet->getColumnDimension('C')->setWidth(20.34);
-    $sheet->getColumnDimension('D')->setWidth(25.14);
-    $sheet->getColumnDimension('E')->setWidth(12.57);
-    $sheet->getColumnDimension('F')->setWidth(12.57);
-    $sheet->getColumnDimension('G')->setWidth(16);
-    $sheet->getColumnDimension('H')->setWidth(13);
-    $sheet->getColumnDimension('I')->setWidth(32);
-
+    $sheet->getColumnDimension('A')->setWidth(30);
+    $sheet->getColumnDimension('B')->setWidth(15);
+    $sheet->getColumnDimension('C')->setWidth(15);
+    $sheet->getColumnDimension('D')->setWidth(15);
+    $sheet->getColumnDimension('E')->setWidth(30);
+    $sheet->getColumnDimension('F')->setWidth(40);
+    $sheet->getColumnDimension('G')->setWidth(15);
+    $sheet->getColumnDimension('H')->setWidth(15);
+    $sheet->getColumnDimension('I')->setWidth(15);
+	$sheet->getColumnDimension('J')->setWidth(30);
+	$sheet->getColumnDimension('K')->setWidth(10);
+	$sheet->getColumnDimension('L')->setWidth(10);
+	$sheet->getColumnDimension('M')->setWidth(10);
+	$sheet->getColumnDimension('N')->setWidth(10);
+	$sheet->getColumnDimension('O')->setWidth(10);
+	$sheet->getColumnDimension('P')->setWidth(60);
+	$sheet->getColumnDimension('Q')->setWidth(60);
+	$sheet->getColumnDimension('R')->setWidth(100);
+	$sheet->getColumnDimension('S')->setWidth(50);
+	$sheet->getColumnDimension('T')->setWidth(20);
+	$sheet->getColumnDimension('U')->setWidth(20);
+	$sheet->getColumnDimension('V')->setWidth(20);
+	$sheet->getColumnDimension('X')->setWidth(20);
+	$sheet->getColumnDimension('Y')->setWidth(20);
+	$sheet->getColumnDimension('W')->setWidth(20);
+	$sheet->getColumnDimension('Z')->setWidth(20);
+	$sheet->getColumnDimension('AA')->setWidth(20);
+	$sheet->getColumnDimension('AB')->setWidth(20);
+	$sheet->getColumnDimension('AC')->setWidth(20);
+	$sheet->getColumnDimension('AD')->setWidth(20);
+	$sheet->getColumnDimension('AE')->setWidth(20);
+	$sheet->getColumnDimension('AF')->setWidth(20);
+	$sheet->getColumnDimension('AG')->setWidth(40);
+	
+	
     //
     $i = 1;
     // PRÓXIMA LINHA
     $sheet->mergeCells('A'.$i.':B'.($i+4));
-    $sheet->mergeCells('C'.$i.':I'.$i);
-    $sheet->mergeCells('C'.($i+1).':I'.($i+1));
+    $sheet->mergeCells('C'.$i.':AG'.$i);
+    $sheet->mergeCells('C'.($i+1).':AG'.($i+1));
     $sheet->setCellValue('C'.($i+1), "Secretaria de Educação e Cidadania");
     $sheet->getStyle('C'.($i+1))->applyFromArray($left)->getFont()->setBold(true);
 
-    $sheet->mergeCells('C'.($i+2).':I'.($i+4));
+    $sheet->mergeCells('C'.($i+2).':AG'.($i+4));
     $sheet->setCellValue('C'.($i+2), "Setor de Transporte Escolar\nE-mail: transporte.escolar@sjc.sp.gov.br\nTelefone: (12) 3901-2165");
     $sheet->getStyle('C'.($i+2))->getAlignment()->setWrapText(true);
 
-    $sheet->getStyle('A'.($i+2).':I'.($i+2))->applyFromArray($left);
+    $sheet->getStyle('A'.($i+2).':AG'.($i+2))->applyFromArray($left);
 
 
     $i+=5;
     $sheet->getStyle('A'.$i.':I'.$i)->applyFromArray($center);
 
     $sheet->setCellValue('A'.$i, "NOME");
-    $sheet->setCellValue('B'.$i, "ALVARÁ");
-    $sheet->setCellValue('C'.$i, "REGIÃO DE ATUAÇÃO");
-    $sheet->setCellValue('D'.$i, "ENDEREÇO COMPLETO");
-    $sheet->setCellValue('E'.$i, "TELEFONE");
-    $sheet->setCellValue('F'.$i, "VEÍCULO");
-    $sheet->setCellValue('G'.$i, "CAPACIDADE");
-    $sheet->setCellValue('H'.$i, "VEÍCULO ADAPTADO");
-    $sheet->setCellValue('I'.$i, "ESCOLAS ATENDIDAS");
-    $sheet->getStyle('A'.$i.':I'.$i)
+	$sheet->setCellValue('B'.$i, "STATUS");
+	$sheet->setCellValue('C'.$i, "DATA DE NASCIMENTO");
+	$sheet->setCellValue('D'.$i, "CPF DO CONDUTOR");
+	$sheet->setCellValue('E'.$i, "RG + ORGÃO EMISSOR");
+	$sheet->setCellValue('F'.$i, "E-MAIL");
+	$sheet->setCellValue('G'.$i, "NÚMERO DA CNH");
+	$sheet->setCellValue('H'.$i, "VALIDADE DA CNH");	
+	$sheet->setCellValue('I'.$i, "NIT");	
+	$sheet->setCellValue('J'.$i, "PERÍODO DE COTRATO");	
+	$sheet->setCellValue('K'.$i, "TIPO DE CONTRATO");	
+	$sheet->setCellValue('L'.$i, "VALOR PAGO");	
+    $sheet->setCellValue('M'.$i, "ALVARÁ");
+	$sheet->setCellValue('N'.$i, "INSCRIÇÃO MUNICIPAL");
+    $sheet->setCellValue('O'.$i, "REGIÃO DE ATUAÇÃO");
+    $sheet->setCellValue('P'.$i, "ENDEREÇO COMPLETO");
+    $sheet->setCellValue('Q'.$i, "TELEFONE");
+	$sheet->setCellValue('R'.$i, "ESCOLAS ATENDIDAS");
+    $sheet->setCellValue('S'.$i, "VEÍCULO");
+	$sheet->setCellValue('T'.$i, "TIPO DO VEÍCULO");
+	$sheet->setCellValue('U'.$i, "ALOCAÇÃO DO VEÍCULO");
+    $sheet->setCellValue('V'.$i, "CAPACIDADE");
+    $sheet->setCellValue('X'.$i, "VEÍCULO ADAPTADO");
+	$sheet->setCellValue('Y'.$i, "IDADE DO VEÍCULO");
+	$sheet->setCellValue('W'.$i, "COMBUSTÍVEL");
+	$sheet->setCellValue('Z'.$i, "NÚMERO DA APÓLICE");
+	$sheet->setCellValue('AA'.$i, "VENCIMENTO DA APÓLICE");
+	$sheet->setCellValue('AB'.$i, "VENCIMENTO DO CRLV");
+	$sheet->setCellValue('AC'.$i, "VISTORIA SEMESTRAL");
+	$sheet->setCellValue('AD'.$i, "NOME DO MONITOR");
+	$sheet->setCellValue('AE'.$i, "CPF DO MONITOR");
+	$sheet->setCellValue('AF'.$i, "RG DO MONITOR");
+	$sheet->setCellValue('AG'.$i, "TELEFONES DO MONITOR");
+
+    $sheet->getStyle('A'.$i.':AG'.$i)
     ->getAlignment()->setWrapText(true);
-    $sheet->getStyle('A'.$i.':I'.$i)->getFill()
+    $sheet->getStyle('A'.$i.':AG'.$i)->getFill()
     ->setFillType(Fill::FILL_SOLID)
     ->getStartColor()->setARGB('FF000000');
 
-    $sheet->getStyle('A'.$i.':I'.$i)->getFont()->setBold(true);
+    $sheet->getStyle('A'.$i.':AG'.$i)->getFont()->setBold(true);
 
-    $sheet->getStyle('A'.$i.':I'.$i)->getFont()->setColor( $colorWhite );
-    $sheet->setAutoFilter('A'.$i.':I'.$i);
+    $sheet->getStyle('A'.$i.':AG'.$i)->getFont()->setColor( $colorWhite );
+    $sheet->setAutoFilter('A'.$i.':AG'.$i);
 
 	if(!empty($status)){
 		$query = Condutor::find()->andWhere(['status' => $status])->orderBy(['nome' => SORT_ASC]);
@@ -362,19 +413,64 @@ class CondutorController extends Controller
     foreach($query->all() as $model) {
     $i++;
         if($i % 2 == 0) {
-            $sheet->getStyle('A'.$i.':I'.$i)->getFill()
+            $sheet->getStyle('A'.$i.':AG'.$i)->getFill()
             ->setFillType(Fill::FILL_SOLID)
             ->getStartColor()->setRGB('F6F6F6');
         
         }
         // $sheet->getStyle('A'.$i.':H'.$i)->applyFromArray($borderSoft);
-        $sheet->getStyle('B'.$i.':I'.$i)->applyFromArray($center);
-        $sheet->getStyle('A'.$i.':I'.$i)->applyFromArray($borderSoft);
-        $sheet->getStyle('A'.$i.':I'.$i)
-        ->getAlignment()->setWrapText(true);
+        $sheet->getStyle('B'.$i.':AG'.$i)->applyFromArray($center);
+        $sheet->getStyle('A'.$i.':AG'.$i)->applyFromArray($borderSoft);
+        $sheet->getStyle('A'.$i.':AG'.$i)->getAlignment()->setWrapText(true);
         $sheet->setCellValue('A'.$i, ' '.$model->nome);
-        $sheet->setCellValue('B'.$i, $model->alvara);
-        $sheet->setCellValue('C'.$i, $model->getRegioesAsString());
+		if($model->status == 1){
+			$statusCondutor ='ATIVO';
+		}else{
+			$statusCondutor ='INATIVO';
+		}
+		$sheet->setCellValue('B'.$i, ' '.$statusCondutor);
+		if($model->dataNascimento){
+			$dataNascArr = explode("-", $model->dataNascimento);		
+			$dataNasc = $dataNascArr[2].'-'.$dataNascArr[1].'-'.$dataNascArr[0];
+		}else{
+			$dataNasc = '';
+		}		
+		$sheet->setCellValue('C'.$i, $dataNasc);
+		$sheet->setCellValue('D'.$i, $model->cpf);
+		$sheet->setCellValue('E'.$i, $model->rg.' - '.$model->orgaoEmissor);
+		$sheet->setCellValue('F'.$i, $model->email);
+		$sheet->setCellValue('G'.$i, $model->cnhRegistro);
+		
+		if($model->cnhValidade){
+			$dataCnhArr = explode("-", $model->cnhValidade);		
+			$dataCnh = $dataCnhArr[2].'-'.$dataCnhArr[1].'-'.$dataCnhArr[0];
+		}else{
+			$dataCnh = '';
+		}	
+		
+		$sheet->setCellValue('H'.$i, $dataCnh);
+		$sheet->setCellValue('I'.$i, $model->nit);
+		
+		if($model->dataInicioContrato){
+			$dtIniContrArr = explode("-", $model->dataInicioContrato);		
+			$dataIniContr = $dtIniContrArr[2].'-'.$dtIniContrArr[1].'-'.$dtIniContrArr[0];
+		}else{
+			$dataIniContr = '';
+		}	
+		
+		if($model->dataFimContrato){
+			$dtFinContrArr = explode("-", $model->dataFimContrato);		
+			$dtFinContr = $dtFinContrArr[2].'-'.$dtFinContrArr[1].'-'.$dtFinContrArr[0];
+		}else{
+			$dtFinContr = '';
+		}	
+		
+		$sheet->setCellValue('J'.$i, $dataIniContr.' - '.$dtFinContr);
+		$sheet->setCellValue('K'.$i, CONDUTOR::ARRAY_TIPO[$model->tipoContrato]);
+		$sheet->setCellValue('L'.$i, $model->valorPagoKmViagem);
+        $sheet->setCellValue('M'.$i, $model->alvara);
+		$sheet->setCellValue('N'.$i, $model->inscricaoMunicipal);
+        $sheet->setCellValue('O'.$i, $model->getRegioesAsString());
         $complemento ='';
         if($model->complementoResidencia){
             $complemento .= ','.$model->complementoResidencia;
@@ -386,21 +482,64 @@ class CondutorController extends Controller
         if($model->bairro)
             $model->bairro = ' - '.$model->bairro;
 
-        $sheet->setCellValue('D'.$i, $model->tipoLogradouro.' '.trim($model->endereco).''.$complemento.''.$num.$model->bairro.' '.$model->cep);
+        $sheet->setCellValue('P'.$i, $model->tipoLogradouro.' '.trim($model->endereco).''.$complemento.''.$num.$model->bairro.' '.$model->cep);
         $ano = '';
         if($model->veiculo->anoModelo && $model->veiculo->anoFabricacao)
             $ano = ' Ano: '.$model->veiculo->anoModelo.'/'.$model->veiculo->anoFabricacao;
-        $sheet->setCellValue('E'.$i, $this->getTelefoneValido($model));
-        $sheet->setCellValue('F'.$i, $model->veiculo->placa.' / '.$model->veiculo->modelo->marca->nome.' '.$model->veiculo->modelo->nome.$ano.' '.Veiculo::ARRAY_TIPO[$model->veiculo->combustivel]);
-        $sheet->setCellValue('G'.$i, $model->veiculo->capacidade);
-        $sheet->setCellValue('H'.$i, Veiculo::ARRAY_ADAPTADO[$model->veiculo->adaptado]);
-        $escolas = [];
+        $sheet->setCellValue('Q'.$i, $this->getTelefoneValido($model));
+		
+		$escolas = [];
         foreach ($model->escolas as $escola)
         {
             $escolas[] = $escola->escola->nomeCompleto;
         }
 
-        $sheet->setCellValue('I'.$i,  implode (',', $escolas));
+        $sheet->setCellValue('R'.$i,  implode (',', $escolas));
+		
+        $sheet->setCellValue('S'.$i, $model->veiculo->placa.' / '.$model->veiculo->modelo->marca->nome.' '.$model->veiculo->modelo->nome.$ano);
+		$sheet->setCellValue('T'.$i, Veiculo::ARRAY_TIPO_VEICULO[$model->veiculo->tipoVeiculo]);
+        $sheet->setCellValue('U'.$i, Veiculo::ARRAY_ALOCACAO[$model->veiculo->alocacao]);
+		$sheet->setCellValue('V'.$i, $model->veiculo->capacidade);
+        $sheet->setCellValue('X'.$i, Veiculo::ARRAY_ADAPTADO[$model->veiculo->adaptado]);
+		$sheet->setCellValue('Y'.$i, $model->veiculo->anoAlerta(1));
+		$sheet->setCellValue('W'.$i, Veiculo::ARRAY_TIPO[$model->veiculo->combustivel]);
+		
+		if($model->veiculo->numApolice == 0){
+			$sheet->setCellValue('Z'.$i, 'Pendente');
+		}else{
+			$sheet->setCellValue('Z'.$i, $model->veiculo->numApolice);
+		}
+		
+		
+		if($model->veiculo->dataVencimentoSeguro){
+			$dtVencSegArr = explode("-", $model->veiculo->dataVencimentoSeguro);		
+			$dtVencSeg = $dtVencSegArr[2].'-'.$dtVencSegArr[1].'-'.$dtVencSegArr[0];
+		}else{
+			$dtVencSeg = '';
+		}			
+		$sheet->setCellValue('AA'.$i,$dtVencSeg );		
+		
+		if($model->veiculo->dataVencimentoCRLV){
+			$dtVencCrlvArr = explode("-", $model->veiculo->dataVencimentoCRLV);		
+			$dtVencCrlv = $dtVencCrlvArr[2].'-'.$dtVencCrlvArr[1].'-'.$dtVencCrlvArr[0];
+		}else{
+			$dtVencCrlv = '';
+		}			
+		$sheet->setCellValue('AB'.$i, $dtVencCrlv);
+		
+		if($model->veiculo->dataVistoriaEstadual){
+			$dtVistEstadualArr = explode("-", $model->veiculo->dataVistoriaEstadual);		
+			$dtVistEstadual = $dtVistEstadualArr[2].'-'.$dtVistEstadualArr[1].'-'.$dtVistEstadualArr[0];
+		}else{
+			$dtVistEstadual = '';
+		}			
+		
+		$sheet->setCellValue('AC'.$i, $dtVistEstadual);
+		$sheet->setCellValue('AD'.$i, $model->nomeMonitor);
+		$sheet->setCellValue('AE'.$i, $model->cpfMonitor);
+		$sheet->setCellValue('AF'.$i, $model->rgMonitor);
+		$sheet->setCellValue('AG'.$i, $model->telefoneMonitor.' '.$model->telefoneMonitorWhatsapp);
+        
 
     }
     
@@ -429,6 +568,10 @@ class CondutorController extends Controller
 
             $filename = $base.'_Condutores_'.date('d-m-Y-H-i-s').'.txt';
             $fp = fopen($filename, 'a');
+
+            //corrige erro de exibição em UTF8 para CSV e TXT:
+        fwrite($fp, pack("CCC",0xef,0xbb,0xbf));                  
+
             $query = Condutor::find()->orderBy(['nome' => SORT_ASC]);
             if(isset($_GET['selecionados']) && $_GET['selecionados'] != '') {
                 $ids = explode(',',$_GET['selecionados']);
@@ -437,31 +580,280 @@ class CondutorController extends Controller
             foreach($query->all() as $model) {
                 $l='';
                 $l .= $model->nome;
-                $l .= ';'.$model->alvara;
-                $l .= ';'.Condutor::ARRAY_REGIAO[$model->regiao];
-                $complemento ='';
-                if($model->complementoResidencia){
-                    $complemento .= ','.$model->complementoResidencia;
-                }
-                $num = '';
-                if($model->numeroResidencia){
-                    $num .= ', Nº '.$model->numeroResidencia;
-                }
-                if($model->bairro)
-                    $model->bairro = ' - '.$model->bairro;
-                $l .= ';'.$model->tipoLogradouro.' '.trim($model->endereco).''.$complemento.''.$num.$model->bairro.' '.$model->cep;
-                $l .= ';'.$model->veiculo->modelo->marca->nome.' '.$model->veiculo->modelo->nome.' '.Veiculo::ARRAY_TIPO[$model->veiculo->combustivel];
-                $l .= ';'.$model->veiculo->capacidade;
-                $l .= ';'.Veiculo::ARRAY_ADAPTADO[$model->veiculo->adaptado];
-    
-                $escolas = [];
-                foreach ($model->escolas as $escola)
-                {
-                    $escolas[] = $escola->escola->nomeCompleto;
-                }
-                $l .= ';'.implode (',', $escolas);
-                $l .= '
-';
+				
+				if($model->status == 1){
+					$statusCondutor ='ATIVO';
+				}else{
+					$statusCondutor ='INATIVO';
+				}
+				$l .= $statusCondutor;
+				if($model->dataNascimento){
+					$dataNascArr = explode("-", $model->dataNascimento);		
+					$dataNasc = $dataNascArr[2].'-'.$dataNascArr[1].'-'.$dataNascArr[0];
+				}else{
+					$dataNasc = '';
+				}
+				$l .= $dataNasc;	
+				$l .= ';'.$model->cpf;
+				$l .= ';'.$model->rg.' - '.$model->orgaoEmissor;
+				$l .= ';'.$model->email;
+				$l .= ';'.$model->cnhRegistro;
+				
+				if($model->cnhValidade){
+					$dataCnhArr = explode("-", $model->cnhValidade);		
+					$dataCnh = $dataCnhArr[2].'-'.$dataCnhArr[1].'-'.$dataCnhArr[0];
+				}else{
+					$dataCnh = '';
+				}	
+				$l .= ';'.$dataCnh;
+				$l .= ';'.$model->nit;
+				
+				if($model->dataInicioContrato){
+					$dtIniContrArr = explode("-", $model->dataInicioContrato);		
+					$dataIniContr = $dtIniContrArr[2].'-'.$dtIniContrArr[1].'-'.$dtIniContrArr[0];
+				}else{
+					$dataIniContr = '';
+				}	
+				
+				if($model->dataFimContrato){
+					$dtFinContrArr = explode("-", $model->dataFimContrato);		
+					$dtFinContr = $dtFinContrArr[2].'-'.$dtFinContrArr[1].'-'.$dtFinContrArr[0];
+				}else{
+					$dtFinContr = '';
+				}	
+				$l .= ';'.$dataIniContr.' - '.$dtFinContr;
+				$l .= ';'.CONDUTOR::ARRAY_TIPO[$model->tipoContrato];
+				$l .= ';'.$model->valorPagoKmViagem;
+				$l .= ';'.$model->alvara;
+				$l .= ';'.$model->inscricaoMunicipal;
+				$l .= ';'.$model->getRegioesAsString();
+				
+				$complemento ='';
+				if($model->complementoResidencia){
+					$complemento .= ','.$model->complementoResidencia;
+				}
+				$num = '';
+				if($model->numeroResidencia){
+					$num .= ', Nº '.$model->numeroResidencia;
+				}
+				if($model->bairro)
+					$model->bairro = ' - '.$model->bairro;
+				
+				$l .= ';'.$model->tipoLogradouro.' '.trim($model->endereco).''.$complemento.''.$num.$model->bairro.' '.$model->cep;
+
+				$ano = '';
+				if($model->veiculo->anoModelo && $model->veiculo->anoFabricacao)
+					$ano = ' Ano: '.$model->veiculo->anoModelo.'/'.$model->veiculo->anoFabricacao;
+				
+				$l .= ';'.$this->getTelefoneValido($model);
+				
+				$escolas = [];
+				foreach ($model->escolas as $escola)
+				{
+					$escolas[] = $escola->escola->nomeCompleto;
+				}
+
+				$l .= ';'.implode (',', $escolas);
+		
+				$sheet->setCellValue('R'.$i,  implode (',', $escolas));
+				
+				$l .= ';'.$model->veiculo->placa.' / '.$model->veiculo->modelo->marca->nome.' '.$model->veiculo->modelo->nome.$ano;
+				$l .= ';'.Veiculo::ARRAY_TIPO_VEICULO[$model->veiculo->tipoVeiculo];
+				$l .= ';'.Veiculo::ARRAY_ALOCACAO[$model->veiculo->alocacao];
+				$l .= ';'.$model->veiculo->capacidade;
+				$l .= ';'.Veiculo::ARRAY_ADAPTADO[$model->veiculo->adaptado];
+				$l .= ';'.$model->veiculo->anoAlerta(1);
+				$l .= ';'.Veiculo::ARRAY_TIPO[$model->veiculo->combustivel];
+				
+				
+				if($model->veiculo->numApolice == 0){
+					$l .= ';Pendente';
+				}else{
+					$l .= ';'.$model->veiculo->numApolice;
+				}
+				
+				
+				if($model->veiculo->dataVencimentoSeguro){
+					$dtVencSegArr = explode("-", $model->veiculo->dataVencimentoSeguro);		
+					$dtVencSeg = $dtVencSegArr[2].'-'.$dtVencSegArr[1].'-'.$dtVencSegArr[0];
+				}else{
+					$dtVencSeg = '';
+				}			
+				$l .= ';'.$dtVencSeg;
+			
+				if($model->veiculo->dataVencimentoCRLV){
+					$dtVencCrlvArr = explode("-", $model->veiculo->dataVencimentoCRLV);		
+					$dtVencCrlv = $dtVencCrlvArr[2].'-'.$dtVencCrlvArr[1].'-'.$dtVencCrlvArr[0];
+				}else{
+					$dtVencCrlv = '';
+				}			
+				$l .= ';'.$dtVencCrlv;
+				
+				if($model->veiculo->dataVistoriaEstadual){
+					$dtVistEstadualArr = explode("-", $model->veiculo->dataVistoriaEstadual);		
+					$dtVistEstadual = $dtVistEstadualArr[2].'-'.$dtVistEstadualArr[1].'-'.$dtVistEstadualArr[0];
+				}else{
+					$dtVistEstadual = '';
+				}			
+				$l .= ';'.$dtVistEstadual;
+				$l .= ';'.$model->nomeMonitor;
+				$l .= ';'.$model->cpfMonitor;
+				$l .= ';'.$model->rgMonitor;
+				$l .= ';'.$model->telefoneMonitor.' '.$model->telefoneMonitorWhatsapp;
+				$l .= '
+';			
+                fwrite($fp,$l);
+            }
+            fclose($fp);
+            try {
+                // $writer = new Xlsx($spreadsheet);
+                header("Content-Disposition: attachment; filename=".$filename);
+                $content = file_get_contents($filename);
+                unlink($filename);
+                exit($content);
+             
+            } catch(Exception $e) {
+                exit($e->getMessage());
+            }
+        break;
+		 case 'CSV':
+
+            $filename = $base.'_Condutores_'.date('d-m-Y-H-i-s').'.csv';
+            $fp = fopen($filename, 'a');
+
+            //corrige erro de exibição em UTF8 para CSV e TXT:
+            fwrite($fp, pack("CCC",0xef,0xbb,0xbf));                  
+
+            $query = Condutor::find()->orderBy(['nome' => SORT_ASC]);
+            if(isset($_GET['selecionados']) && $_GET['selecionados'] != '') {
+                $ids = explode(',',$_GET['selecionados']);
+                $query = $query->where(['in', 'id', $ids]);
+            }
+            foreach($query->all() as $model) {
+                $l='';
+                $l .= $model->nome;
+				
+				if($model->status == 1){
+					$statusCondutor ='ATIVO';
+				}else{
+					$statusCondutor ='INATIVO';
+				}
+				$l .= $statusCondutor;
+				if($model->dataNascimento){
+					$dataNascArr = explode("-", $model->dataNascimento);		
+					$dataNasc = $dataNascArr[2].'-'.$dataNascArr[1].'-'.$dataNascArr[0];
+				}else{
+					$dataNasc = '';
+				}
+				$l .= $dataNasc;	
+				$l .= ';'.$model->cpf;
+				$l .= ';'.$model->rg.' - '.$model->orgaoEmissor;
+				$l .= ';'.$model->email;
+				$l .= ';'.$model->cnhRegistro;
+				
+				if($model->cnhValidade){
+					$dataCnhArr = explode("-", $model->cnhValidade);		
+					$dataCnh = $dataCnhArr[2].'-'.$dataCnhArr[1].'-'.$dataCnhArr[0];
+				}else{
+					$dataCnh = '';
+				}	
+				$l .= ';'.$dataCnh;
+				$l .= ';'.$model->nit;
+				
+				if($model->dataInicioContrato){
+					$dtIniContrArr = explode("-", $model->dataInicioContrato);		
+					$dataIniContr = $dtIniContrArr[2].'-'.$dtIniContrArr[1].'-'.$dtIniContrArr[0];
+				}else{
+					$dataIniContr = '';
+				}	
+				
+				if($model->dataFimContrato){
+					$dtFinContrArr = explode("-", $model->dataFimContrato);		
+					$dtFinContr = $dtFinContrArr[2].'-'.$dtFinContrArr[1].'-'.$dtFinContrArr[0];
+				}else{
+					$dtFinContr = '';
+				}	
+				$l .= ';'.$dataIniContr.' - '.$dtFinContr;
+				$l .= ';'.CONDUTOR::ARRAY_TIPO[$model->tipoContrato];
+				$l .= ';'.$model->valorPagoKmViagem;
+				$l .= ';'.$model->alvara;
+				$l .= ';'.$model->inscricaoMunicipal;
+				$l .= ';'.$model->getRegioesAsString();
+				
+				$complemento ='';
+				if($model->complementoResidencia){
+					$complemento .= ','.$model->complementoResidencia;
+				}
+				$num = '';
+				if($model->numeroResidencia){
+					$num .= ', Nº '.$model->numeroResidencia;
+				}
+				if($model->bairro)
+					$model->bairro = ' - '.$model->bairro;
+				
+				$l .= ';'.$model->tipoLogradouro.' '.trim($model->endereco).''.$complemento.''.$num.$model->bairro.' '.$model->cep;
+
+				$ano = '';
+				if($model->veiculo->anoModelo && $model->veiculo->anoFabricacao)
+					$ano = ' Ano: '.$model->veiculo->anoModelo.'/'.$model->veiculo->anoFabricacao;
+				
+				$l .= ';'.$this->getTelefoneValido($model);
+				
+				$escolas = [];
+				foreach ($model->escolas as $escola)
+				{
+					$escolas[] = $escola->escola->nomeCompleto;
+				}
+
+				$l .= ';'.implode (',', $escolas);
+		
+				$sheet->setCellValue('R'.$i,  implode (',', $escolas));
+				
+				$l .= ';'.$model->veiculo->placa.' / '.$model->veiculo->modelo->marca->nome.' '.$model->veiculo->modelo->nome.$ano;
+				$l .= ';'.Veiculo::ARRAY_TIPO_VEICULO[$model->veiculo->tipoVeiculo];
+				$l .= ';'.Veiculo::ARRAY_ALOCACAO[$model->veiculo->alocacao];
+				$l .= ';'.$model->veiculo->capacidade;
+				$l .= ';'.Veiculo::ARRAY_ADAPTADO[$model->veiculo->adaptado];
+				$l .= ';'.$model->veiculo->anoAlerta(1);
+				$l .= ';'.Veiculo::ARRAY_TIPO[$model->veiculo->combustivel];
+				
+				
+				if($model->veiculo->numApolice == 0){
+					$l .= ';Pendente';
+				}else{
+					$l .= ';'.$model->veiculo->numApolice;
+				}
+				
+				
+				if($model->veiculo->dataVencimentoSeguro){
+					$dtVencSegArr = explode("-", $model->veiculo->dataVencimentoSeguro);		
+					$dtVencSeg = $dtVencSegArr[2].'-'.$dtVencSegArr[1].'-'.$dtVencSegArr[0];
+				}else{
+					$dtVencSeg = '';
+				}			
+				$l .= ';'.$dtVencSeg;
+			
+				if($model->veiculo->dataVencimentoCRLV){
+					$dtVencCrlvArr = explode("-", $model->veiculo->dataVencimentoCRLV);		
+					$dtVencCrlv = $dtVencCrlvArr[2].'-'.$dtVencCrlvArr[1].'-'.$dtVencCrlvArr[0];
+				}else{
+					$dtVencCrlv = '';
+				}			
+				$l .= ';'.$dtVencCrlv;
+				
+				if($model->veiculo->dataVistoriaEstadual){
+					$dtVistEstadualArr = explode("-", $model->veiculo->dataVistoriaEstadual);		
+					$dtVistEstadual = $dtVistEstadualArr[2].'-'.$dtVistEstadualArr[1].'-'.$dtVistEstadualArr[0];
+				}else{
+					$dtVistEstadual = '';
+				}			
+				$l .= ';'.$dtVistEstadual;
+				$l .= ';'.$model->nomeMonitor;
+				$l .= ';'.$model->cpfMonitor;
+				$l .= ';'.$model->rgMonitor;
+				$l .= ';'.$model->telefoneMonitor.' '.$model->telefoneMonitorWhatsapp;
+				$l .= '
+';			
                 fwrite($fp,$l);
             }
             fclose($fp);
@@ -1043,7 +1435,6 @@ class CondutorController extends Controller
 
         return $model;
     }
-
 	 
     private function uploadSingleFile($model, $file, $dbColumn)
     {
@@ -1064,12 +1455,15 @@ class CondutorController extends Controller
                 $model->$dbColumn = $dir . $nomeArquivo;
                 $model->save();
             }
+
+            //Atualiza tabela de logs
+            $this->salvarLog(Log::ACAO_ATUALIZAR, $dbColumn, $model->id);
+
         }
     }
 
     private function actionUploadFile($model, $file, $idTipoDocumento)
     {
-		
         $arquivos = UploadedFile::getInstances($model, $file);
 
         if ($arquivos) {
@@ -1100,6 +1494,9 @@ class CondutorController extends Controller
 
                 $i++;
             }
+
+            //Atualiza tabela de logs
+            $this->salvarLog(Log::ACAO_ATUALIZAR, $file, $model->id);
         }
     }
 
@@ -1142,6 +1539,108 @@ class CondutorController extends Controller
     }
 
     /**
+     * get ultima modifcacao do condutor
+     * @param int $id
+     * @return mixed
+     */
+    public function getDataUltimaModif($id)
+    {
+        $sql = "SELECT MAX(data) FROM escolarsjc.Log WHERE tabela='Condutor' AND idCondutorTable=$id
+            AND coluna<>'lat' AND coluna<>'lng'";
+        
+        $queryResult = Yii::$app->getDb()->createCommand($sql)->queryAll();
+
+        return $queryResult;
+    }
+
+    /**
+     * get ultima modificacao do monitor
+     * @param int $id
+     * @return mixed
+     */
+    public function getDataUltimaModifMonitor($id)
+    {
+        $sql = "SELECT MAX(data) FROM escolarsjc.Log WHERE tabela='Condutor' AND idCondutorTable=$id
+            AND (coluna='nomeMonitor' OR coluna='rgMonitor' OR coluna='cpfMonitor' OR coluna='telefoneMonitor')";
+        
+        $queryResult = Yii::$app->getDb()->createCommand($sql)->queryAll();
+
+        return $queryResult;
+    }
+
+    /**
+     * get ultima modificacao de dados compostos do Cndutor
+     * @param int $id
+     * @return mixed
+     */
+    public function getDataUltimaModifCompostos($id)
+    {
+
+        $sql = "SELECT MAX(data) FROM escolarsjc.Log WHERE tabela='Condutor' AND idCondutorTable=$id
+                    AND (coluna='telefone' OR coluna='telefone2' OR coluna='celular' 
+                            OR coluna='celular2' OR coluna='folhaPonto' OR coluna='pesquisaRota'
+                        )";
+        
+        $queryResult = Yii::$app->getDb()->createCommand($sql)->queryAll();
+
+        return $queryResult;
+        
+    }
+
+
+    /**
+     * get ultima modifcacao do condutor por coluna
+     * @param int $id
+     * @param string $coluna
+     * @return mixed
+     */
+    public function getDataUltimaModifColuna($id, $coluna)
+    {
+        $searchResult = Log::find()->select('data')
+                                ->andWhere([
+                                    'tabela' => 'Condutor', 
+                                    'idCondutorTable' => $id,
+                                    'coluna' => $coluna
+                                ])
+                                ->orderBy('data desc')
+                                ->one();
+
+        return $searchResult;
+    }
+
+    /**
+     * Converte string de data para formato correto
+     * @param string $coluna
+     * @return string
+     */
+    public function formatPadraoDataBR($stringData)
+    {
+        if($stringData){
+            $dataFormatada = "(Alterado em: " . date("d/m/Y H:i", strtotime($stringData)) . ")";
+        }else{
+            $dataFormatada = '';
+        }
+
+        return $dataFormatada;
+    }
+
+    private function salvarLog($acao, $coluna, $id)
+    {
+        if ($coluna) {
+            Log::salvarLog([
+                'acao' => $acao,
+                'referencia' => 'Condutor-' . $id,
+                'tabela' => 'Condutor',
+                'coluna' => $coluna,
+                'antes' => 'Arquivo antigo',
+                'depois' => 'Arquivo atualizado',
+                'key' => 'idCondutor',
+                'id' => $id,
+            ]);
+        }
+    }
+
+    /**
      * Updates an existing Condutor model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param string $id
@@ -1151,14 +1650,32 @@ class CondutorController extends Controller
     {
         $model = $this->findModel($id);
 		
-		
         // 
         // $this->criarUsuario($model);
         //Pass em formato BT
         // print  $_POST['Condutor[dataNascimento]'];
         // print '<br><br><br>';
         // $novaSenha = str_replace('/', '', Yii::$app->request->post('dataNascimento'));
-        
+        $logData = array();
+        $arrayBusca = array('telefone', 'fotoMotorista', 'documentoCNHCondutor', 'documentoCRLV', 
+                        'documentoApoliceSeguro', 'documentoAutorizacaoEscolar', 
+                        'documentoProntuarioCNH', 'documentoMonitorRG', 'documentoMonitorContratoTrabalho',
+                        'documentoMonitorCertidaoAntecedentesCriminais'
+                    );
+                    
+        $dataUltimoLog = $this->getDataUltimaModif($id);
+        $logData['dataUltimoLog'] = $this->formatPadraoDataBR($dataUltimoLog[0]["MAX(data)"]);
+
+        $dataModifMonitor = $this->getDataUltimaModifMonitor($id);
+        $logData['dataModifMonitor'] = $this->formatPadraoDataBR($dataModifMonitor[0]["MAX(data)"]);
+
+        $dataDadosCompCondut = $this->getDataUltimaModifCompostos($id);
+        $logData['dataDadosCompCondut'] = $this->formatPadraoDataBR($dataDadosCompCondut[0]["MAX(data)"]);
+
+        foreach ($arrayBusca as $k => $value) {
+            $buscaResult = $this->getDataUltimaModifColuna($id, $value);
+            $logData[$value] = $this->formatPadraoDataBR($buscaResult["data"]);
+        }            
 
         if ($model->load(Yii::$app->request->post())) {
             $model = $this->loadCheckbox($model);
@@ -1166,8 +1683,6 @@ class CondutorController extends Controller
             // $novaSenha = str_replace('/', '', $model->dataNascimento);
             $model = $this->getDates($model);
             $model->save();
-			
-			
             if ($model->anexoFotoMotorista) {
                 $this->uploadSingleFile($model, 'anexoFotoMotorista', 'fotoMotorista');										
             }
@@ -1206,6 +1721,7 @@ class CondutorController extends Controller
             $model = $this->getDatesBr($model);
             return $this->render('update', [
                 'model' => $model,
+                'logData' => $logData,
             ]);
         }
     }
