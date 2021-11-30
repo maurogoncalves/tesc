@@ -266,7 +266,8 @@ class PainelAtendimentoController extends \yii\web\Controller
 		
 		$tipo = $get['tipo'];
 
-        $this->sortDadosHistoricoAtendimento($dados);
+        //sort agora é feito pela query
+        // $this->sortDadosHistoricoAtendimento($dados);
         if (!$dados)
             $dados = [];
         if ($periodo) {
@@ -415,7 +416,7 @@ class PainelAtendimentoController extends \yii\web\Controller
 				$sheet->getStyle('B'.$i.':J'.$i)->applyFromArray($center);
 				$sheet->getStyle('A'.$i.':J'.$i)->applyFromArray($borderSoft);
 				$sheet->getStyle('A'.$i.':J'.$i)->getAlignment()->setWrapText(true);
-				$sheet->setCellValue('A'.$i, $model['id']);
+				$sheet->setCellValue('A'.$i, $model['id_aluno']);
 				$sheet->setCellValue('B'.$i, $model['aluno']);
 				$sheet->setCellValue('C'.$i, $model['RA'].' '.$model['RAdigito']);
 				$sheet->setCellValue('D'.$i, $model['criacao']);
@@ -465,7 +466,7 @@ class PainelAtendimentoController extends \yii\web\Controller
 
         foreach ($dados as $model) {
             $l = '';
-            $l .= $model['id'];
+            $l .= $model['id_aluno'];
             $l .= ';' . $model['aluno'];
             $l .= ';' . $model['RA'].' '.$model['RAdigito'];
             $l .= ';' . $model['criacao'];
@@ -478,7 +479,8 @@ class PainelAtendimentoController extends \yii\web\Controller
             $l .= ';' . $condutor["nome"];
             $l .= ';' . $periodo;
             $l .= '
-';
+';//espaço acima é a quebra linha
+
             fwrite($fp, $l);
       }
        
@@ -503,7 +505,8 @@ class PainelAtendimentoController extends \yii\web\Controller
         $condutor = $this->session->get('condutor');
         $periodo = $this->session->get('periodo');
 
-        $this->sortDadosHistoricoAtendimento($dados);
+        //sort agora é feito pela query
+        // $this->sortDadosHistoricoAtendimento($dados);
         if (!$dados)
             $dados = [];
         if ($periodo) {
@@ -542,7 +545,7 @@ class PainelAtendimentoController extends \yii\web\Controller
 
         foreach ($dados as $model) {
             $content .= '<tr>';
-			$content .= $this->td(6, $model['id']);
+			$content .= $this->td(6, $model['id_aluno']);
 			$content .= $this->td(34, $model['aluno']);
 			$content .= $this->td(10, $model['RA'].' '.$model['RAdigito']);
 			$content .= $this->td(7, $model['criacao']);
@@ -1588,7 +1591,7 @@ class PainelAtendimentoController extends \yii\web\Controller
 								select st.id from SolicitacaoTransporte st where st.idCondutor = {$condutor->id}  and  (st.`data` between '{$data[0]}' and '{$data[1]}' or st.ultimaMovimentacao between '{$data[0]}' and '{$data[1]}')
 									union 
 								select id from SolicitacaoTransporte st where st.`status` =6 and st.idCondutor = {$condutor->id} and anoVigente = {$ano})
-							and sta.`status` = 6) group by h.idAluno";
+							and sta.`status` = 6) group by al.nome";
 
 				
 				

@@ -163,6 +163,7 @@ $(document).ready(function() {
 				"sPrevious": "Anterior"
 			},
 		},
+		"order": [[ 1, "asc" ]],
 		"lengthMenu": [[25, 50, 100, 200], [25, 50, 100, 200, "Todos"]],
 		 
 	});
