@@ -60,7 +60,21 @@ use kartik\select2\Select2;
             <?php endif; ?>
     </div>
     <div class="row">
-      <div class="col-md-6">
+	 <div class="col-md-4">
+                   <?=
+                      $form->field($model, 'sentido')->widget(Select2::classname(), [
+                        'data' => CondutorRota::ARRAY_SENTIDO,
+                        'language' => 'pt',
+                        'options' => ['placeholder' => 'Sentido', 'class' => 'form-control', 'id' => 'sentido'],
+                        'pluginOptions' => [
+                            'allowClear' => true,
+                            'multiple' => false,
+                            'initialize' => true,
+                        ],
+                    ]);
+                ?>
+            </div>
+      <div class="col-md-4">
               <?=
                 $form->field($model, 'turno')->widget(Select2::classname(), [
                   'data' => CondutorRota::ARRAY_TURNOS,
@@ -74,7 +88,7 @@ use kartik\select2\Select2;
               ]);
           ?>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-4">
               <?=
                 $form->field($model, 'viagem')->widget(Select2::classname(), [
                   'data' => CondutorRota::ARRAY_VIAGEM,

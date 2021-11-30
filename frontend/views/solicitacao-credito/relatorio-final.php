@@ -21,50 +21,40 @@ function td($str)
 {
     return '<td>' . $str . '</td>';
 }
+ $totalAluno =0;
+ foreach ($solicitacoesAlunos as $solAluno){
+	 $totalAluno +=$solAluno->valor;
+ } 
+ 
 ?>
 
 <?= $this->render('dados-iniciais', ['model' => $model, 'mostrarExportacao' => true, 'mostrarAprovacao' => true, 'configuracao' => $configuracao]) ?>
 
 
 <div class="row mt-10">
-    <div class="col-md-2">
-        <div class="box box-solid p-10">
-            <label class="control-label">Dias letivos do mês</label>
-            <input type="text" readonly="true" class="form-control" id="diasLetivosMes"  value="<?= $model->diasLetivosMes ?>">
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="box box-solid p-10">
-            <label class="control-label">Valor Necessário</label>
-            <input name="valorNecessarioTotal" id="valorNecessarioTotal"  readonly="true" class="form-control moneyWithMinus" value="<?= $model->valorNecessarioTotal ? $model->valorNecessarioTotal : 0;?>">
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="box box-solid p-10">
-            <label class="control-label">Saldo Restante na Escola</label>
-            <input name="saldoRestanteEscola" id="saldoRestanteEscola" readonly="true" class="form-control moneyWithMinus" value="<?= $model->saldoRestante ? $model->saldoRestante : 0; ?>" class="form-control mt-15 moneyWithMinus">
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="box box-solid p-10">
-            <label class="control-label">Dias Letivos Restantes</label>
-          
-            <input name="diasLetivosRestantes"  readonly="true" class="form-control" value="<?= $model->diasLetivosRestantes ?>" class="form-control mt-15 ">
-
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="box box-solid p-10">
-            <label class="control-label">Saldo Restante nos Cartões</label>
-            <input type="text" name="saldoRestanteCartoes" id="saldoRestanteCartoes" readonly="true" class="form-control mt-15 moneyWithMinus"  value="<?= $model->saldoRestanteCartoes ? $model->saldoRestanteCartoes : 0; ?>" >
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="box box-solid p-10">
-            <label class="control-label">Valor a ser Creditado</label>
-            <input type="text" name="valorCreditado" id="valorCreditado" readonly="true" class="form-control mt-15 moneyWithMinus"  value="<?= $model->valorCreditado ? $model->valorCreditado : 0; ?>" >
-        </div>
-    </div>
+	<div class="col-md-12">
+	<table class="table table-striped table-bordered">
+		<tr style='text-align:center;font-weight:bold;background-color:#fff!important'> 
+			<td>Dias letivos do mês </td>
+			<td>Valor Necessário Total Mensal </td>
+			<td>Valor Necessário Aluno </td>
+			<td>Saldo Restante na Escola </td>
+			<td>Dias Letivos Restantes </td>
+			<td>Saldo Restante nos Cartões </td>
+			<td>Valor a ser Creditado </td>
+		</tr>	
+		<tr style='background-color:#fff!important'> 
+			<td><input type="text" readonly="true" class="form-control" id="diasLetivosMes"  value="<?= $model->diasLetivosMes ?>"></td>
+			<td><input name="valorNecessarioTotal" id="valorNecessarioTotal"  readonly="true" class="form-control moneyWithMinus" value="<?= $model->valorNecessarioTotal ? $model->valorNecessarioTotal : 0;?>"></td>
+			<td><input name="valorNecessarioAluno" type="text" id="valorNecessarioAluno"  readonly="true" class="form-control moneyWithMinus" value="<?= $model->valorNecessarioAluno ? $model->valorNecessarioAluno : 0;?>"></td>
+			<td><input name="saldoRestanteEscola" id="saldoRestanteEscola" readonly="true" class="form-control moneyWithMinus" value="<?= $model->saldoRestante ? $model->saldoRestante : 0; ?>" class="form-control mt-15 moneyWithMinus"></td>
+			<td><input name="diasLetivosRestantes"  readonly="true" class="form-control" value="<?= $model->diasLetivosRestantes ?>" class="form-control mt-15 "></td>
+			<td><input type="text" name="saldoRestanteCartoes" id="saldoRestanteCartoes" readonly="true" class="form-control moneyWithMinus"  value="<?= $model->saldoRestanteCartoes ? $model->saldoRestanteCartoes : 0; ?>" ></td>
+			<td><input type="text" name="valorCreditado" id="valorCreditado" readonly="true" class="form-control moneyWithMinus"  value="<?= $model->valorCreditado ? $model->valorCreditado : 0; ?>" ></td>
+		</tr>	
+	</table>
+	</div> 
+	
 
 </div>
 
@@ -89,7 +79,9 @@ function td($str)
                     <th>Turma</th>
                     <th>Nº Cartão</th>
                     <th>Saldo em <?= date("d/m/Y", strtotime($model->criado)) ?></th>
+					<!--
                     <th>Justificativa </th>
+					-->
                     <th>Valor Necessário </th>
                     <th>Necessidade de crédito</th>
                     <th>&nbsp;</th>
@@ -107,9 +99,9 @@ function td($str)
                             href="<?= Url::toRoute(['aluno/view', 'id' =>  $solAluno->aluno->id]) ?>"><?= $solAluno->aluno->nome ?></a></td>
                     <td class="center-text"><?= $solAluno->aluno->RACompleto ?></td>
                     <td class="center-text"><?= $solAluno->aluno->turma ? Aluno::ARRAY_SERIES[$solAluno->aluno->serie].'/'.Aluno::ARRAY_TURMA[$solAluno->aluno->turma] : '-' ?></td>
-                    <td class="center-text"><?= $model->tipoSolicitacao == SolicitacaoCredito::TIPO_PASSE_ESCOLAR ? $solAluno->aluno->solicitacaoAtivaPasse->cartaoPasseEscolar : $solAluno->aluno->solicitacaoAtivaPasse->cartaoValeTransporte ?></td>
+                    <td class="center-text"><?= $model->tipoSolicitacao == SolicitacaoCredito::TIPO_PASSE_ESCOLAR ? $solAluno->aluno->solicitacao->cartaoPasseEscolar : $solAluno->aluno->solicitacao->cartaoValeTransporte ?></td>
                     <td class="center-text">
-                        <input type="text" class="form-control moneyWithMinus inputSaldoRestante"   value="<?= $solAluno->saldo ? $model->saldo : 0; ?>" readonly="true">
+                        <input type="text" class="form-control moneyWithMinus inputSaldoRestante"   value="<?= $solAluno->saldo ? $solAluno->saldo : 0; ?>" readonly="true">
                     </td>
                     <td style="background:red; display:none;">
                         <input type="text" class="form-control inputDiasLetivosFecharMes" readonly="true">
@@ -120,10 +112,12 @@ function td($str)
                     <td style="background:red; display:none;">
                         <input type="text" class="form-control saldoFinalMes" readonly="true">
                     </td>
+					<!--
                     <td class="center-text"><input type="text" class="form-control justificativa"  value="<?= $solAluno->justificativa ?>" readonly="true"></td>
+					-->
                     <td class="center-text">
                         <div class="">
-                        <input type="text" class="form-control valorNecessario moneyWithMinus"  readonly="true"  value="<?= $solAluno->valor ? $model->valor : 0; ?>" >
+                        <input type="text" class="form-control valorNecessario moneyWithMinus"  readonly="true"  value="<?= $solAluno->valor ? $solAluno->valor : 0; ?>" >
                         </div>
                     </td>
                     <td class="center-td" style="max-width: 100px !important;">

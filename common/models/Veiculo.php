@@ -326,22 +326,41 @@ class Veiculo extends \yii\db\ActiveRecord
         
         return $diff ;
     }
-    public function anoAlerta() {
-        $diff = (date('Y') - $this->anoFabricacao);
+    public function anoAlerta($tipo = 0) {
+		$diff = (date('Y') - $this->anoFabricacao);
+		if($tipo == 1){
+			
+			if($diff < 0 || !$this->anoFabricacao)
+                return $this->textoAnoFabricacao();
+			$dozeAnosAtras = date('Y') - 12;
+
+			if($this->capacidade <= 15 && $diff >= 12 && $diff < 13)
+				return $this->textoAnoFabricacao();
+			if($this->capacidade <= 15 && $diff >= 13)
+				return $this->textoAnoFabricacao();
+			if($this->capacidade > 15 && $diff == 15)
+				return $this->textoAnoFabricacao();
+			if($this->capacidade > 15 && $diff >= 16)
+				return $this->textoAnoFabricacao();
+			return $this->textoAnoFabricacao();
+			
+		}else{
+			
             if($diff < 0 || !$this->anoFabricacao)
                 return $this->textoAnoFabricacao();
-        $dozeAnosAtras = date('Y') - 12;
+			$dozeAnosAtras = date('Y') - 12;
 
-        if($this->capacidade <= 15 && $diff >= 12 && $diff < 13)
-            return '<span style="'.$this->classAlert().'">'.$this->textoAnoFabricacao().'</span>';
-        if($this->capacidade <= 15 && $diff >= 13)
-            return '<span style="'.$this->classDanger().'">'.$this->textoAnoFabricacao().'</span>';
-
-        if($this->capacidade > 15 && $diff == 15)
-            return '<span style="'.$this->classAlert().'">'.$this->textoAnoFabricacao().'</span>';
-        if($this->capacidade > 15 && $diff >= 16)
-            return '<span style="'.$this->classDanger().'">'.$this->textoAnoFabricacao().'</span>';
-       return $this->textoAnoFabricacao();
+			if($this->capacidade <= 15 && $diff >= 12 && $diff < 13)
+				return '<span style="'.$this->classAlert().'">'.$this->textoAnoFabricacao().'</span>';
+			if($this->capacidade <= 15 && $diff >= 13)
+				return '<span style="'.$this->classDanger().'">'.$this->textoAnoFabricacao().'</span>';
+			if($this->capacidade > 15 && $diff == 15)
+				return '<span style="'.$this->classAlert().'">'.$this->textoAnoFabricacao().'</span>';
+			if($this->capacidade > 15 && $diff >= 16)
+				return '<span style="'.$this->classDanger().'">'.$this->textoAnoFabricacao().'</span>';
+			return $this->textoAnoFabricacao();
+		}
+       
         
     }
 }

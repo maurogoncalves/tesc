@@ -698,8 +698,9 @@ class SolicitacaoCreditoController extends Controller
     
     public function actionCreditoPreenchimento($id){
         $model = $this->findModel($id);
- 
+		
         if ($post = Yii::$app->request->post() ) {
+			
             if($model->status != SolicitacaoCredito::STATUS_EFETIVADA){
 				
 				$pkCount = (is_array($post['aluno']) ? count($post['aluno']) : 0);
@@ -709,9 +710,13 @@ class SolicitacaoCreditoController extends Controller
 					return $this->redirect(['index']);
 					exit;
 				}
-
-
+				\Yii::$app->db->createCommand()->delete('SolicitacaoCreditoAluno', ['idSolicitacao'=>$model->id])->execute();
+				
+				//print_r($post['aluno']);exit;
                 foreach ($post['aluno'] as $index => $idAluno) {
+					
+					
+					
                     $modelAluno = new SolicitacaoCreditoAluno();
                     $modelAluno->tipo = SolicitacaoCreditoAluno::TIPO_PASSE_ESCOLAR;
                     $modelAluno->idSolicitacao = $model->id;
@@ -729,9 +734,15 @@ class SolicitacaoCreditoController extends Controller
                         \Yii::$app->getSession()->setFlash('error', BaseHtml::errorSummary($modelAluno, ['header'=>'Erro ao salvar a solicitação de crédito do aluno.'])); 
                 }
 
-                $model->status = SolicitacaoCredito::STATUS_EFETIVADA;
+				if ($post['statusProgresso'] == 1){
+					$model->status = SolicitacaoCredito::STATUS_EM_ANDAMENTO;
+				}else{
+					$model->status = SolicitacaoCredito::STATUS_EFETIVADA;
+				}
+                
                 $model->saldoRestante = \Yii::$app->formatter::BRLtoDouble($post['saldoRestanteEscola']);
                 $model->valorNecessarioTotal = \Yii::$app->formatter::BRLtoDouble($post['valorNecessarioTotal']);
+				$model->valorNecessarioAluno = \Yii::$app->formatter::BRLtoDouble($post['valorNecessarioAluno']);
                 $model->diasLetivosRestantes = \Yii::$app->formatter::BRLtoDouble($post['diasLetivosRestantes']);
                 $model->saldoRestanteCartoes = \Yii::$app->formatter::BRLtoDouble($post['saldoRestanteCartoes']);
                 $model->valorCreditado = \Yii::$app->formatter::BRLtoDouble($post['valorCreditado']);
@@ -744,6 +755,7 @@ class SolicitacaoCreditoController extends Controller
         }
 
         if($model->tipoSolicitacao == SolicitacaoCredito::TIPO_VALE_TRANSPORTE){
+			
             $idsAlunoCurso = AlunoCurso::find()->cache(60)->select('idAluno')->all();
             $alunos = [];
             foreach($idsAlunoCurso as $aluno) {
@@ -759,24 +771,46 @@ class SolicitacaoCreditoController extends Controller
             ->joinWith('solicitacao')
             ->orderBy(['nome'=>SORT_ASC])
             ->all();
+			
+			 return $this->render('credito-preenchimento', [
+				'model' => $model,
+				// 'alunos' => $alunos,
+				'alunos' => $alunos,
+				'configuracao' => Configuracao::setup()
+			]); 
+			
+		
         } else {
-            $alunos = Aluno::find()
-            ->where(['=','SolicitacaoTransporte.idEscola', $model->idEscola])
-            ->andWhere(['=', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_CONCEDIDO])
+			
+            // $alunos = Aluno::find()
+            // ->where(['=','SolicitacaoTransporte.idEscola', $model->idEscola])
+            // ->andWhere(['=', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_CONCEDIDO])
             // ->andWhere(['>', 'dataAprovacao', $model->inicio])
-            ->andWhere(['=', 'tipoSolicitacao', SolicitacaoTransporte::SOLICITACAO_BENEFICIO])
-            ->andWhere(['=', 'SolicitacaoTransporte.modalidadeBeneficio', Aluno::MODALIDADE_PASSE])
-            ->joinWith('solicitacao')
-            ->orderBy(['nome'=>SORT_ASC])
-            ->all();
+            // ->andWhere(['=', 'tipoSolicitacao', SolicitacaoTransporte::SOLICITACAO_BENEFICIO])
+            // ->andWhere(['=', 'SolicitacaoTransporte.modalidadeBeneficio', Aluno::MODALIDADE_PASSE])
+            // ->joinWith('solicitacao')
+            // ->orderBy(['nome'=>SORT_ASC])
+            // ->all();
+			
+			
+			$sql = "select *,a.id as idAl,sca.id as idSolicitacaoCredAl,(select count(*) from SolicitacaoCreditoAluno scca where scca.idSolicitacao = ".$id.") as temSolCred from Aluno a  join SolicitacaoTransporte st on st.idAluno = a.id left join SolicitacaoCreditoAluno sca on sca.idAluno = a.id and sca.idSolicitacao = ".$id." where st.`status` = ".SolicitacaoTransporte::STATUS_CONCEDIDO." and st.tipoSolicitacao = ".SolicitacaoTransporte::SOLICITACAO_BENEFICIO." and st.modalidadeBeneficio = ".Aluno::MODALIDADE_PASSE." and st.idEscola = ".$model->idEscola ;			
+			$alunos = Yii::$app->getDb()->createCommand($sql)->queryAll();					
+			
+
+			$sql = "select * from SolicitacaoCredito sc where sc.`id` = ".$id;			
+			$solCred = Yii::$app->getDb()->createCommand($sql)->queryAll();					
+			
+			 return $this->render('credito-preenchimento-passe', [
+				'model' => $model,
+				// 'alunos' => $alunos,
+				'alunos' => $alunos,
+				'solCred' => $solCred,
+				'temSolCred' => $alunos[0]['temSolCred'],
+				'configuracao' => Configuracao::setup()
+			]); 
         }
        
-        return $this->render('credito-preenchimento', [
-            'model' => $model,
-            // 'alunos' => $alunos,
-            'alunos' => $alunos,
-            'configuracao' => Configuracao::setup()
-        ]); 
+       
     }
 
     /**

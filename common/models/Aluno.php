@@ -215,8 +215,7 @@ class Aluno extends \yii\db\ActiveRecord
     {
 		
         parent::afterSave($insert, $atributosAlterados);
-		
-			
+
 		
 			//UPDATE
 			if (!$insert) {
@@ -231,15 +230,26 @@ class Aluno extends \yii\db\ActiveRecord
 						
 				if($dadosEnderecoAluno[0]['atualiza_endereco_renovacao'] == '1'){
 					
+					
 				}else{
-					// print_r($atributosAlterados);
+					 //print_r($atributosAlterados);exit;
 					// exit(1);
 					// array_key_exists("idEscola", $atributosAlterados) || 
-					if (array_key_exists("endereco", $atributosAlterados) || array_key_exists("horarioEntrada", $atributosAlterados) || array_key_exists("horarioSaida", $atributosAlterados)) {
+					if (array_key_exists("cep", $atributosAlterados) ||  array_key_exists("tipoLogradouro", $atributosAlterados) || array_key_exists("cidade", $atributosAlterados) || array_key_exists("bairro", $atributosAlterados) || array_key_exists("endereco", $atributosAlterados) || array_key_exists("horarioEntrada", $atributosAlterados) || array_key_exists("horarioSaida", $atributosAlterados)) {
+						//print_r($atributosAlterados);exit;
+						
 						$this->encerrarSolicitacoesViaCadastro('ENCERRADO PELO SISTEMA. FORAM ALTERADOS CAMPOS NO CADASTRO DO ALUNO');
 					}
 					if (array_key_exists("idEscola", $atributosAlterados)) {
 						if ($atributosAlterados['idEscola'] != $this->idEscola)
+							$this->encerrarSolicitacoesViaCadastro('ENCERRADO PELO SISTEMA. FORAM ALTERADOS CAMPOS NO CADASTRO DO ALUNO');
+					}
+					if (array_key_exists("turno", $atributosAlterados)) {
+						if ($atributosAlterados['turno'] != $this->turno)
+							$this->encerrarSolicitacoesViaCadastro('ENCERRADO PELO SISTEMA. FORAM ALTERADOS CAMPOS NO CADASTRO DO ALUNO');
+					}
+					if (array_key_exists("numeroResidencia", $atributosAlterados)) {
+						if ($atributosAlterados['numeroResidencia'] != $this->numeroResidencia)
 							$this->encerrarSolicitacoesViaCadastro('ENCERRADO PELO SISTEMA. FORAM ALTERADOS CAMPOS NO CADASTRO DO ALUNO');
 					}
 				}
@@ -266,9 +276,9 @@ class Aluno extends \yii\db\ActiveRecord
 
     public function encerrarSolicitacoesViaCadastro($msgJustificativa = '')
     {
-        if (\Yii::$app->User->identity->editarDadosProtegidos == Usuario::PERMITIR_EDICAO_DADOS_PROTEGIDOS) {
-            return null;
-        }
+        // if (\Yii::$app->User->identity->editarDadosProtegidos == Usuario::PERMITIR_EDICAO_DADOS_PROTEGIDOS) {
+            // return null;
+        // }
         return $this->encerrarSolicitacoes($msgJustificativa);
     }
     public function encerrarSolicitacoes($msgJustificativa = '')
@@ -276,6 +286,16 @@ class Aluno extends \yii\db\ActiveRecord
 
 
         $solicitacoes = SolicitacaoTransporte::find()->where(['idAluno' => $this->id])->all();
+		
+		$sqlTodosPontos ='select idPonto from PontoAluno p where p.idAluno  = '.$this->id; 
+		$todosPontos = Yii::$app->getDb()->createCommand($sqlTodosPontos)->queryAll();
+		foreach($todosPontos as $pont){					
+			if($pont['idPonto']){	
+				\Yii::$app->db->createCommand()->delete('Ponto', ['id' => $pont['idPonto']])->execute();
+			}
+		}
+		\Yii::$app->db->createCommand()->delete('PontoAluno', ['idAluno' => $solicitacao->idAluno])->execute();
+			
         PontoAluno::removerTodasRotas($this->id);
         foreach ($solicitacoes as $solicitacao) {
             $modelStatus = new SolicitacaoStatus();
@@ -313,6 +333,9 @@ class Aluno extends \yii\db\ActiveRecord
                 $modelStatus->justificativa = $msgJustificativa;
             $modelStatus->mostrar = 1;
             $modelStatus->save();
+			
+			
+			
         }
     }
 

@@ -70,7 +70,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             title="AULA(S) NA SEMANA:<?php foreach ($aluno->alunoCurso as $alunoCurso) : echo ' ' . Aluno::ARRAY_DIAS_CURSO[$alunoCurso->dia]; endforeach; ?>"><?= $aluno->RACompleto ?></span></td>
                     <td class="center-text"><?= $aluno->turma ? Aluno::ARRAY_SERIES[$aluno->serie].'/'.Aluno::ARRAY_TURMA[$aluno->turma] : '-' ?></td>
 
-                    <td class="center-text"><?= $model->tipoSolicitacao == SolicitacaoCredito::TIPO_PASSE_ESCOLAR ? $aluno->solicitacaoAtivaPasse->cartaoPasseEscolar : $aluno->solicitacaoAtivaPasse->cartaoValeTransporte ?></td>
+                    <td class="center-text"><?= $model->tipoSolicitacao == SolicitacaoCredito::TIPO_PASSE_ESCOLAR ? $aluno->solicitacao->cartaoPasseEscolar : $aluno->solicitacao->cartaoValeTransporte ?></td>
 
                     <td class="center-text">
                         <input type="text" class="form-control money inputSaldoRestante" name="saldoRestante[<?= $aluno->id ?>]" readonly="true">

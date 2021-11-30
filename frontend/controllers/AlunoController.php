@@ -345,6 +345,14 @@ class AlunoController extends Controller
         $oldNumero = $model->numeroResidencia;
         $oldTurma = $model->turma;
         $oldSerie = $model->serie;
+		$oldCep = $model->cep;
+		$oldEndereco = $model->endereco;
+		$oldBairro = $model->bairro;
+		$oldCidade = $model->cidade;
+		$oldTipoLogradouro = $model->tipoLogradouro;
+		$oldHorarioEntrada = $model->horarioEntrada;
+		$oldHorarioSaida = $model->horarioSaida;
+		$oldTurno = $model->turno;
 		$model->atualiza_endereco_renovacao = 0;
         if ($model->load(Yii::$app->request->post())) {
             // throw new NotFoundHttpException(print_r($model, true));
@@ -365,7 +373,24 @@ class AlunoController extends Controller
 			if($redirect == '1'){
 				$model->atualiza_endereco_renovacao = '1';
 			}else{
-				
+				if ($model->tipoLogradouro != $oldTipoLogradouro)
+					$model->encerrarSolicitacoesViaCadastro();
+				if ($model->cidade != $oldCidade)
+					$model->encerrarSolicitacoesViaCadastro();
+				if ($model->bairro != $oldBairro)
+					$model->encerrarSolicitacoesViaCadastro();
+				if ($model->turno != $oldTurno)
+					$model->encerrarSolicitacoesViaCadastro();
+				if ($model->horarioEntrada != $oldHorarioEntrada)
+					$model->encerrarSolicitacoesViaCadastro();
+				if ($model->horarioSaida != $oldHorarioSaida)
+					$model->encerrarSolicitacoesViaCadastro();
+				if ($model->endereco != $oldEndereco)
+					$model->encerrarSolicitacoesViaCadastro();
+				if ($model->cep != $oldCep)
+					$model->encerrarSolicitacoesViaCadastro();
+				if ($model->numeroResidencia != $oldNumero)
+					$model->encerrarSolicitacoesViaCadastro();
 				if ($model->numeroResidencia != $oldNumero)
 					$model->encerrarSolicitacoesViaCadastro();
 				if ($model->turma != $oldTurma)

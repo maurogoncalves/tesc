@@ -25,18 +25,19 @@ $this->params['breadcrumbs'][] = $this->title;
     'id' => 'formCredito',
     
   ]); ?>
-<?= $this->render('header-solicitacao', ['model' => $model, 'configuracao' => $configuracao]) ?>
+<?= $this->render('header-solicitacao-passe', ['model' => $model, 'configuracao' => $configuracao, 'solCred' => $solCred, 'temSolCred' => $temSolCred]) ?>
 <div class="row mt-10">
-	<div class="col-md-9">  </div>
-	<div class="col-md-1"> 
-	<button  class="btn btn-danger pull-left" name='salvar' id="salvar">Salvar e Finalizar</button>
-	</div>
-	<div class="col-md-1"> 
-	&nbsp;
-	<input type='text' id='statusProgresso' name='statusProgresso' value='0'>
-	</div>
+	<div class="col-md-10">  </div>
+	
+	
+	
 	<div class="col-md-1"> 
 	<p  class="btn btn-primary pull-right"  name='salvarProgresso' id="salvarProgresso">Salvar Progresso</p>
+	</div>
+	
+	<div class="col-md-1"> 
+	<input type='hidden' id='statusProgresso' name='statusProgresso' value='0'>
+	<button  class="btn btn-danger pull-left" name='salvar' id="salvar">Salvar e Finalizar</button>
 	</div>
     <div class="col-md-12">
         <div class="box box-solid" >
@@ -62,49 +63,54 @@ $this->params['breadcrumbs'][] = $this->title;
                     <th class="debug">Dias letivos para fechar o mês (R$) e Saldo Descontado</th>
                     <th class="debug">Anti-UE</th>
                     <th class="debug">Saldo no Final do Mês</th>
+					<!--
                     <th>Justificativa </th>
+					-->
                     <th>Valor Necessário </th>
                     <th>Necessidade de crédito</th>
                     <th>&nbsp;</th>
                 </tr>
                 <?php $i = 0;
-                foreach ($alunos as $aluno) :  $i++; ?>
+                foreach ($alunos as $aluno) : $i++;  ?>
                 <tr>
                     <td class="center-td"><?= $i ?></td>
-                    <td class="center-td"><input type="checkbox" class="alunoMarcado" name="aluno[]" value="<?= $aluno['id'] ?>" /></td>
+                    <td class="center-td"><input type="checkbox" id="<?= 'alunoMarcado-'.$aluno['idAl'] ?>" class="alunoMarcado" <?= $aluno['idSolicitacaoCredAl'] ? 'checked' : ''; ?> name="aluno[]" value="<?= $aluno['idAl'] ?>" /></td>
                     <?php if($model->tipoSolicitacao == SolicitacaoCredito::TIPO_PASSE_ESCOLAR): ?>
-                    <td class="center-td"><input type="checkbox" class="fundhas"  name="fundhas[<?= $aluno['id']  ?>]" /></td>
+                    <td class="center-td"><input type="checkbox" id="<?= 'fundhas-'.$aluno['idAl'] ?>" class="fundhas" <?= $aluno['fundhas'] ? 'checked' : ''; ?> name="fundhas[<?= $aluno['idAl']  ?>]" /></td>
                     <?php endif; ?>
                     <td class="center-text"><a target="_new"
-                            href="<?= Url::toRoute(['aluno/view', 'id' =>  $aluno->id]) ?>"><?= $aluno['nome'] ?></a></td>
+                            href="<?= Url::toRoute(['aluno/view', 'id' =>  $aluno['idAl']]) ?>"><?= $aluno['nome'] ?></a></td>
                     <td class="center-text"><span data-toggle="tooltip"
-                            title="AULA(S) NA SEMANA:<?php foreach ($aluno->alunoCurso as $alunoCurso) : echo ' ' . Aluno::ARRAY_DIAS_CURSO[$alunoCurso->dia]; endforeach; ?>"><?= $aluno->RACompleto ?></span></td>
-                    <td class="center-text"><?= $aluno->turma ? Aluno::ARRAY_SERIES[$aluno->serie].'/'.Aluno::ARRAY_TURMA[$aluno->turma] : '-' ?></td>
+                            title="AULA(S) NA SEMANA:<?php foreach ($aluno->alunoCurso as $alunoCurso) : echo ' ' . Aluno::ARRAY_DIAS_CURSO[$alunoCurso->dia]; endforeach; ?>"><?= $aluno['RA'].' '.$aluno['RAdigito'] ?></span></td>
+                    <td class="center-text"><?= $aluno['turma'] ? Aluno::ARRAY_SERIES[$aluno['serie']].'/'.Aluno::ARRAY_TURMA[$aluno['turma']] : '-' ?></td>
 
-                    <td class="center-text"><?= $model->tipoSolicitacao == SolicitacaoCredito::TIPO_PASSE_ESCOLAR ? $aluno->solicitacaoAtivaPasse->cartaoPasseEscolar : $aluno->solicitacaoAtivaPasse->cartaoValeTransporte ?></td>
+                    <td class="center-text"><?= $model->tipoSolicitacao == SolicitacaoCredito::TIPO_PASSE_ESCOLAR ? $aluno['cartaoPasseEscolar'] : $aluno['cartaoValeTransporte'] ?></td>
 
                     <td class="center-text">
-                        <input type="text" class="form-control money inputSaldoRestante" name="saldoRestante[<?= $aluno->id ?>]" readonly="true">
+                        <input id="saldoRestante-<?= $aluno['idAl'] ?>" type="text" class="form-control money inputSaldoRestante"  value='<?= $aluno['saldo'] ? $aluno['saldo'] : '0'; ?>'  name="saldoRestante[<?= $aluno['idAl'] ?>]" >
+						
                     </td>
                     
                     <td class="debug">
-                        <input type="text" class="form-control inputDiasLetivosFecharMes" name="diasLetivosFecharMes[<?= $aluno->id ?>]" readonly="true">
+                        <input type="text" class="form-control inputDiasLetivosFecharMes" name="diasLetivosFecharMes[<?= $aluno['idAl'] ?>]" >
                     </td>
              
                     <td class="debug">
-                        <input type="text" class="form-control inputAntiUe" name="AntiUe[<?= $aluno->id ?>]" readonly="true">
+                        <input type="text" class="form-control inputAntiUe" name="AntiUe[<?= $aluno['idAl'] ?>]" >
                     </td>
                     <td class="debug">
-                        <input type="text" class="form-control saldoFinalMes" name="saldoFinalMes[<?= $aluno->id ?>]" readonly="true">
+                        <input type="text" id="saldoFinal-<?= $aluno['idAl'] ?>" class="form-control saldoFinalMes"  name="saldoFinalMes[<?= $aluno['idAl'] ?>]"  >
                     </td>
-                    <td class="center-text"><input type="text" class="form-control justificativa"  name="justificativa[<?= $aluno->id ?>]" readonly="true"></td>
+					<!--
+                    <td class="center-text"><input type="text" class="form-control justificativa" value='<?= $aluno['justificativa'] ? $aluno['justificativa'] : '0'; ?>'  name="justificativa[<?= $aluno['idAl'] ?>]" ></td>
+					-->
                     <td class="center-text">
-                        <div class="habilitadoNecessidadeCredito">
-                        <input type="text" class="form-control valorNecessario" name="valorNecessario[<?= $aluno->id ?>]" readonly="true" value="0">
+                        <div class="<?= $aluno['valor'] ? '' : 'habilitadoNecessidadeCredito'; ?>">
+                        <input id="valorNec-<?= $aluno['idAl'] ?>"  type="text" readonly="true" class="form-control valorNecessario" name="valorNecessario[<?= $aluno['idAl'] ?>]"  value="<?= $aluno['valor'] ? $aluno['valor'] : '0'; ?>">
                         </div>
                     </td>
                     <td class="center-td" style="max-width: 100px !important;">
-                        <div class="habilitadoNecessidadeCredito">
+                        <div class="<?= $aluno['valor'] ? '' : 'habilitadoNecessidadeCredito'; ?>">
                             <div class="simple-toggle">
                                 <label class="tgl">
                                     <input type="checkbox" class="a checkboxNecessidadeCredito"   />
@@ -117,15 +123,16 @@ $this->params['breadcrumbs'][] = $this->title;
                         </div>
                     </td>
 
-                    <td class="center-td"><a class="btn btn-primary pull-right consultarCredito"
-                            aluno="<?= $aluno->id ?>"><i class="fas fa-search"></i></a></td>
+                    <td class="center-td"><a class="btn btn-primary pull-right consultarCredito" name="<?= $aluno['id'] ?>"><i class="fas fa-search"></i></a></td>
                 </tr>
-                <?php endforeach; ?>
+                <?php  
+				$contador = $contador +1;
+				endforeach; ?>
             </table>
             <div class="pull-right">
                 <form class="form-inline">
                     <b>Alunos atendidos:</b> <input type="text" class="form-control qtdeAlunos"
-                        style="max-width: 45px;padding-right:15px;" readonly="true" value="0" />
+                        style="max-width: 45px;padding-right:15px;" readonly="true" value="<?php echo$i?>" />
                 </form>
             </div>
         </div>
@@ -133,20 +140,19 @@ $this->params['breadcrumbs'][] = $this->title;
     <div class="col-md-12">
     <div class="" style="margin-top:20px;">
     </div>
-       <div class="col-md-9">  </div>
+       <div class="col-md-10">  </div>
+	   <div class="col-md-1"> 
+		<p  class="btn btn-primary pull-right"  name='salvarProgresso' id="salvarProgresso">Salvar Progresso</p>
+		</div>
 		<div class="col-md-1"> 
 		<button  class="btn btn-danger pull-right" id="salvar" name="salvar">Salvar e Finalizar</button>
 		</div>
-		<div class="col-md-1"> 
-		&nbsp;
-		</div>
-		<div class="col-md-1"> 
-		<p  class="btn btn-primary pull-right"  name='salvarProgresso' id="salvarProgresso">Salvar Progresso</p>
-		</div>
+		
+		
     </div>                                                                                              
 </div>
 <?php ActiveForm::end(); ?>
-<?= $this->render('calculos-passe', ['model' => $model]) ?>
+<?= $this->render('calculos-passe', ['model' => $model, 'temSolCred' => $temSolCred]) ?>
 
 
 

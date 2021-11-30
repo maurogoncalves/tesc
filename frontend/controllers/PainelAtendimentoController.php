@@ -266,7 +266,7 @@ class PainelAtendimentoController extends \yii\web\Controller
 		
 		$tipo = $get['tipo'];
 
-        //sort agora é feito pela query
+        //sort feito pela query
         // $this->sortDadosHistoricoAtendimento($dados);
         if (!$dados)
             $dados = [];
@@ -505,7 +505,7 @@ class PainelAtendimentoController extends \yii\web\Controller
         $condutor = $this->session->get('condutor');
         $periodo = $this->session->get('periodo');
 
-        //sort agora é feito pela query
+        //sort feito pela query
         // $this->sortDadosHistoricoAtendimento($dados);
         if (!$dados)
             $dados = [];

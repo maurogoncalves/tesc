@@ -200,35 +200,6 @@ function gerenciarExportacao(event, tipo){
 	}
 
 
-			function getCondutorAndPeriodo(){
-				condutorName = $('span[class=select2-selection__clear]').parent().text().split('×')[1]
-				peridoPesquisa = $('input[name="periodo"]').val().split(' - ');
-
-				if(condutorName == undefined)
-					condutorName = ''
-				
-				if(peridoPesquisa == undefined || peridoPesquisa == ''){
-					peridoPesquisa[0] = '';
-					peridoPesquisa[1] = '';
-				}else{
-					peridoPesquisa[0] = peridoPesquisa[0].replace("/20","/");
-					peridoPesquisa[1] = peridoPesquisa[1].replace("/20","/");
-				}
-
-
-				$('thead').prepend(`<tr >
-										<th></th>
-										<th style="font-size: 10px;">Período: ${peridoPesquisa[0]} a ${peridoPesquisa[1]}</th>
-										<th></th>
-										<th></th>
-										<th></th>
-										<th></th>
-										<th style="font-size: 10px;">Condutor:</th>
-										<th style="font-size: 10px;">${condutorName}</th>
-									<tr>`);
-
-			}
-
 
 </script>
 

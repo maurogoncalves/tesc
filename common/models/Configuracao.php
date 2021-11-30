@@ -30,8 +30,8 @@ class Configuracao extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['valeTransporte', 'passeEscolar','dataVigente'], 'required'],
-            [['valeTransporte', 'passeEscolar'], 'number'],
+            [['valeTransporte', 'passeEscolar','dataVigente','exibeRenovacao'], 'required'],
+            [['valeTransporte', 'passeEscolar', 'exibeRenovacao'], 'number'],
             [['dataVigente','anoVigente','folhaPonto','documentoFolhaPonto'], 'safe'],
 
         ];
@@ -46,7 +46,8 @@ class Configuracao extends \yii\db\ActiveRecord
             'id' => 'ID',
             'valeTransporte' => 'Vale Transporte',
             'passeEscolar' => 'Passe Escolar',
-            'dataVigente' => 'Data limite para solicitações'
+            'dataVigente' => 'Data limite para solicitações',
+			'exibeRenovacao' => 'Exibir Tela de Renovação para secretário',
 
         ];
     }

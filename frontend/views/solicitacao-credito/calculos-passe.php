@@ -57,6 +57,7 @@ use common\models\SolicitacaoCredito;
 </div>
 <script type="text/javascript">
 var tipo = '<?=  $model->tipoSolicitacao == SolicitacaoCredito::TIPO_PASSE_ESCOLAR ? 'passeEscolar' : 'valeTransporte' ?>';
+var temSolCred = '<?= $temSolCred ?>';
 var valorAtualPasse = null;
 var configuracoes = null;
 $.getJSON("index.php?r=configuracao%2Fview-ajax")
@@ -69,8 +70,22 @@ $.getJSON("index.php?r=configuracao%2Fview-ajax")
     configuracoes = response; 
 });
 $(document).ready(function() {
+	
     calcSaldoDiasLetivos();
     calcValorNecessario();
+	
+	let contador =0;
+	$(".alunoMarcado").each(function() {		
+		if ($(this).prop('checked')) {
+			contador++;			
+		}
+	});
+	$(".qtdeAlunos").val(contador);
+
+	
+	$(".inputSaldoRestante").trigger("change");
+
+	
     $(".a").click(function(event)  {
         event.preventDefault(); 
     })
@@ -150,20 +165,22 @@ $(".selecionarTodos").change(function(){
     $(".alunoMarcado").each(function() {
         $(this).prop('checked', flag)
     });
-    processarCheckbox()
+	
+    processarCheckbox();
 });
 $("#qtdeAlunos").change(function()  {
     calcValorNecessarioTotal();
 })
 $(".alunoMarcado").click(function() {
-    // processarCheckbox();
+     //processarCheckbox();
     let cont = 0;
 
 $(".alunoMarcado").each(function() {
     if ($(this).prop('checked')) {
         cont++;
+		
     }
-})
+});
 
 // console.warn($(this).prop('checked'));
 if ($(this).prop('checked')) {
@@ -172,14 +189,71 @@ if ($(this).prop('checked')) {
 } else {
     inputAluno($(this), true)
 }
-$(".qtdeAlunos").val(cont)
+$(".inputSaldoRestante").trigger("change");
+$(".qtdeAlunos").val(cont);
 calcValorNecessarioTotal();
 })
 
 $(".fundhas").click(function() {
-    console.log('aaa')
-    calcSaldoDiasLetivos()
-    
+    //calcSaldoDiasLetivos();
+	
+	var id = $(this).attr('id');
+	var arr = id.split('-');
+	var checado = $("#fundhas-"+arr[1]).is(':checked');
+	var valorNec = $("#valorNecessarioAluno").val();
+	
+	var saldoRestante = $("#saldoRestante-"+arr[1]).val();
+	if(checado == true){
+		
+		if((saldoRestante == '0,00') || (saldoRestante == '0') ){	
+			var saldoFinal = BRLtoReal(valorNec); 
+		}else{
+			if(saldoRestante){	
+				var saldoFinal = (BRLtoReal(valorNec) * 2) - BRLtoReal(saldoRestante)
+			}else{
+				var saldoFinal = 0; 
+			}			
+		}
+		//console.log('saldoRestante '+saldoRestante);
+		//console.log('saldoFinal '+saldoFinal);
+		// console.log('diasLetivosMes '+diasLetivosMes);
+		// console.log('diasLetivosRestantes '+diasLetivosRestantes);
+		// console.log('valorTotalDias '+valorTotalDias);
+		// console.log('diasLetFundHas '+diasLetFundHas);
+		// console.log('saldoDescontado '+saldoDescontado);
+		// console.log('antiUe '+antiUe);
+		console.log('saldoFinal --'+saldoFinal);
+		// console.log('valorAtualPasse '+valorAtualPasse);
+		
+		// if(saldoFinal == '0'){
+			// var novoValor = valorTotalOficial;
+		// }else{
+			// var novoValor = valorTotalOficial - saldoFinal;
+		// }
+		
+		//(BRLtoReal(valorNec) * 2) - BRLtoReal(saldoRestante);		
+		// if(saldoFinal > 0){
+			// $("#valorNec-"+arr[1]).val(0);
+		// }else{
+			// $("#valorNec-"+arr[1]).val(saldoFinal);
+		// }
+		
+		$("#valorNec-"+arr[1]).val(saldoFinal);
+		
+		
+	}else{
+		var novoValor = (BRLtoReal(valorNec) * 1) - BRLtoReal(saldoRestante);
+		if(novoValor > 0){
+			$("#valorNec-"+arr[1]).val(novoValor);
+		}else{
+			$("#valorNec-"+arr[1]).val(0);
+		}
+		
+	}
+
+	$(".inputSaldoRestante").trigger("change");
+	
+	
 })
 function processarCheckbox(){
     let cont = 0;
@@ -193,7 +267,7 @@ function processarCheckbox(){
         }
     })
 
-   
+    $(".inputSaldoRestante").trigger("change");
     $(".qtdeAlunos").val(cont)
     calcValorNecessario();
     calcValorNecessarioTotal();
@@ -225,7 +299,23 @@ $("#diasLetivosMes").change(function(){
 $(".inputSaldoRestante").change(function() {
     atualizarSaldo();
     calcValorNecessario();
-    setTimeout(() =>    calcValorNecessario(), 500)
+	setTimeout(() =>    calcValorNecessario(), 500);
+	let totalGeralNec = 0;
+    let divs = $(".valorNecessario");
+    for(let i = 0; i < divs.length; i++){		
+		let item = divs[i];
+		let saldoAtual = parseFloat($(item).val());		
+		let id = ($(item).attr('id'));
+		var idArr = id.split('-');
+		var isVisible = $( "#"+id ).is( ":visible" );
+		if(isVisible == true){
+			var saldoRestante = $( "#saldoRestante-"+idArr[1]).val();
+			if(saldoRestante){
+				totalGeralNec +=saldoAtual;
+			}			
+		}
+    } 
+	$("#valorNecessarioTotalAux").val(totalGeralNec);	    
 });
 $("#diasLetivosMes").change(function() {
     let value = BRLtoReal($(this).val())
@@ -239,7 +329,13 @@ $("#saldoRestanteEscola").change(() => {
 });
 $("#diasLetivosRestantes").change(function() {
     console.warn('diasLetivosRestantes')
-    calcSaldoDiasLetivos();
+    //calcSaldoDiasLetivos();
+	
+	$(".inputSaldoRestante").trigger("change");
+	calcValorNecessario();
+	calcValorSerCreditado();
+	calcValorNecessarioTotal();
+	
     
 });
 $("#saldoRestanteCartoes").change(() => {
@@ -248,28 +344,35 @@ $("#saldoRestanteCartoes").change(() => {
 });
 
 function calcValorSerCreditado(){
-    
+
     console.warn('calcValorSerCreditado')
     let total = 0;
     let valorSaldoRestanteEscola = BRLtoReal(saldoRestanteEscola.value);
     let valorSaldoRestanteCartoes = BRLtoReal(saldoRestanteCartoes.value);
-    let totalNecessario = BRLtoReal(valorNecessarioTotal.value)
-    total = totalNecessario - (valorSaldoRestanteEscola + valorSaldoRestanteCartoes)
-    $("#valorCreditado").val(realToBRL(total))
-    // console.warn('valorCreditado')
+	
+    //let totalNecessario = BRLtoReal(valorNecessarioTotal.value);
+	let totalNecessario = (valorNecessarioTotalAux.value);
+
+    //total =  totalNecessario - (valorSaldoRestanteEscola + valorSaldoRestanteCartoes) ;
+	total =  totalNecessario - valorSaldoRestanteEscola ;
+	
+	if(total > 0){
+		$("#valorCreditado").val(realToBRL(total));
+    } 
+	
 }
  function calcSaldoDiasLetivos(){
     ///Dias letivos restantes para fechar o mês / Saldo descontado
-   let = diasLetivosRestantes =  parseInt($("#diasLetivosRestantes").val())
-    $(".inputDiasLetivosFecharMes").each(function() {
-        // CHECK IF IS FUNDHAS
+   // let = diasLetivosRestantes =  parseInt($("#diasLetivosRestantes").val())
+    // $(".inputDiasLetivosFecharMes").each(function() {
+        // // CHECK IF IS FUNDHAS
            
-        let saldoDescontado = diasLetivosRestantes * valorAtualPasse
-        if($(this).closest('tr').find('.fundhas').prop('checked')){
-            saldoDescontado *= 2;
-        }
-        $(this).val(saldoDescontado)
-    });
+        // let saldoDescontado = diasLetivosRestantes * valorAtualPasse
+        // if($(this).closest('tr').find('.fundhas').prop('checked')){
+            // saldoDescontado *= 2;
+        // }
+        // $(this).val(saldoDescontado)
+    // });
     
     calcAntiUE();
     calcValorNecessario();
@@ -295,6 +398,7 @@ function calcValorSerCreditado(){
         if(totalAntiUe >= 0) 
            saldoFinalMes = totalAntiUe
         $(item).closest('tr').find('.saldoFinalMes').val(saldoFinalMes)
+		
 
      }
 
@@ -302,28 +406,113 @@ function calcValorSerCreditado(){
 async function calcValorNecessario(){
     console.warn('calcValorNecessario')
     ///VALOR A SER CREDITADO
-    let saldoNecessario = parseInt(diasLetivosMes.value) * valorAtualPasse
-
+	let diasLetivosRestantes = parseInt($("#diasLetivosRestantes").val());
+	let diasLetivosMes = parseInt($("#diasLetivosMes").val());
+	totalDiaMes = diasLetivosRestantes+diasLetivosMes;
+    let saldoNecessario = totalDiaMes * valorAtualPasse
+	var valorNec = $("#valorNecessarioAluno").val();
+	valorNec = valorNec.replace(",",".");
+	
     let divs = $(".saldoFinalMes");
-
+	
     for(let i = 0; i < divs.length; i++){
         let item = divs[i];
-        let saldoAtual = parseFloat($(item).val())
-        let totalSaldo = saldoNecessario - saldoAtual
+        let saldoAtual = parseFloat($(item).val());
+		
+		let id = ($(item).attr('id'));
+		var idArr = id.split('-');
+		var checado = $("#fundhas-"+idArr[1]).is(':checked');
+		var saldoRestante = $("#saldoRestante-"+idArr[1]).val();
+		if(checado){
+			
+			
+			if((saldoRestante == '0,00') || (saldoRestante == '0') ){	
+			var saldoFinal = valorNec; 
+			}else{
+				if(saldoRestante){	
+					var saldoFinal = (valorNec * 2) - BRLtoReal(saldoRestante);
+				}else{
+					var saldoFinal = 0; 
+				}			
+			}
+		
+			// var valorTotalOficial = diasLetivosMes * valorAtualPasse;
+			// var valorTotalDias =  parseInt(diasLetivosMes) + parseInt(diasLetivosRestantes);
+			// var diasLetFundHas = parseFloat(valorTotalDias * valorAtualPasse);	
+			// var saldoDescontado = parseFloat((diasLetivosRestantes * valorAtualPasse) + (diasLetFundHas));
+			
+			// if(saldoRestante){			
+				// var antiUe = (parseFloat(saldoRestante) - saldoDescontado);			
+			// }else{
+				// var antiUe = 0;
+			// }
+			// if(antiUe < 0){
+				// var saldoFinal = 0
+			// }else{
+				// var saldoFinal = antiUe;
+			// }
+			
+			if(saldoFinal == 0){
+				var totalSaldo = saldoFinal;
+			}else{
+				var totalSaldo = saldoFinal;
+			}
+			
+			// console.log('valorTotalOficial '+valorTotalOficial);
+			// console.log('diasLetivosMes '+diasLetivosMes);
+			// console.log('diasLetivosRestantes '+diasLetivosRestantes);
+			// console.log('valorTotalDias '+valorTotalDias);
+			// console.log('diasLetFundHas '+diasLetFundHas);
+			// console.log('saldoDescontado '+saldoDescontado);
+			// console.log('antiUe '+antiUe);
+			 console.log('saldoFinal -'+saldoFinal);
+			// console.log('valorAtualPasse '+valorAtualPasse);
+			 console.log('saldoRestante '+saldoRestante);
+			
+			//console.log(valorNec+'-'+saldoRestante+'-'+idArr[1]);
+			 if(totalSaldo > 0){
+				var totalSaldoArr = parseFloat(totalSaldo);
+				$("#valorNec-"+idArr[1]).val(totalSaldoArr);
+				//$(item).closest('tr').find('.valorNecessario').val(totalSaldoArr);
+				$(item).closest('tr').find('.checkboxNecessidadeCredito').attr('checked', true);
+				$("#valorNecessarioAluno").val(realToBRL(totalSaldoArr));			
+			} else {
+				$(item).closest('tr').find('.valorNecessario').val('0');
+				$(item).closest('tr').find('.checkboxNecessidadeCredito').attr('checked', false)
+			}
+			
+			
+		}else{
+			let totalSaldo = saldoNecessario - saldoAtual;
+			 if(totalSaldo > 0){
+			
+			var totalSaldoArr = parseFloat(totalSaldo.toFixed(2));
+				$("#valorNec-"+idArr[1]).val(totalSaldoArr);
+				//$(item).closest('tr').find('.valorNecessario').val(totalSaldoArr);
+				$(item).closest('tr').find('.checkboxNecessidadeCredito').attr('checked', true);
+				$("#valorNecessarioAluno").val(realToBRL(totalSaldoArr));			
+			} else {
+				$(item).closest('tr').find('.valorNecessario').val('0');
+				$(item).closest('tr').find('.checkboxNecessidadeCredito').attr('checked', false)
+			}
+		}
+        
         // console.log(saldoNecessario, saldoAtual)
      
       
         // console.log('totalSaldo', totalSaldo)
-        $(item).closest('tr').find('.valorNecessario').val(totalSaldo)
+        
         // console.error($(item).closest('tr').find('.valorNecessario').val())
-        if(totalSaldo > 0){
-            $(item).closest('tr').find('.checkboxNecessidadeCredito').attr('checked', true)   
-        } else {
-            $(item).closest('tr').find('.checkboxNecessidadeCredito').attr('checked', false)
-        }
+		
+		
+	
+       
     } 
     atualizarSaldo();
-    calcValorSerCreditado()
+    calcValorSerCreditado();
+	
+	
+	
     
 }
  function atualizarSaldo(){
@@ -335,8 +524,8 @@ async function calcValorNecessario(){
         total += parseFloat($(this).val());
         // $(this).css('display', 'block') //to show
     });
-    // console.log(total)
-    $("#saldoRestanteCartoes").val(realToBRL(total))
+    
+    $("#saldoRestanteCartoes").val(realToBRL(total));
     
 }
 
@@ -349,12 +538,22 @@ function montarCalculos(){
 
 
 function calcValorNecessarioTotal(){
+	//let valorNecessarioAluno = $("#valorNecessarioAluno").val();
     let totalDiasLetivosMes = parseInt(diasLetivosMes.value);
-    let totalQtdeAlunos = parseInt(qtdeAlunos.value)
-    // console.error(totalDiasLetivosMes, totalQtdeAlunos)
-    let valorNecessarioTotal = totalDiasLetivosMes * totalQtdeAlunos * valorAtualPasse;
-    $("#valorNecessarioTotal").val(realToBRL(valorNecessarioTotal))
-    calcValorSerCreditado()
+    let totalQtdeAlunos = parseInt(qtdeAlunos.value);
+	let diasLetivosRestantes = parseInt($("#diasLetivosRestantes").val());
+	
+	totalDiasLetivosMesTot = totalDiasLetivosMes + diasLetivosRestantes;
+
+	
+    //console.error(totalDiasLetivosMes, totalQtdeAlunos, valorAtualPasse);
+    let valorNecessarioTotal = totalDiasLetivosMesTot * totalQtdeAlunos * valorAtualPasse;
+	//valorNecessarioAluno = valorNecessarioAluno.replace(",",".");
+	//let valorNecessarioTotal = (valorNecessarioAluno - totalDiasLetivosMes) * (totalQtdeAlunos * valorAtualPasse);
+	
+	//console.log(totalDiasLetivosMesTot+'-'+totalQtdeAlunos+'-'+valorAtualPasse);
+    $("#valorNecessarioTotal").val(realToBRL(valorNecessarioTotal));
+    calcValorSerCreditado();
 }
 
 $("#salvar").click(function(ev) {

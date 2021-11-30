@@ -15,6 +15,10 @@ use common\models\TipoLogradouro;
 
 ?>
 <style type="text/css">
+ .swal2-popup {
+  font-size: 1.0rem !important;
+}
+
   #justificativa-barreira,
   #inputs-barreira {
     display: none;
@@ -448,8 +452,17 @@ use common\models\TipoLogradouro;
     </div>
   </div>
   <div class="form-group">
-    <span id="erro-telefones" style="color:#f00; padding-left:15px"></span> <?= Html::submitButton($model->isNewRecord ? 'Salvar' : 'Atualizar', ['class' => $model->isNewRecord ? 'btn btn-success pull-right' : 'btn btn-primary pull-right']) ?>
+    <span id="erro-telefones" style="color:#f00; padding-left:15px"></span> 
+	<?php if($model->isNewRecord == 'Salvar'){ ?>
+		<?= Html::submitButton('Salvar', ['class' => 'btn btn-success pull-right'] ) ?>
+	<?php }else{ ?>	
+		<?= Html::button('Atualizar',['class' => 'btn btn-success pull-right','id' => 'salvarAluno'] ) ?>
+		
+	<?php } ?>
+	
   </div>
+  
+  
   <?php ActiveForm::end(); ?>
 
 </div>
@@ -481,6 +494,87 @@ use common\models\TipoLogradouro;
 
 <!-- Validação do endereço no maps -->
 <script type="text/javascript">
+
+  
+  
+ var redirect = $("#redirect").val();	
+  if(redirect != 0 ){	
+  
+  }else{
+		$("#salvarAluno").on('click', function(event) {
+		var dadosAlterados =0;
+			
+		var cep = $("#cep").val();
+		if(cep != '<?=$model->cep?>'){
+			 dadosAlterados = 1;
+		}
+		
+		var turno = $("#turno").val();
+		if(turno != '<?=$model->turno?>'){
+			 dadosAlterados = 2;
+		}
+		
+		var horarioEntrada = $("#aluno-horarioentrada").val();
+		if(horarioEntrada != '<?=$model->horarioEntrada?>'){
+			 dadosAlterados = 3;
+		}
+		
+		var horarioSaida = $("#aluno-horariosaida").val();
+		if(horarioSaida != '<?=$model->horarioSaida?>'){
+			 dadosAlterados = 4;
+		}
+		
+		var tipoLogradouro = $("#tipo-logradouro").val();
+		if(tipoLogradouro != '<?=$model->tipoLogradouro?>'){
+			 dadosAlterados = 6;
+		}
+		
+		var alunoEndereco = $("#aluno-endereco").val();
+		if(alunoEndereco != '<?=$model->endereco?>'){
+			 dadosAlterados = 7;
+		}
+		
+		
+		
+		
+		var alunoCidade = $("#aluno-cidade").val();
+		if(alunoCidade != '<?=$model->cidade?>'){
+			 dadosAlterados = 8;
+		}
+		
+		var alunoNumRes = $("#aluno-numeroresidencia").val();
+		if(alunoNumRes != '<?=$model->numeroResidencia?>'){
+			 dadosAlterados = 9;
+		}
+		 console.log(dadosAlterados);
+		
+		if(dadosAlterados != 0){
+			Swal.fire({
+				title: 'Usuário(a)',
+				text: "Alguns dos campos cep, endereço, horário de entrada e saída e turno foram alterados, então todas as solicitações ativas serão encerradas e deverão ser realizadas novamente. Deseja continuar?",
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'SIM',
+				cancelButtonText: 'NÃO'
+			  }).then((result) => {
+				if (result.value) {
+					$("#formAluno").submit();
+				}else{
+					history.go(-1);
+				}
+			  });
+		}else{
+			$("#formAluno").submit();
+		}
+  });
+  
+	   
+  }
+ 
+		  
+		  
   $('#cep').keypress(function(e) {
     if (e.which == 13) {
       $('#cep').blur();
@@ -502,7 +596,7 @@ use common\models\TipoLogradouro;
   var latAtual = <?= print $model->lat; ?>;
   var lngAtual = <?= print $model->lng; ?>;
   var action = '<?= Yii::$app->controller->module->requestedRoute ?>';
-  var redirect = $("#redirect").val();
+  
   if(redirect != 0 ){
 	  
   }else{
@@ -526,10 +620,16 @@ use common\models\TipoLogradouro;
   $("#cep").change(function() {
     esconderTabela();
     let cep = $("#cep").val();
-    if (!cep)
-      return null;
-    let logradouro = $("#aluno-endereco").val();
-    let tipo = $("#tipo-logradouro").val();
+	let logradouro = $("#aluno-endereco").val();
+	let tipo = $("#tipo-logradouro").val();
+    if (!cep){
+		return null;
+	}else{
+		logradouro = null;
+	}
+      
+    
+    
     $(".field-cep .loading").html('<i class="fas fa-hourglass-half"></i> Buscando informações...');
     $("#aluno-bairro").attr('readonly',true);
     $.getJSON("index.php?r=pesquisa-logradouro/pesquisa-logradouro", {

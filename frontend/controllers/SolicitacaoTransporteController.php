@@ -539,18 +539,29 @@ class SolicitacaoTransporteController extends Controller
 				$dados = Yii::$app->getDb()->createCommand($sql)->queryAll();	
 				if($dados[0]['id']){
 					$solicitacao = SolicitacaoTransporte::findOne($dados[0]['id']);
-					$solicitacao->status =SolicitacaoTransporte::STATUS_ENCERRADA;    
+					$solicitacao->status =SolicitacaoTransporte::STATUS_CANCELADO;    
+					$solicitacao->tipoSolicitacao = SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO;
 					$solicitacao->save();					
-					PontoAluno::removerTodasRotas($model->id);					
 					$modelStatus = new SolicitacaoStatus();
 					$modelStatus->idUsuario = \Yii::$app->User->identity->id;
 					$modelStatus->dataCadastro = date('Y-m-d');
-					$modelStatus->status = SolicitacaoTransporte::STATUS_ENCERRADA;
+					$modelStatus->status = SolicitacaoTransporte::STATUS_CANCELADO;
 					$modelStatus->idSolicitacaoTransporte = $dados[0]['id'];
-					$modelStatus->tipo = SolicitacaoStatus::TIPO_INSERIDO;
+					$modelStatus->tipo = SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO;					
 					$modelStatus->mostrar = 1;							
-					$modelStatus->justificativa = 'BENEFÍCIO ENCERRADO VIA SISTEMA';
+					$modelStatus->justificativa = $post['SolicitacaoTransporte']['justificativaBarreiraFisica'];
 					$modelStatus->save();
+					
+					$sqlTodosPontos ='select idPonto from PontoAluno p where p.idAluno  = '.$model->idAluno; 
+					$todosPontos = Yii::$app->getDb()->createCommand($sqlTodosPontos)->queryAll();
+
+					foreach($todosPontos as $pont){									
+						if($pont['idPonto']){	
+							\Yii::$app->db->createCommand()->delete('PontoAluno', ['idPonto' => $pont['idPonto']])->execute();
+							\Yii::$app->db->createCommand()->delete('Ponto', ['id' => $pont['idPonto']])->execute();
+						}
+					}
+									
 					 return ['status' => true];
 				}
 			}
@@ -1120,6 +1131,7 @@ class SolicitacaoTransporteController extends Controller
             ->andWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_INDEFERIDO])
             ->andWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_ATENDIDO])
 			->andWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_CONCEDIDO])
+			->andWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_CANCELADO])
             //->andWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_DEFERIDO]) // alteracao mauro 21/10/2021
             ->andWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_ANDAMENTO])
             ->andWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_ENCERRADA])

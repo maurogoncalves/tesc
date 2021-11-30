@@ -20,7 +20,10 @@ use yii\helpers\Url;
 $this->title = 'RENOVAÇÃO - ALUNOS ATENDIDOS';
 $this->params['breadcrumbs'][] = $this->title;
 
-
+$config = Configuracao::setup();
+if($config->exibeRenovacao){
+	
+}
 function mountSelect($camposOrdenacao,$index){
 	$str = '';
 	$option = '';
@@ -182,6 +185,22 @@ if(empty($idAluno)){
 
 
 $(document).ready(function() {
+	var exibeRenovacao = <?php echo $config->exibeRenovacao?>;	
+	if(exibeRenovacao == 0 ){
+		Swal.fire({
+			title: '😊 Atenção usuário(a)!',
+			text: "A tela de renovação ainda não está disponivel para ser usada, aguarde o supervisor liberar. Obrigado",
+			icon: 'warning',
+			showCancelButton: false,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+        confirmButtonText: 'Ok, vou aguardar',
+		}).then((result) => {
+			window.location.href = 'index.php?r=aviso/meus-avisos';
+		});
+	
+		
+   }
 	$(".renovar").prop('disabled', false);	
 	
 	var ra = <?php echo $ra?>;
@@ -237,7 +256,7 @@ $(document).ready(function() {
 				"sPrevious": "Anterior"
 			},
 		},
-		"lengthMenu": [[10, 50, 100, 200], [50, 100, 200, "Todos"]],
+		"lengthMenu": [[10, 50, 100, 200], [10, 50, 100, 200, "Todos"]],
 		 "search": {
 			"search": "<?php echo $ra == 0 ? "" : $ra;?>"
 		  }

@@ -13,7 +13,14 @@ use kartik\widgets\FileInput;
 <div class="box-body">
 
     <?php $form = ActiveForm::begin(); ?>
-
+			  
+	<?=  $form->field($model, 'exibeRenovacao')
+            ->dropDownList(
+            [ '1' => 'Sim','0' => 'Não',],          
+			['prompt'=>'Selecione']    
+            );
+	?>
+ 
     <?= $form->field($model, 'valeTransporte')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'passeEscolar')->textInput(['maxlength' => true]) ?>
