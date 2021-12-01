@@ -485,7 +485,7 @@ class CondutorController extends Controller
         $sheet->setCellValue('P'.$i, $model->tipoLogradouro.' '.trim($model->endereco).''.$complemento.''.$num.$model->bairro.' '.$model->cep);
         $ano = '';
         if($model->veiculo->anoModelo && $model->veiculo->anoFabricacao)
-            $ano = ' Ano: '.$model->veiculo->anoModelo.'/'.$model->veiculo->anoFabricacao;
+            $ano = ' Ano: '.$model->veiculo->anoFabricacao.'/'.$model->veiculo->anoModelo;
         $sheet->setCellValue('Q'.$i, $this->getTelefoneValido($model));
 		
 		$escolas = [];
@@ -643,7 +643,8 @@ class CondutorController extends Controller
 
 				$ano = '';
 				if($model->veiculo->anoModelo && $model->veiculo->anoFabricacao)
-					$ano = ' Ano: '.$model->veiculo->anoModelo.'/'.$model->veiculo->anoFabricacao;
+					$ano = ' Ano: '.$model->veiculo->anoFabricacao.'/'.$model->veiculo->anoModelo;
+
 				
 				$l .= ';'.$this->getTelefoneValido($model);
 				
@@ -795,7 +796,8 @@ class CondutorController extends Controller
 
 				$ano = '';
 				if($model->veiculo->anoModelo && $model->veiculo->anoFabricacao)
-					$ano = ' Ano: '.$model->veiculo->anoModelo.'/'.$model->veiculo->anoFabricacao;
+					$ano = ' Ano: '.$model->veiculo->anoFabricacao.'/'.$model->veiculo->anoModelo;
+				
 				
 				$l .= ';'.$this->getTelefoneValido($model);
 				

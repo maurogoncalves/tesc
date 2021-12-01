@@ -696,6 +696,7 @@ use common\models\TipoLogradouro;
       $("#mapUser").css("display", "block");
       let enderecoCompleto = tipo + ` ` + logradouro + `, ` + num + `, ` + bairro;
       // -- HERE 2-- //
+	  //alert(enderecoCompleto);
       geoSearch(enderecoCompleto);
     } else {
       $("#mapUser").css("display", "none");
@@ -846,8 +847,13 @@ use common\models\TipoLogradouro;
         if (results[0]) {
           var latitude = results[0].geometry.location.lat();
           var longitude = results[0].geometry.location.lng();
-          console.log('GEOCODE', latitude, longitude);
-          addMarker(latitude, longitude, endereco);
+          console.log('GEOCODE', latitude, longitude,endereco);		  
+		  if((results[0].formatted_address.indexOf("São José dos Campos") != -1)){
+			addMarker(latitude, longitude, endereco);  
+		  }else{
+			addMarker('-23.1851185', '-45.8875702', 'PRAÇA AFONSO PENA, 1000000, CENTRO, São José dos Campos, Brasil ') ; 
+		  }
+          
         }
       }
     });

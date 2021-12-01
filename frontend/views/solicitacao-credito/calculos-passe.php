@@ -209,7 +209,11 @@ $(".fundhas").click(function() {
 			var saldoFinal = BRLtoReal(valorNec); 
 		}else{
 			if(saldoRestante){	
-				var saldoFinal = (BRLtoReal(valorNec) * 2) - BRLtoReal(saldoRestante)
+				var saldoFinal = (BRLtoReal(valorNec) * 2) - BRLtoReal(saldoRestante);
+				if(saldoFinal >= valorNec){
+					var saldoFinal = valorNec;
+				}
+				
 			}else{
 				var saldoFinal = 0; 
 			}			
@@ -222,7 +226,7 @@ $(".fundhas").click(function() {
 		// console.log('diasLetFundHas '+diasLetFundHas);
 		// console.log('saldoDescontado '+saldoDescontado);
 		// console.log('antiUe '+antiUe);
-		console.log('saldoFinal --'+saldoFinal);
+		console.log('saldoFinal |'+saldoFinal);
 		// console.log('valorAtualPasse '+valorAtualPasse);
 		
 		// if(saldoFinal == '0'){
@@ -431,6 +435,9 @@ async function calcValorNecessario(){
 			}else{
 				if(saldoRestante){	
 					var saldoFinal = (valorNec * 2) - BRLtoReal(saldoRestante);
+					if(saldoFinal >= valorNec){
+						var saldoFinal = valorNec;
+					}
 				}else{
 					var saldoFinal = 0; 
 				}			
