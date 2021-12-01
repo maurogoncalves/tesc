@@ -63,7 +63,6 @@ use common\models\TipoLogradouro;
             ])) { ?>
     <div class="box-header with-border condutor-info">
       <h4>Informações do condutor</h4>
-      <h4 class="log-info log-info_margin"><?= $logData['dataUltimoLog'] ?></h4>
     </div>
 
     <div class="row">
@@ -312,7 +311,7 @@ use common\models\TipoLogradouro;
     <div class="row">
       <div class="col-md-6">
         <div class="template-fileinput <?php if(empty($model->docCRLV)) print 'without-files'; ?>">
-        <h4 class="log-info"><?= $logData["documentoCRLV"] ?></h4>
+          <h4 class="log-info"><?= $logData["documentoCRLV"] ?></h4>
           <?php
           echo $form->field($model, 'documentoCRLV[]')->widget(FileInput::classname(), [
             'options'=>['accept'=>'application/pdf, image/*', 'multiple'=>true],
@@ -526,6 +525,7 @@ use common\models\TipoLogradouro;
 
     <div class="row">
       <div class="col-md-4">
+        <h4 class="log-info"><?= $logData["fotoMotorista"] ?></h4> 
         <div class="template-fileinput <?php if(empty($model->fotoMotorista)) print 'without-files'; ?>">
           <?php
             echo $form->field($model, 'anexoFotoMotorista[]')->widget(FileInput::classname(), [
@@ -548,6 +548,7 @@ use common\models\TipoLogradouro;
       <div class="col-md-8">
         <div class="col-md-6">
           <div class="template-fileinput <?php if(empty($model->docCnhCondutor)) print 'without-files'; ?>">
+            <h4 class="log-info"><?= $logData['documentoCNHCondutor'] ?></h4>
             <?php
               echo $form->field($model, 'documentoCNHCondutor[]')->widget(FileInput::classname(), [
               'options'=>['accept'=>'application/pdf, image/*', 'multiple'=>true],
@@ -556,6 +557,7 @@ use common\models\TipoLogradouro;
             <div class="substituir-arquivos">Clique aqui para substituir os arquivos</div>
           </div>
           <div class="template-fileinput <?php if(empty($model->docCRLV)) print 'without-files'; ?>">
+            <h4 class="log-info"><?= $logData["documentoCRLV"] ?></h4>
             <?php
             echo $form->field($model, 'documentoCRLV[]')->widget(FileInput::classname(), [
               'options'=>['accept'=>'application/pdf, image/*', 'multiple'=>true],
@@ -565,6 +567,7 @@ use common\models\TipoLogradouro;
           </div> 
   
           <div class="template-fileinput <?php if(empty($model->docApoliceSeguro)) print 'without-files'; ?>">
+            <h4 class="log-info"><?= $logData["documentoApoliceSeguro"] ?></h4> 
             <?php
               echo $form->field($model, 'documentoApoliceSeguro[]')->widget(FileInput::classname(), [
                 'options'=>['accept'=>'application/pdf, image/*', 'multiple'=>true],
@@ -576,6 +579,7 @@ use common\models\TipoLogradouro;
 
         <div class="col-md-6">
           <div div class="template-fileinput <?php if(empty($model->docAutorizacaoEscolar)) print 'without-files'; ?>">
+            <h4 class="log-info"><?= $logData["documentoAutorizacaoEscolar"] ?></h4>
             <?php
               echo $form->field($model, 'documentoAutorizacaoEscolar[]')->widget(FileInput::classname(), [
                 'options'=>['accept'=>'application/pdf, image/*', 'multiple'=>true],
@@ -584,6 +588,7 @@ use common\models\TipoLogradouro;
             <div class="substituir-arquivos">Clique aqui para substituir os arquivos</div>
           </div>   
           <div class="template-fileinput <?php if(empty($model->docProntuarioCNH)) print 'without-files'; ?>">
+            <h4 class="log-info"><?= $logData["documentoProntuarioCNH"] ?></h4>          
             <?php
               echo $form->field($model, 'documentoProntuarioCNH[]')->widget(FileInput::classname(), [
                 'options'=>['accept'=>'application/pdf, image/*', 'multiple'=>true],
@@ -603,7 +608,8 @@ use common\models\TipoLogradouro;
     <div class="row">
       <div class="col-md-4">
         <div class="template-fileinput <?php if(empty($model->docRgMonitor)) print 'without-files'; ?>">
-            <?php
+          <h4 class="log-info"><?= $logData["documentoMonitorRG"] ?></h4>     
+          <?php
           echo $form->field($model, 'documentoMonitorRG[]')->widget(FileInput::classname(), [
           'options'=>['accept'=>'application/pdf, image/*', 'multiple'=>true],
           'pluginOptions'=>['allowedFileExtensions'=>['jpg','gif','png','pdf'],  'language' => Yii::$app->language, 'showPreview' => false, 'initialPreview' => [], 'showUpload' => false]
@@ -614,6 +620,7 @@ use common\models\TipoLogradouro;
 
       <div class="col-md-4">
         <div class="template-fileinput <?php if(empty($model->docContratoTrabalho)) print 'without-files'; ?>">
+          <h4 class="log-info"><?= $logData["documentoMonitorContratoTrabalho"] ?></h4>     
           <?php
             echo $form->field($model, 'documentoMonitorContratoTrabalho[]')->widget(FileInput::classname(), [
               'options'=>['accept'=>'application/pdf, image/*', 'multiple'=>true],
@@ -623,6 +630,7 @@ use common\models\TipoLogradouro;
         </div>   
       </div>
       <div class="col-md-4">
+        <h4 class="log-info"><?= $logData["documentoMonitorCertidaoAntecedentesCriminais"] ?></h4>     
         <div class="template-fileinput <?php if(empty($model->docCertidaoAntecedentesCriminais)) print 'without-files'; ?>">
           <?php
             echo $form->field($model, 'documentoMonitorCertidaoAntecedentesCriminais[]')->widget(FileInput::classname(), [
