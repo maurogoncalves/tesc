@@ -125,7 +125,81 @@ class GestaoDocumentosController extends Controller
 
     }
 
+	public function actionBuscar(){
+		
+		 \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        try {
+			$post = Yii::$app->request->post();
+			
+			$id = $post['id'];
+			$dadosCnh = Condutor::findOne($id);
+			$dadosVeic = Veiculo::findOne($dadosCnh['idVeiculo']);			
+			
+            return [
+				'status' => true,
+                'cnhValidade' => $dadosCnh['cnhValidade'],
+				'dataVencimentoCRLV' => $dadosVeic['dataVencimentoCRLV'],
+				'dataVistoriaEstadual' => $dadosVeic['dataVistoriaEstadual'],
+				'dataVencimentoSeguro' => $dadosVeic['dataVencimentoSeguro'],
+            ];
+
+        } catch (NotFoundHttpException $e) {
+            return [
+                'status' => false
+            ];
+        }
+		
+		
+	
+			
+	}	 
     
+	public function actionSalvarDatas(){
+		
+		  \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        try {
+			$post = Yii::$app->request->post();
+			
+			
+			$idCondutor = $post['idCondutor'];
+			$cnhValidade = $post['cnhValidade'];
+			$dataVencimentoCRLV = $post['dataVencimentoCRLV'];
+			$dataVistoriaEstadual = $post['dataVistoriaEstadual'];
+			$dataVencimentoSeguro = $post['dataVencimentoSeguro'];
+			
+			//$dadosCnh = Condutor::findOne($idCondutor);
+			//$dadosVeic = Veiculo::findOne($dadosCnh['idVeiculo']);		
+
+			$condutor = Condutor::findOne($idCondutor);
+			$condutor->cnhValidade =$cnhValidade;				
+			
+			
+			$veiculo = Veiculo::findOne($condutor['idVeiculo']);
+			$veiculo->dataVencimentoCRLV =$dataVencimentoCRLV;		
+			$veiculo->dataVistoriaEstadual =$dataVistoriaEstadual;		
+			$veiculo->dataVencimentoSeguro =$dataVencimentoSeguro;		
+			
+			if ($veiculo->save() && $condutor->save() ){
+                $status = true;
+            }else{
+				$status = false;
+			}	
+			
+			
+            return [
+				'status' => $status,                
+            ];
+
+        } catch (NotFoundHttpException $e) {
+            return [
+                'status' => false
+            ];
+        }
+		
+	
+			
+	}
+	
     public function actionExportar($tipo){
   // $content = '<table>';
   $spreadsheet = new Spreadsheet();

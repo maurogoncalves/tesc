@@ -94,7 +94,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'vAlign'=>'middle',
                 'hiddenFromExport'=>true,
                 'mergeHeader'=>true,
-            ],
+            ],			 
             'nome',
             [
                 'attribute'=>'cnhValidade',
@@ -211,7 +211,25 @@ $this->params['breadcrumbs'][] = $this->title;
                 'filterInputOptions' => [
                     'placeholder' => '-',
                 ]
-            ],        
+            ],      
+			[
+                        'contentOptions' => ['style' => 'min-width:80px;'],  //Largura coluna                
+                        'class' => 'yii\grid\ActionColumn',
+                        'template' => '{roterizar}', 
+                        'buttons' => [
+                        'roterizar' => function ($url, $model) {
+                            return Html::a('<span class="glyphicon glyphicon-pencil exibirModal" id='.$model->id.'></span>','#', [
+							'id' => 'activity-view-link',
+							'title' => Yii::t('yii', 'View'),
+							'data-toggle' => 'modal',
+							'data-target' => '#activity-modal',
+							'data-id' => $model->id,
+							'data-pjax' => '0',
+
+						]);
+                        },
+                        ]
+                    ],			
             // 'status',
             // 'nome',
             // 'idUsuario',
@@ -276,6 +294,39 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 </div>
 </div>
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Atualizar Datas</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row"> 
+		  <div class="col-md-4" class="form-control" style='text-align:right!important;font-weight:bold!important' > Cnh</div>	
+          <div class="col-md-6" ><input type="date" class="form-control" name="cnhValidade" id='cnhValidade' ></div>
+        </div> 
+		<div class="row"> 
+		  <div class="col-md-4" class="form-control" style='text-align:right!important;font-weight:bold!important' > CRLV</div>	
+          <div class="col-md-6" ><input type="date" class="form-control" name="dataVencimentoCRLV" id='dataVencimentoCRLV' ></div>
+        </div> 
+		<div class="row"> 
+		  <div class="col-md-4" class="form-control" style='text-align:right!important;font-weight:bold!important' > Vistoria Semestral</div>	
+          <div class="col-md-6" ><input type="date" class="form-control" name="dataVistoriaEstadual" id='dataVistoriaEstadual' ></div>
+        </div> 
+		<div class="row"> 
+		  <div class="col-md-4" class="form-control" style='text-align:right!important;font-weight:bold!important' > Seguro</div>	
+          <div class="col-md-6" ><input type="date" class="form-control" name="dataVencimentoSeguro" id='dataVencimentoSeguro' ></div>
+		  <input type="hidden"  name='idCondutor' id='idCondutor' readonly='yes' class="form-control" value=''  >		
+        </div> 
+
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-success pull-right" id="salvar">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script> 
 $(document).ready(function() {
@@ -283,6 +334,93 @@ setTimeout(() => $("#w6").html($("#w66").html()), 200)
 
     
 });
+
+$( "#salvar" ).click(function() {
+	var cnhValidade = $("#cnhValidade").val();
+	var dataVencimentoCRLV = $("#dataVencimentoCRLV").val();
+	var dataVistoriaEstadual = $("#dataVistoriaEstadual").val();
+	var dataVencimentoSeguro = $("#dataVencimentoSeguro").val();
+	var idCondutor = $("#idCondutor").val();
+	
+	$.ajax({	
+		type: 'POST',
+		url: 'index.php?r=gestao-documentos/salvar-datas',
+		data:{
+			idCondutor: idCondutor,
+			cnhValidade: cnhValidade,
+			dataVencimentoCRLV: dataVencimentoCRLV,
+			dataVistoriaEstadual: dataVistoriaEstadual,
+			dataVencimentoSeguro: dataVencimentoSeguro,
+		},
+	}).done(function(data) {
+		$('#modal').modal('hide');
+		if(data.status){				
+			Swal.fire({
+				title: 'Atenção usuário(a)!',
+				text: "Dados atualizados com sucesso",
+				icon: 'warning',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Ok, obrigado',
+			}).then((result) => {
+				console.log('OK VOU VERIFICAR')
+			});
+			
+		}else{
+			Swal.fire({
+				title: 'Atenção usuário(a)!',
+				text: "Algum problema aconteceu durante a atualização, contate o Administrador",
+				icon: 'warning',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Ok, obrigado',
+			}).then((result) => {
+				console.log('OK VOU VERIFICAR')
+			});
+		}
+		
+		
+	});	
+	
+});
+	
+$( ".exibirModal" ).click(function() {
+	var id = $(this).attr('id');
+	$.ajax({	
+		type: 'POST',
+		url: 'index.php?r=gestao-documentos/buscar',
+		data:{
+			id: id,
+		},
+	}).done(function(data) {
+		
+		if(data.status){
+			$("#cnhValidade").val(data.cnhValidade);
+			$("#dataVencimentoCRLV").val(data.dataVencimentoCRLV);
+			$("#dataVistoriaEstadual").val(data.dataVistoriaEstadual);
+			$("#dataVencimentoSeguro").val(data.dataVencimentoSeguro);
+			$("#idCondutor").val(id);
+			$('#modal').modal('show');	
+		}else{
+			Swal.fire({
+				title: 'Atenção usuário(a)!',
+				text: "Existe algum problema com os documentos desse condutor, contate o Administrador",
+				icon: 'warning',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Ok, vou verificar',
+			}).then((result) => {
+				console.log('OK VOU VERIFICAR')
+			});
+		}
+		
+		
+	});	
+});	
+
 setTimeout(() => {
     try {
     document.getElementById('w6').innerHTML= document.getElementById('w66').innerHTML
