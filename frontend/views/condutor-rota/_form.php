@@ -23,13 +23,13 @@ use kartik\select2\Select2;
       </div>
     </div>
     <?php endif; ?>
+	
     <div class="row">
-    <?php if($model->isNewRecord): ?>
+    <?php if($model->isNewRecord){ ?>
     	<div class="col-md-6">
     		    <?=  
                   $form->field($model, 'idCondutor')->widget(Select2::classname(), [
-                    // 'data' => ArrayHelper::map(Condutor::disponivelRota($model->condutor), 'id', 'nome'),
-					'data' => ArrayHelper::map(Condutor::find()->andWhere('status = 1')->andWhere('idVeiculo IS NOT NULL')->all(), 'id', 'nome'),
+                     'data' => ArrayHelper::map(Condutor::disponivelRota($model->condutor), 'id', 'nome'),
                     'value' =>  $model->condutor,
                     'language' => 'pt',
                     'options' => ['placeholder' => 'Selecione o condutor', 'class' => 'form-control', 'id' => 'condutor'],
@@ -41,8 +41,9 @@ use kartik\select2\Select2;
                 ]);
             ?>
     	</div>
-        <?php endif; ?>
-        <?php if($model->isNewRecord): ?>
+	<?php }else{ ?>
+		<div class="col-md-6"></div>
+	<?php } ?>
         <div class="col-md-6">
                    <?=
                       $form->field($model, 'sentido')->widget(Select2::classname(), [
@@ -57,24 +58,10 @@ use kartik\select2\Select2;
                     ]);
                 ?>
             </div>
-            <?php endif; ?>
     </div>
+	
     <div class="row">
-	 <div class="col-md-4">
-                   <?=
-                      $form->field($model, 'sentido')->widget(Select2::classname(), [
-                        'data' => CondutorRota::ARRAY_SENTIDO,
-                        'language' => 'pt',
-                        'options' => ['placeholder' => 'Sentido', 'class' => 'form-control', 'id' => 'sentido'],
-                        'pluginOptions' => [
-                            'allowClear' => true,
-                            'multiple' => false,
-                            'initialize' => true,
-                        ],
-                    ]);
-                ?>
-            </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
               <?=
                 $form->field($model, 'turno')->widget(Select2::classname(), [
                   'data' => CondutorRota::ARRAY_TURNOS,
@@ -88,7 +75,7 @@ use kartik\select2\Select2;
               ]);
           ?>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
               <?=
                 $form->field($model, 'viagem')->widget(Select2::classname(), [
                   'data' => CondutorRota::ARRAY_VIAGEM,
@@ -103,6 +90,7 @@ use kartik\select2\Select2;
           ?>
       </div>
     </div>
+	
 	<div class="row">
     	<!-- <div class="col-md-3">
     		   <?=

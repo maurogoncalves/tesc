@@ -101,19 +101,23 @@ class SolicitacaoTransporteController extends Controller
      */
     public function actionIndex()
     {
-
+		$anoVigente = $this->configuracao->calcularAno();
         $solicitacoesPermitidas = [];
         $solicitacoes = SolicitacaoTransporte::find()->all();
+		
+
 
         //Antigo forçar mostrar só as do grupo
         //$solicitacoesPermitidas = UsuarioGrupo::solicitacoesPermitidas($solicitacoes);
         foreach ($solicitacoes as $solicitacao) {
-            $solicitacoesPermitidas[] = $solicitacao->id;
+			if(($solicitacao->status <> '3') or ($solicitacao->anoVigente <> $anoVigente)){
+				$solicitacoesPermitidas[] = $solicitacao->id;
+			}            
         }
 
         $searchModel = new SolicitacaoTransporteSearch();
 
-        $searchModel->anoVigente = $this->configuracao->calcularAno();
+        $searchModel->anoVigente = $anoVigente;
 
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams, $solicitacoesPermitidas);
         $dataProvider->sort->defaultOrder = ['id' => SORT_DESC];
@@ -140,12 +144,14 @@ class SolicitacaoTransporteController extends Controller
             $ids[] = 999999;
             $dataProvider->query->andFilterWhere(['in', 'Escola.id', $ids]);
         }
-
+		
+		
         if (Usuario::permissao(Usuario::PERFIL_SECRETARIO)) {
             $ids = EscolaSecretario::listaEscolas();
             $ids[] = 999999;
             $dataProvider->query->andFilterWhere(['in', 'Escola.id', $ids]);
         }
+
 
         $dataProvider->pagination = ['pageSize' => isset($_GET['pageSize']) ? $_GET['pageSize'] : 20];
         // cast list object in dataprovider
@@ -578,7 +584,8 @@ class SolicitacaoTransporteController extends Controller
                 // $model->idRotaIda = $solicitacaoAtual->idRotaIda;
                 // $model->idRotaVolta = $solicitacaoAtual->idRotaVolta;
             }
-            $model->anoVigente = $this->configuracao->calcularAno();
+            //$model->anoVigente = $this->configuracao->calcularAno();
+			$model->anoVigente = $this->configuracao->anoVigente;
 
             // campos que devem ser atualizados na tabela de aluno
             $aluno = Aluno::findOne($model->idAluno);
@@ -1422,6 +1429,7 @@ class SolicitacaoTransporteController extends Controller
 
      public function actionRenovacoes()
     {
+		$get = Yii::$app->request->get();
         // $anoCorrente = date("Y") - 1;
         // $anoVigente = $this->configuracao->calcularAno();
         // $dataVigente = explode('-',$configuracao->dataVigente);
@@ -1460,7 +1468,20 @@ class SolicitacaoTransporteController extends Controller
         // ->andWhere(['<=','SolicitacaoTransporte.anoVigente', $anoVigente])
         $idsPasse = array_column($SolicitacoesPasseEscolar, 'id');
         // print_r($idsPasse);
-        $solicitacoesCorrentes = SolicitacaoTransporte::find()
+		if($get['motivoNaoRenova'] == 8){
+			$solicitacoesCorrentes = SolicitacaoTransporte::find()
+            ->andWhere(['<>', 'tipoSolicitacao', SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO])
+            //->andWhere(['SolicitacaoTransporte.status' => SolicitacaoTransporte::STATUS_ATENDIDO])
+            //->orWhere(['in', 'SolicitacaoTransporte.id', $idsPasse])
+            // ->andWhere(['>=', 'SolicitacaoTransporte.data',$anoCorrente.'-01-01'])
+            ->andWhere(['<=', 'SolicitacaoTransporte.data', $this->configuracao->dataVigente])
+			->andWhere(['=', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_ATENDIDO])
+			->orWhere(['=', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_CONCEDIDO])
+            // ->andWhere(['<=','SolicitacaoTransporte.anoVigente', $anoVigente])
+            ->innerJoin('Escola', 'Escola.id=SolicitacaoTransporte.idEscola')
+            ->innerJoin('Aluno', 'Aluno.id=SolicitacaoTransporte.idAluno');
+		}else{
+			$solicitacoesCorrentes = SolicitacaoTransporte::find()
             ->andWhere(['<>', 'tipoSolicitacao', SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO])
             //->andWhere(['SolicitacaoTransporte.status' => SolicitacaoTransporte::STATUS_ATENDIDO])
             //->orWhere(['in', 'SolicitacaoTransporte.id', $idsPasse])
@@ -1469,6 +1490,9 @@ class SolicitacaoTransporteController extends Controller
             // ->andWhere(['<=','SolicitacaoTransporte.anoVigente', $anoVigente])
             ->innerJoin('Escola', 'Escola.id=SolicitacaoTransporte.idEscola')
             ->innerJoin('Aluno', 'Aluno.id=SolicitacaoTransporte.idAluno');
+		}
+		
+        
 
 
 
@@ -1494,7 +1518,9 @@ class SolicitacaoTransporteController extends Controller
 				$st->andWhere(['Escola.regiao' => $get['regiao']]);
 			} 
 			if ($get['motivoNaoRenova']){
+				
 				$st->andWhere(['SolicitacaoTransporte.motivoNaoRenova' => $get['motivoNaoRenova']]);
+				
 			} 
 				
             if ($get['tipoDeSolicitacao']){

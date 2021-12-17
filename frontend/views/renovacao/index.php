@@ -21,9 +21,7 @@ $this->title = 'RENOVAÇÃO - ALUNOS ATENDIDOS';
 $this->params['breadcrumbs'][] = $this->title;
 
 $config = Configuracao::setup();
-if($config->exibeRenovacao){
-	
-}
+
 function mountSelect($camposOrdenacao,$index){
 	$str = '';
 	$option = '';
@@ -37,6 +35,8 @@ function mountSelect($camposOrdenacao,$index){
 	return $str;
 }
 
+
+
 if(empty($ra)){
 	$ra = 0;
 }
@@ -44,7 +44,13 @@ if(empty($ra)){
 if(empty($idAluno)){
 	$idAluno = 0;
 }
-	
+$totalAlunos =0;
+foreach($alunos as $dados){
+	if($dados['tem_outra_solicitacao'] == '0'){	
+		$totalAlunos++;
+	}
+}	
+
 ?> 
 <!--
 <script src="https://cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js"></script> 
@@ -59,7 +65,7 @@ if(empty($idAluno)){
                 <div class="box-header with-border">
 					<div class="col-md-6">
                     <h4>
-                    <?= '<span class="label label-primary">Total: '.count($alunos).'</span>'; ?>
+                    <?= '<span class="label label-primary">Total: '.$totalAlunos.'</span>'; ?>
                     </h4>
 					</div>
 					<div class="col-md-6">
@@ -137,14 +143,15 @@ if(empty($idAluno)){
 				<br>
 				<input class="atualizar_end" type="radio" checked disabled name='atualizar_end-<?=$dados['idAluno']?>' id='2-<?=$dados['idAluno']?>' style="margin-left:5px;margin-right:8px;margin-bottom:10px;" />Não
 				</td>
-                <td><?php
+               <td><?php
 					$options = mountSelect(aluno::ARRAY_TURNO,$dados['turno']);
 					print "<select disabled class='form-control turno' style='height:25px!important;width:130px!important;font-size:8px!important' id='turno-".$dados['idAluno']."' name='turno-".$dados['idAluno']."' >'".$options."</select>";												
 					echo'<br>';
 					$options = mountSelect(Escola::ARRAY_ENSINO,$dados['ensino']);
 					print "<select disabled class='form-control ensino' style='height:25px!important;width:130px!important;font-size:8px!important' id='ensino-".$dados['idAluno']."' name='ensino-".$dados['idAluno']."' >'".$options."</select>";												
 				?>
-				</td><td>
+				</td>
+				<td>
 				<?php
 					$options = mountSelect(Aluno::ARRAY_SERIES,$dados['serie']);
 					print "<select disabled class='form-control serie' style='height:25px!important;width:70px!important;font-size:8px!important' id='serie-".$dados['idAluno']."' name='serie-".$dados['idAluno']."' >'".$options."</select>";												
@@ -276,6 +283,35 @@ $(document).on('click', '.renovar', function () {
 		$("#motivo_renova-"+arr[2]).find('[value="7"]').remove();
 		$("#motivo_renova-"+arr[2]).find('[value="8"]').remove();
 
+		var existe = $("#motivo_renova-"+arr[2]+" option[value='1']").length > 0;		
+		if(!existe){
+			$("#motivo_renova-"+arr[2]).append('<option value=1>CONCLUINTE</option>');
+		}
+		
+		var existe = $("#motivo_renova-"+arr[2]+" option[value='2']").length > 0;		
+		if(!existe){
+			$("#motivo_renova-"+arr[2]).append('<option value=2>FALECIDO</option>');
+		}
+		
+		var existe = $("#motivo_renova-"+arr[2]+" option[value='3']").length > 0;		
+		if(!existe){
+			$("#motivo_renova-"+arr[2]).append('<option value=3>MUDOU-SE</option>');
+		}
+		
+		var existe = $("#motivo_renova-"+arr[2]+" option[value='4']").length > 0;		
+		if(!existe){
+			$("#motivo_renova-"+arr[2]).append('<option value=4>RECLASSIFICADO</option>');
+		}
+		
+		var existe = $("#motivo_renova-"+arr[2]+" option[value='5']").length > 0;		
+		if(!existe){
+			$("#motivo_renova-"+arr[2]).append('<option value=5>TRANSFERIDO</option>');
+		}
+		var existe = $("#motivo_renova-"+arr[2]+" option[value='6']").length > 0;		
+		if(!existe){
+			$("#motivo_renova-"+arr[2]).append('<option value=6>OUTRO</option>');
+		}
+		
 		$("#motivo_renova-"+arr[2]).val(0);
 		$("#turno-"+arr[2]).prop('disabled', true);
 		$("#ensino-"+arr[2]).prop('disabled', true);
@@ -287,8 +323,20 @@ $(document).on('click', '.renovar', function () {
 		$("#1-"+arr[2]).prop('disabled', true);
 		$("#2-"+arr[2]).prop('disabled', true);
 	}else{
-		$("#motivo_renova-"+arr[2]).find('[value="0"]').remove();		
-		$("#motivo_renova-"+arr[2]).find('[value="8"]').remove();
+
+		$("#motivo_renova-"+arr[2]).find('[value="0"]').remove();	
+		$("#motivo_renova-"+arr[2]).find('[value="1"]').remove();
+		$("#motivo_renova-"+arr[2]).find('[value="2"]').remove();
+		$("#motivo_renova-"+arr[2]).find('[value="3"]').remove();	
+		$("#motivo_renova-"+arr[2]).find('[value="4"]').remove();	
+		$("#motivo_renova-"+arr[2]).find('[value="5"]').remove();		
+		$("#motivo_renova-"+arr[2]).find('[value="6"]').remove();				
+		$("#motivo_renova-"+arr[2]).find('[value="8"]').remove();				
+		var existe = $("#motivo_renova-"+arr[2]+" option[value='7']").length > 0;
+		
+		if(!existe){
+			$("#motivo_renova-"+arr[2]).append('<option value=7>REMATRICULA</option>');
+		}
 
 		$("#turno-"+arr[2]).prop('disabled', false);
 		$("#ensino-"+arr[2]).prop('disabled', false);
@@ -824,7 +872,18 @@ $(document).on('click', '.atualizar_end', function () {
 			if(result.value){
 				window.location.href = 'index.php?r=aluno/update&id='+arr[1]+'&redirect=1';				
 			}else if(result.dismiss == 'cancel'){
-				console.log('cancel');
+				$("#2-"+arr[1]).prop('checked', true);
+				$("#motivo_renova-"+arr[1]).show();
+				$("#motivo_renova-"+arr[1]).val(7);
+				$("#turno-"+arr[1]).prop('disabled', false);
+				$("#ensino-"+arr[1]).prop('disabled', false);
+				$("#serie-"+arr[1]).prop('disabled', false);
+				$("#turma-"+arr[1]).prop('disabled', false);
+				$("#entrada-"+arr[1]).prop('disabled', false);
+				$("#saida-"+arr[1]).prop('disabled', false);
+				$("#telefone-"+arr[1]).prop('disabled', false);	
+				$("#1-"+arr[1]).prop('disabled', false);
+				$("#2-"+arr[1]).prop('disabled', false);
 			}
         });
 			

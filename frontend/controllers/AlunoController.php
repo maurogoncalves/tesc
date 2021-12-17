@@ -341,6 +341,7 @@ class AlunoController extends Controller
      */
     public function actionUpdate($id,$redirect=false)
     {
+		
         $model = $this->findModel($id);
         $oldNumero = $model->numeroResidencia;
         $oldTurma = $model->turma;
@@ -431,6 +432,8 @@ class AlunoController extends Controller
             'model' => $model,
 			'redirect' => $redirect,
         ]);
+		
+		
     }
 
     /** 

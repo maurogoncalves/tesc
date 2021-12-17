@@ -13,6 +13,7 @@ use common\models\Usuario;
 use common\models\TipoLogradouro;
 
 
+									
 ?>
 <style type="text/css">
  .swal2-popup {
@@ -495,11 +496,18 @@ use common\models\TipoLogradouro;
 <!-- Validação do endereço no maps -->
 <script type="text/javascript">
 
-  
-  
  var redirect = $("#redirect").val();	
-  if(redirect != 0 ){	
-  
+ 
+  var perfilUsuario = <?php print Yii::$app->user->identity->idPerfil; ?>;
+  if(perfilUsuario == 1){
+	  $("#salvarAluno").on('click', function(event) {
+			$("#formAluno").submit();
+		 });	
+  }else{
+	  if(redirect != 0 ){	
+		$("#salvarAluno").on('click', function(event) {
+			$("#formAluno").submit();
+		 });	
   }else{
 		$("#salvarAluno").on('click', function(event) {
 		var dadosAlterados =0;
@@ -533,21 +541,15 @@ use common\models\TipoLogradouro;
 		if(alunoEndereco != '<?=$model->endereco?>'){
 			 dadosAlterados = 7;
 		}
-		
-		
-		
-		
 		var alunoCidade = $("#aluno-cidade").val();
 		if(alunoCidade != '<?=$model->cidade?>'){
 			 dadosAlterados = 8;
-		}
-		
+		}		
 		var alunoNumRes = $("#aluno-numeroresidencia").val();
 		if(alunoNumRes != '<?=$model->numeroResidencia?>'){
 			 dadosAlterados = 9;
 		}
-		 console.log(dadosAlterados);
-		
+		console.log(dadosAlterados);
 		if(dadosAlterados != 0){
 			Swal.fire({
 				title: 'Usuário(a)',
@@ -568,10 +570,10 @@ use common\models\TipoLogradouro;
 		}else{
 			$("#formAluno").submit();
 		}
-  });
+	}); 
+	}
+	}
   
-	   
-  }
  
 		  
 		  

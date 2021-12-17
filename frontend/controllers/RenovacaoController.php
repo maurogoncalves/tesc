@@ -90,7 +90,7 @@ class RenovacaoController extends Controller
 
 		if($_POST){
 			
-	
+		
 
 			$idAluno = $_POST['id_aluno'];
 			$idSol = $_POST['id_solicitacao'];
@@ -361,6 +361,7 @@ class RenovacaoController extends Controller
     }
 	
 	private function gravar($solicitacao,$escola,$idSol,$status){
+		
 		$model = new SolicitacaoTransporte();
 		$model->idAluno =$solicitacao->idAluno;
 		$model->idEscola =$solicitacao->idEscola;
@@ -398,10 +399,12 @@ class RenovacaoController extends Controller
 		
 		
 		if($solicitacao->modalidadeBeneficio == 1){
+			
 			if($status == 3){
 				//se modalidade de beneficio for frete, e houve alteração de endereço salvar com  status é recebido
 				$model->novaSolicitacao=SolicitacaoTransporte::NOVA_SOLICITACAO;
 				$model->status=SolicitacaoTransporte::STATUS_DEFERIDO;	
+				$model->motivoNaoRenova=8;
 				$model->save();		
 				
 				$modelStatus = new SolicitacaoStatus();
@@ -418,6 +421,7 @@ class RenovacaoController extends Controller
 				//se modalidade de beneficio for frete, e não houve alteração periodo
 				$model->novaSolicitacao=SolicitacaoTransporte::RENOVACAO;
 				$model->status=SolicitacaoTransporte::STATUS_ATENDIDO;
+				$model->motivoNaoRenova=8;
 				$model->save();	
 				
 				$modelStatus = new SolicitacaoStatus();
@@ -428,10 +432,13 @@ class RenovacaoController extends Controller
 				$modelStatus->justificativa = 'ENCERRADO PELO SISTEMA. NOVA SOLICITAÇÃO VIGENTE #' . $model->id;
 				$modelStatus->save();	
 				
+				
+				
 			}elseif($status == 9){		
 				//se modalidade de beneficio for frete, e não existe rotas, status recebido
 				$model->status=SolicitacaoTransporte::STATUS_DEFERIDO;
 				$model->novaSolicitacao=SolicitacaoTransporte::RENOVACAO;
+				$model->motivoNaoRenova=8;
 				$model->save();		
 				
 				$modelStatus = new SolicitacaoStatus();
@@ -448,6 +455,7 @@ class RenovacaoController extends Controller
 				//se modalidade de beneficio for frete, e excedeu a capacidade do veiculo, status recebido
 				$model->status=SolicitacaoTransporte::STATUS_DEFERIDO;
 				$model->novaSolicitacao=SolicitacaoTransporte::NOVA_SOLICITACAO;
+				$model->motivoNaoRenova=8;
 				$model->save();		
 				
 				$modelStatus = new SolicitacaoStatus();
@@ -463,6 +471,7 @@ class RenovacaoController extends Controller
 				//BENEFÍCIO SOLICITADO COM STATUS RECEBIDO, MAS AGUARDANDO NOVA ROTA, O CONDUTOR NÃO ATENDE O PERÍODO DESEJADO
 				$model->status=SolicitacaoTransporte::STATUS_DEFERIDO;
 				$model->novaSolicitacao=SolicitacaoTransporte::NOVA_SOLICITACAO;
+				$model->motivoNaoRenova=8;
 				$model->save();		
 				
 				$modelStatus = new SolicitacaoStatus();
@@ -478,8 +487,31 @@ class RenovacaoController extends Controller
 				$model->novaSolicitacao=SolicitacaoTransporte::NOVA_SOLICITACAO;
 				$model->status=SolicitacaoTransporte::STATUS_ATENDIDO;	
 				$model->novaSolicitacao=SolicitacaoTransporte::RENOVACAO;
+				$model->motivoNaoRenova=8;
 				$model->save();		
-			}
+			}elseif($status == 11){
+				
+				$sqlTodosPontos ='select idPonto from PontoAluno p where p.idAluno  = '.$solicitacao->idAluno; 
+				$todosPontos = Yii::$app->getDb()->createCommand($sqlTodosPontos)->queryAll();
+										
+				foreach($todosPontos as $pont){									
+					if($pont['idPonto']){	
+						\Yii::$app->db->createCommand()->delete('PontoAluno', ['idPonto' => $pont['idPonto']])->execute();						
+					}
+				}
+				\Yii::$app->db->createCommand()->delete('Ponto', ['id' => $pont['idPonto']])->execute();						
+				$modelStatus = new SolicitacaoStatus();
+				$modelStatus->idUsuario = \Yii::$app->User->identity->id;
+				$modelStatus->dataCadastro = date('Y-m-d');
+				$modelStatus->status = SolicitacaoTransporte::STATUS_ENCERRADA;
+				$modelStatus->idSolicitacaoTransporte = $idSol;
+				$modelStatus->tipo = SolicitacaoStatus::TIPO_INSERIDO;
+				$modelStatus->mostrar = 1;							
+				$modelStatus->justificativa = 'BENEFÍCIO ENCERRADO VIA SISTEMA';
+				$modelStatus->save();
+				
+				
+			}	
 				
 		}elseif(($status == 5 ) && ($solicitacao->modalidadeBeneficio == 2)){
 			//status 5 e status 6		
@@ -488,6 +520,7 @@ class RenovacaoController extends Controller
 			$model->modalidadeBeneficio=2;
 			$model->novaSolicitacao=SolicitacaoTransporte::RENOVACAO;
 			$model->status=SolicitacaoTransporte::STATUS_CONCEDIDO;	
+			$model->motivoNaoRenova=8;
 			$model->save();		
 		}
 		
@@ -567,6 +600,7 @@ class RenovacaoController extends Controller
 				$model->modalidadeBeneficio=2;
 				$model->novaSolicitacao=SolicitacaoTransporte::RENOVACAO;
 				$model->status=SolicitacaoTransporte::STATUS_CONCEDIDO;	
+				$model->motivoNaoRenova=8;
 				$model->save();	
 					
 				$modelStatus = new SolicitacaoStatus();
@@ -582,6 +616,31 @@ class RenovacaoController extends Controller
 			
 		}				
 		
+		if($model->id){
+			$sqlTodasSolicitacoes ='select id from SolicitacaoTransporte c where c.idAluno = '.$solicitacao->idAluno.' and c.id <> '.$model->id.' and c.id <> '.$idSol.' and (status = '.SolicitacaoTransporte::STATUS_CONCEDIDO.' or status = '.SolicitacaoTransporte::STATUS_ATENDIDO.')' ;
+		}else{
+			$sqlTodasSolicitacoes ='select id from SolicitacaoTransporte c where c.idAluno = '.$solicitacao->idAluno.' and c.id <> '.$idSol.' and (status = '.SolicitacaoTransporte::STATUS_CONCEDIDO.' or status = '.SolicitacaoTransporte::STATUS_ATENDIDO.')' ;
+		}
+		
+		$todasSolicitacoes = Yii::$app->getDb()->createCommand($sqlTodasSolicitacoes)->queryAll();
+		
+		foreach($todasSolicitacoes as $solic){
+			
+			$novaSolicitacao = SolicitacaoTransporte::findOne($solic['id']);
+			$novaSolicitacao->status =SolicitacaoTransporte::STATUS_ENCERRADA;    
+			$novaSolicitacao->save();
+			
+			$modelStatus = new SolicitacaoStatus();
+			$modelStatus->idUsuario = \Yii::$app->User->identity->id;
+			$modelStatus->dataCadastro = date('Y-m-d');
+			$modelStatus->status = SolicitacaoTransporte::STATUS_ENCERRADA;
+			$modelStatus->idSolicitacaoTransporte = $solic['id'];
+			$modelStatus->tipo = SolicitacaoStatus::TIPO_INSERIDO;
+			$modelStatus->mostrar = 1;							
+			$modelStatus->justificativa = 'BENEFÍCIO ENCERRADO VIA SISTEMA';
+			$modelStatus->save();		
+		
+		}
 		
 		return true;
 		
@@ -607,6 +666,7 @@ class RenovacaoController extends Controller
             $ids[] = 999999;
         }
 		
+		
 		if(!empty($ids)){
 			$sqlAtendido = "select st.id,a.id as idAluno, a.nome,a.RA,a.RAdigito,a.turno,a.ensino,a.serie,a.turma,a.horarioEntrada,a.horarioSaida,a.telefoneResidencial,a.endereco, a.complementoResidencia,a.bairro,st.idCondutor,st.idRotaIda,st.idRotaVolta,a.idEscola,
 				(select GROUP_CONCAT(nome SEPARATOR '<br>') from AlunoNecessidadesEspeciais al  join NecessidadesEspeciais n on al.idNecessidadesEspeciais = n.id where al.idAluno = a.id) as necessidades,st.anoVigente,ci.nome as condutor_ida,cv.nome as condutor_volta,st.modalidadeBeneficio,a.numeroResidencia,
@@ -617,7 +677,7 @@ class RenovacaoController extends Controller
 				join CondutorRota crv on crv.id = st.idRotaVolta
 				join Condutor ci on ci.id = cri.idCondutor
 				join Condutor cv on cv.id = crv.idCondutor
-				where st.`status` = ".SolicitacaoTransporte::STATUS_ATENDIDO." and a.serie not in (16,17,18,19,20,21,22,23,24,25,26,27) and st.anoVigente = $configuracao->anoVigente and a.idEscola in  (".implode (',', $ids).")";
+				where st.`status` = ".SolicitacaoTransporte::STATUS_ATENDIDO." and st.anoVigente = $configuracao->anoVigente and a.idEscola in  (".implode (',', $ids).")";
 				//  as series entre 16 e 27 são ensino EJA e são renovados a cada 6 meses
 				$sqlDeferidoDre = "select st.id,a.id as idAluno, a.nome,a.RA,a.RAdigito,a.turno,a.ensino,a.serie,a.turma,a.horarioEntrada,a.horarioSaida,a.telefoneResidencial,a.endereco, a.complementoResidencia,a.bairro,st.idCondutor,st.idRotaIda,st.idRotaVolta,a.idEscola,
 				(select GROUP_CONCAT(nome SEPARATOR '<br>') from AlunoNecessidadesEspeciais al  join NecessidadesEspeciais n on al.idNecessidadesEspeciais = n.id where al.idAluno = a.id) as necessidades,st.anoVigente,ci.nome as condutor_ida,cv.nome as condutor_volta,st.modalidadeBeneficio,a.numeroResidencia,
@@ -629,9 +689,10 @@ class RenovacaoController extends Controller
 				left join Condutor ci on ci.id = cri.idCondutor
 				left join Condutor cv on cv.id = crv.idCondutor
 				left join Escola e on e.id = a.idEscola
-				where st.`status` = ".SolicitacaoTransporte::STATUS_CONCEDIDO." and a.serie not in (16,17,18,19,20,21,22,23,24,25,26,27) and st.anoVigente = $configuracao->anoVigente  and e.unidade in ('1','2') and st.modalidadeBeneficio = 2 and a.idEscola in  (".implode (',', $ids).")";
+				where st.`status` = ".SolicitacaoTransporte::STATUS_CONCEDIDO."  and st.anoVigente = $configuracao->anoVigente  and e.unidade in ('1','2') and st.modalidadeBeneficio = 2 and a.idEscola in  (".implode (',', $ids).")";
 				//  as series entre 16 e 27 são ensino EJA e são renovados a cada 6 meses
 				$sql = $sqlAtendido.' union '.$sqlDeferidoDre;
+				
         				
 		}else{
 			$sqlAtendido = "select st.id,a.id as idAluno, a.nome,a.RA,a.RAdigito,a.turno,a.ensino,a.serie,a.turma,a.horarioEntrada,a.horarioSaida,a.telefoneResidencial,a.endereco, a.complementoResidencia,a.bairro,st.idCondutor,st.idRotaIda,st.idRotaVolta,a.idEscola,
@@ -643,7 +704,7 @@ class RenovacaoController extends Controller
 				join CondutorRota crv on crv.id = st.idRotaVolta
 				join Condutor ci on ci.id = cri.idCondutor
 				join Condutor cv on cv.id = crv.idCondutor
-				where st.`status` = ".SolicitacaoTransporte::STATUS_ATENDIDO." and a.serie not in (16,17,18,19,20,21,22,23,24,25,26,27) and st.anoVigente = $configuracao->anoVigente" ;
+				where st.`status` = ".SolicitacaoTransporte::STATUS_ATENDIDO."  and st.anoVigente = $configuracao->anoVigente" ;
 				//  as series entre 16 e 27 são ensino EJA e são renovados a cada 6 meses
 				
 				$sqlDeferidoDre = "select st.id,a.id as idAluno, a.nome,a.RA,a.RAdigito,a.turno,a.ensino,a.serie,a.turma,a.horarioEntrada,a.horarioSaida,a.telefoneResidencial,a.endereco, a.complementoResidencia,a.bairro,st.idCondutor,st.idRotaIda,st.idRotaVolta,a.idEscola,
@@ -656,7 +717,7 @@ class RenovacaoController extends Controller
 				left join Condutor ci on ci.id = cri.idCondutor
 				left join Condutor cv on cv.id = crv.idCondutor
 				left join Escola e on e.id = a.idEscola
-				where st.`status` = ".SolicitacaoTransporte::STATUS_CONCEDIDO." and a.serie not in (16,17,18,19,20,21,22,23,24,25,26,27) and st.anoVigente = $configuracao->anoVigente  and e.unidade in ('1','2') and st.modalidadeBeneficio = 2 ";
+				where st.`status` = ".SolicitacaoTransporte::STATUS_CONCEDIDO."  and st.anoVigente = $configuracao->anoVigente  and e.unidade in ('1','2') and st.modalidadeBeneficio = 2 ";
 				//  as series entre 16 e 27 são ensino EJA e são renovados a cada 6 meses
 				$sql = $sqlAtendido.' union '.$sqlDeferidoDre;
 		}
@@ -668,6 +729,7 @@ class RenovacaoController extends Controller
 			'alunos' => $dadosAlunos,
 			'ra' => $ra,
 			'idAluno' => $idAluno,
+			'dadosEnsino' => $dadosEnsino,
         ]);
     }
 

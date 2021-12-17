@@ -47,6 +47,7 @@ class Configuracao extends \yii\db\ActiveRecord
             'valeTransporte' => 'Vale Transporte',
             'passeEscolar' => 'Passe Escolar',
             'dataVigente' => 'Data limite para solicitações',
+			'anoVigente' => 'Ano Vigente para solicitações',
 			'exibeRenovacao' => 'Exibir Tela de Renovação para secretário',
 
         ];

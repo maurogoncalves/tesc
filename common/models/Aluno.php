@@ -141,7 +141,33 @@ class Aluno extends \yii\db\ActiveRecord
         28 => 'SR - MANHÃ',
         29 => 'SR - TARDE'
     ];
-
+	
+	
+	const ARRAY_SERIES_INFANTIL = [
+        1 => 'INFANTIL I',
+        2 => 'INFANTIL II',
+        3 => 'PRÉ I',
+        4 => 'PRÉ II',       
+    ];
+	
+	const ARRAY_SERIES_FUNDAMENTAL = [
+        5 => '1º EF',
+        6 => '2º EF',
+        7 => '3º EF',
+        8 => '4º EF',
+        9 => '5º EF',
+        10 => '6º EF',
+        11 => '7º EF',
+        30 => '8º EF',
+        12 => '9º EF',
+    ];
+	
+	const ARRAY_SERIES_MEDIO = [
+        13 => '1º EM',
+        14 => '2º EM',
+        15 => '3º EM',
+    ];
+	
     const ARRAY_TURMA = [
         1 => 'A',
         2 => 'B',
@@ -279,7 +305,12 @@ class Aluno extends \yii\db\ActiveRecord
         // if (\Yii::$app->User->identity->editarDadosProtegidos == Usuario::PERMITIR_EDICAO_DADOS_PROTEGIDOS) {
             // return null;
         // }
-        return $this->encerrarSolicitacoes($msgJustificativa);
+		if(\Yii::$app->User->identity->idPerfil == 1){
+			return null;
+		}else{
+			return $this->encerrarSolicitacoes($msgJustificativa);
+		}
+        
     }
     public function encerrarSolicitacoes($msgJustificativa = '')
     {

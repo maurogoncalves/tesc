@@ -38,6 +38,19 @@ use kartik\widgets\FileInput;
             ]
         ]);
     ?>
+	<?php 
+        echo $form->field($model, 'anoVigente')->widget(DatePicker::classname(), [
+            'type' => DatePicker::TYPE_COMPONENT_APPEND,
+            'value' =>  $model->anoVigente,
+            'options' => ['placeholder' => 'Ano Vigente para novas solicitações'],
+            'pluginOptions' => [
+                'orientation' => 'bottom left',
+                'autoclose'=>true,
+                'format' => 'yyyy',
+                // 'startDate' => 'today',
+            ]
+        ]);
+    ?>
       <div class="template-fileinput <?php if (empty($model->folhaPonto)) print 'without-files'; ?>">
 
         <?php
@@ -48,6 +61,9 @@ use kartik\widgets\FileInput;
         <div class="substituir-arquivos">Clique aqui para substituir o arquivo</div>
     
     </div>
+	
+	 
+	
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Salvar' : 'Atualizar', ['class' => $model->isNewRecord ? 'btn btn-success pull-right' : 'btn btn-primary pull-right']) ?>
     </div>

@@ -430,7 +430,7 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>
 
             <div class="box-body" style="margin-left:10px;">
-                <h4><i class="fa fa-file" aria-hidden="true"></i> Autorização Escolar (Vistoria Semestral) - DETRAN
+                <h4><i class="fa fa-file" aria-hidden="true"></i> Autorização Escolar123 (Vistoria Semestral) - DETRAN
                     <?=  Condutor::permissaoRemover() ? Html::a('Apagar arquivos', ['condutor/arquivos', 'id' => $model->id, 'tipo' => TipoDocumento::TIPO_CNH], [
                         'class' => 'btn btn-danger btn-sm pull-right align-button',
                         'data' => [

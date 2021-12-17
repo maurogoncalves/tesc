@@ -98,7 +98,9 @@ class ConfiguracaoController extends Controller
         $model = $this->findModel(1);
         \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         
-        $model->anoVigente = $model->calcularAno();
+		//alteracao mauro 14/12/2021 - puxar ano vigente do campo anoVigente do banco de dados
+        //$model->anoVigente = $model->calcularAno();
+		
         $model = $this->getDatesBr($model);
         
         return $model;
