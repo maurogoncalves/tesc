@@ -101,7 +101,8 @@ class SolicitacaoTransporteController extends Controller
      */
     public function actionIndex()
     {
-		$anoVigente = $this->configuracao->calcularAno();
+		//alteraçao feita em dez/2021 para que todas fique configurado que deve aparecer solicitações do ano que está configurado em configuracoes
+		$anoVigente = $this->configuracao->anoVigente;
         $solicitacoesPermitidas = [];
         $solicitacoes = SolicitacaoTransporte::find()->all();
 		

@@ -197,7 +197,7 @@ foreach($model->escolas as $escola) {
 							if ($data->solicitacaoAtiva)
 								if ($data->solicitacaoAtiva->rotaVolta)
 									if ($data->solicitacaoAtiva->rotaVolta->idCondutor == $model->id)
-										return $data->horarioEntrada;
+										return $data->horarioSaida;
 								
 							return '-';
 						}

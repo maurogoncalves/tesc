@@ -796,14 +796,17 @@ use common\models\TipoLogradouro;
     for (let i = 0; i <= data.length; i++) {
       let local = data[i];
       if (local) {
+        novoLogradouro = local.LOGRADOURO.replace(/["'"]/g,"");
         let enderecoCompleto = '';
         if (num) {
-          enderecoCompleto = local.TIPO_LOGRADOURO + ` ` + local.LOGRADOURO + `, ` + num + `, ` + local.BAIRRO;
+          enderecoCompleto = local.TIPO_LOGRADOURO + ` ` + novoLogradouro + `, ` + num + `, ` + local.BAIRRO;
         } else {
-          enderecoCompleto = local.TIPO_LOGRADOURO + ` ` + local.LOGRADOURO + `, ` + local.BAIRRO;
+          enderecoCompleto = local.TIPO_LOGRADOURO + ` ` + novoLogradouro + `, ` + local.BAIRRO;
 
         }
-        $('#tabelaEnderecoBody').append(`<tr><td>` + local.CEP + `</td><td>` + local.TIPO_LOGRADOURO + ` ` + local.LOGRADOURO + `</td><td>` + local.BAIRRO + `</td><td align="center">` + local.CIDADE + `</td><td algn="center"><a class="btn btn-success" onclick='selecionarEndereco("` + enderecoCompleto + `","` + local.LOGRADOURO + `","` + local.BAIRRO + `","` + local.CEP + `","` + local.TIPO_LOGRADOURO + `","` + local.CIDADE + `")' >Selecionar endereço</a></td></tr>`);
+
+        
+        $('#tabelaEnderecoBody').append(`<tr><td>` + local.CEP + `</td><td>` + local.TIPO_LOGRADOURO + ` ` + novoLogradouro + `</td><td>` + local.BAIRRO + `</td><td align="center">` + local.CIDADE + `</td><td algn="center"><a class="btn btn-success" onclick='selecionarEndereco("` + enderecoCompleto + `","` + novoLogradouro + `","` + local.BAIRRO + `","` + local.CEP + `","` + local.TIPO_LOGRADOURO + `","` + local.CIDADE + `")' >Selecionar endereço</a></td></tr>`);
       }
     }
     $("#tabelaEndereco").append(`

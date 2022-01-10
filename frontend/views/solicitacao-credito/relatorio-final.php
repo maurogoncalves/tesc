@@ -87,7 +87,9 @@ function td($str)
                     <th>&nbsp;</th>
                 </tr>
                 <?php $i = 0;
-                foreach ($solicitacoesAlunos as $solAluno) :  $i++; ?>
+                foreach ($solicitacoesAlunos as $solAluno) :  $i++; 
+				
+				?>
                 <tr>
                     <td class="center-td"><?= $i ?></td>
                     <td class="center-td" style="display: none;"><input type="checkbox" class="alunoMarcado" checked="true" name="aluno[]" value="<?= $solAluno->aluno->id ?>" /></td>

@@ -14,6 +14,7 @@ use yii\filters\VerbFilter;
 use common\models\Bairro;
 use common\models\Escola;
 use common\models\Aluno;
+use common\models\Configuracao;
 
 use kartik\mpdf\Pdf;
 use common\models\SolicitacaoTransporte;
@@ -24,6 +25,7 @@ use yii\helpers\Url;;
  */
 class AgrupamentoBairroController extends Controller
 {
+    protected $configuracao;
     public $bairrosUrbanos;
     public $bairrosRurais;
     public $tabela1;
@@ -39,6 +41,7 @@ class AgrupamentoBairroController extends Controller
     public function init()
     {
         parent::init();
+        
         $this->bairrosUrbanos = AgrupamentoBairro::zonaUrbana();
         $this->bairrosRurais = AgrupamentoBairro::zonaRural();
         $this->tabela1 = [
@@ -213,10 +216,12 @@ class AgrupamentoBairroController extends Controller
 
     public function gerarSolicitacoes()
     {
+        $this->configuracao = Configuracao::setup();
         // $solicitacoesFrete = [];
         $solicitacoesFrete = SolicitacaoTransporte::find()
 		    ->andWhere(['<>', 'tipoSolicitacao', SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO])
             ->andWhere(['SolicitacaoTransporte.status' => SolicitacaoTransporte::STATUS_ATENDIDO])
+            ->andWhere(['=', 'SolicitacaoTransporte.anoVigente', $this->configuracao->anoVigente])
 			->innerJoin('Escola', 'Escola.id=SolicitacaoTransporte.idEscola')
             ->innerJoin('Aluno', 'Aluno.id=SolicitacaoTransporte.idAluno')
 			->join('LEFT JOIN `CondutorRota` AS `RotaEntrada` ON', '`RotaEntrada`.`id` = `SolicitacaoTransporte`.`idRotaIda`')
@@ -224,8 +229,7 @@ class AgrupamentoBairroController extends Controller
             ->join('LEFT JOIN `Condutor` AS `CondutorEntrada` ON', '`CondutorEntrada`.`id` = `RotaEntrada`.`idCondutor`')
             ->join('LEFT JOIN `Condutor` AS `CondutorSaida` ON', '`CondutorSaida`.`id` = `RotaSaida`.`idCondutor`')
             ->join('LEFT JOIN `AlunoNecessidadesEspeciais` ON', '`AlunoNecessidadesEspeciais`.`idAluno` = `Aluno`.`id`')
-			//->join('LEFT JOIN `SolicitacaoStatus` ON', '`SolicitacaoStatus`.`idSolicitacaoTransporte` = `SolicitacaoTransporte`.`id`')
-			//->andWhere(['=', 'SolicitacaoStatus.status', SolicitacaoTransporte::STATUS_ATENDIDO])
+			//->join('LEFT JOIN `SolicitacaoStatus` ON', '`SolicitacaoStatus`.`idSolicitacaoTransporte` = `SolicitacaoTransporte`.`id`')			
             ->all();
 
 
@@ -234,6 +238,7 @@ class AgrupamentoBairroController extends Controller
 			->andWhere(['<>', 'SolicitacaoTransporte.tipoSolicitacao', SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO])
             ->andWhere(['SolicitacaoTransporte.status' => SolicitacaoTransporte::STATUS_CONCEDIDO])			
             ->andWhere(['SolicitacaoTransporte.modalidadeBeneficio' => Aluno::MODALIDADE_PASSE])
+            ->andWhere(['=', 'SolicitacaoTransporte.anoVigente', $this->configuracao->anoVigente])
 			->innerJoin('Escola', 'Escola.id=SolicitacaoTransporte.idEscola')
             ->innerJoin('Aluno', 'Aluno.id=SolicitacaoTransporte.idAluno')
             //->join('LEFT JOIN `AlunoNecessidadesEspeciais` ON', '`AlunoNecessidadesEspeciais`.`idAluno` = `Aluno`.`id`')

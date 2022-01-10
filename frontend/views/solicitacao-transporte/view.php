@@ -95,9 +95,9 @@ $this->params['breadcrumbs'][] = $this->title;
                                         echo '<div class="box-header with-border">';
 										
 										if($model->modalidadeBeneficio == 2){
-											echo Html::button('Conceder', ['value' => Url::to(['solicitacao-transporte/alteracao-status-ajax', 'id' => $model->id, 'status' => SolicitacaoTransporte::STATUS_DEFERIDO_DRE]), 'title' => 'Conceder', 'class' => 'showModalButton  align-button btn btn-success pull-right']);
+											echo Html::button('Conceder', ['value' => Url::to(['solicitacao-transporte/alteracao-status-ajax', 'id' => $model->id, 'status' => SolicitacaoTransporte::STATUS_CONCEDIDO]), 'title' => 'Conceder', 'class' => 'showModalButton  align-button btn btn-success pull-right']);
 										}else{
-											echo Html::button('Deferir', ['value' => Url::to(['solicitacao-transporte/alteracao-status-ajax', 'id' => $model->id, 'status' => SolicitacaoTransporte::STATUS_DEFERIDO_DRE]), 'title' => 'Deferimento', 'class' => 'showModalButton  align-button btn btn-success pull-right']);
+											echo Html::button('Deferir', ['value' => Url::to(['solicitacao-transporte/alteracao-status-ajax', 'id' => $model->id, 'status' => SolicitacaoTransporte::STATUS_DEFERIDO]), 'title' => 'Deferimento', 'class' => 'showModalButton  align-button btn btn-success pull-right']);
 										}
                                         
 										
@@ -504,7 +504,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             'attribute' => 'dataCadastro',
                             'label' => 'Data',
                             'value' => function ($model, $index, $widget) {
-                                return ($model->dataCadastro) ? Yii::$app->formatter->asDate($model->dataCadastro, 'dd/MM/Y') : '';
+                                return ($model->dataCadastro) ? date("d/m/Y", strtotime($model->dataCadastro)): '';
                             },
                             'filterType' => GridView::FILTER_DATE,
                             'filterWidgetOptions' => [
