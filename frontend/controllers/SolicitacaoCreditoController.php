@@ -637,8 +637,10 @@ class SolicitacaoCreditoController extends Controller
                                 
 
         }
+		
         return $this->render('relatorio-final', [
             'model' => $model,
+			'tipo' => $model->solicitacaoCreditoAlunos[0]['tipo'],
             'solicitacoesAlunos' => $model->solicitacaoCreditoAlunos,
             'configuracao' => Configuracao::setup()
 
@@ -793,7 +795,7 @@ class SolicitacaoCreditoController extends Controller
             // ->all();
 			
 			
-			$sql = "select *,a.id as idAl,sca.id as idSolicitacaoCredAl,(select count(*) from SolicitacaoCreditoAluno scca where scca.idSolicitacao = ".$id.") as temSolCred from Aluno a  join SolicitacaoTransporte st on st.idAluno = a.id left join SolicitacaoCreditoAluno sca on sca.idAluno = a.id and sca.idSolicitacao = ".$id." where st.`status` = ".SolicitacaoTransporte::STATUS_CONCEDIDO." and st.tipoSolicitacao = ".SolicitacaoTransporte::SOLICITACAO_BENEFICIO." and st.modalidadeBeneficio = ".Aluno::MODALIDADE_PASSE." and st.idEscola = ".$model->idEscola ;			
+			$sql = "select *,a.id as idAl,sca.id as idSolicitacaoCredAl,(select count(*) from SolicitacaoCreditoAluno scca where scca.idSolicitacao = ".$id.") as temSolCred from Aluno a  join SolicitacaoTransporte st on st.idAluno = a.id left join SolicitacaoCreditoAluno sca on sca.idAluno = a.id and sca.idSolicitacao = ".$id." where st.`status` = ".SolicitacaoTransporte::STATUS_CONCEDIDO." and st.tipoSolicitacao = ".SolicitacaoTransporte::SOLICITACAO_BENEFICIO." and st.modalidadeBeneficio = ".Aluno::MODALIDADE_PASSE." and st.idEscola = ".$model->idEscola." order by a.nome asc" ;			
 			$alunos = Yii::$app->getDb()->createCommand($sql)->queryAll();					
 			
 
