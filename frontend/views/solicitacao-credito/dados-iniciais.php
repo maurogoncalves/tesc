@@ -128,7 +128,7 @@ t
                                 if (Usuario::permissoes([Usuario::PERFIL_TESC_PASSE_ESCOLAR, Usuario::PERFIL_SUPER_ADMIN])) {
                                     //actionAlteracaoStatusAjax
                                     echo '<div class="box-header with-border">';
-                                    echo Html::button('DEFERIR2', ['value' => Url::to(['solicitacao-credito/alteracao-status-ajax', 'id' => $model->id, 'status' => SolicitacaoCredito::STATUS_DEFERIDO]), 'title' => 'Deferimento', 'class' => 'showModalButton  align-button btn btn-success pull-right']);
+                                    echo Html::button('DEFERIR', ['value' => Url::to(['solicitacao-credito/alteracao-status-ajax', 'id' => $model->id, 'status' => SolicitacaoCredito::STATUS_DEFERIDO]), 'title' => 'Deferimento', 'class' => 'showModalButton  align-button btn btn-success pull-right']);
                                     echo Html::button('INDEFERIR', ['value' => Url::to(['solicitacao-credito/alteracao-status-ajax', 'id' => $model->id, 'status' => SolicitacaoCredito::STATUS_INDEFERIDO]), 'title' => 'INDEFERIR', 'class' => 'showModalButton btn btn-danger pull-right']);
                                     echo '</div>';
                                 }

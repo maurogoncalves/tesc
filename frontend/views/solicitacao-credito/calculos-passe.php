@@ -70,6 +70,7 @@ $.getJSON("index.php?r=configuracao%2Fview-ajax")
     configuracoes = response; 
 });
 $(document).ready(function() {
+
 	
     calcSaldoDiasLetivos();
     calcValorNecessario();
@@ -226,7 +227,7 @@ $(".fundhas").click(function() {
 		// console.log('diasLetFundHas '+diasLetFundHas);
 		// console.log('saldoDescontado '+saldoDescontado);
 		// console.log('antiUe '+antiUe);
-		console.log('saldoFinal |'+saldoFinal);
+		//console.log('saldoFinal |'+saldoFinal);
 		// console.log('valorAtualPasse '+valorAtualPasse);
 		
 		// if(saldoFinal == '0'){
@@ -295,7 +296,7 @@ function BRLtoReal(valor){
 }
 $("#diasLetivosMes").change(function(){
     calcValorNecessarioTotal();
-        atualizarSaldo();
+    atualizarSaldo();
     calcValorNecessario();
     setTimeout(() =>    calcValorNecessario(), 500)
 })
@@ -413,7 +414,7 @@ async function calcValorNecessario(){
 	let diasLetivosRestantes = parseInt($("#diasLetivosRestantes").val());
 	let diasLetivosMes = parseInt($("#diasLetivosMes").val());
 	totalDiaMes = diasLetivosRestantes+diasLetivosMes;
-    let saldoNecessario = totalDiaMes * valorAtualPasse
+    let saldoNecessario = totalDiaMes * valorAtualPasse;
 	var valorNec = $("#valorNecessarioAluno").val();
 	valorNec = valorNec.replace(",",".");
 	
@@ -472,9 +473,9 @@ async function calcValorNecessario(){
 			// console.log('diasLetFundHas '+diasLetFundHas);
 			// console.log('saldoDescontado '+saldoDescontado);
 			// console.log('antiUe '+antiUe);
-			 console.log('saldoFinal -'+saldoFinal);
+			 //console.log('saldoFinal -'+saldoFinal);
 			// console.log('valorAtualPasse '+valorAtualPasse);
-			 console.log('saldoRestante '+saldoRestante);
+			 //console.log('saldoRestante '+saldoRestante);
 			
 			//console.log(valorNec+'-'+saldoRestante+'-'+idArr[1]);
 			 if(totalSaldo > 0){
@@ -482,7 +483,13 @@ async function calcValorNecessario(){
 				$("#valorNec-"+idArr[1]).val(totalSaldoArr);
 				//$(item).closest('tr').find('.valorNecessario').val(totalSaldoArr);
 				$(item).closest('tr').find('.checkboxNecessidadeCredito').attr('checked', true);
-				$("#valorNecessarioAluno").val(realToBRL(totalSaldoArr));			
+				
+				if(divs.length > i){
+					$("#valorNecessarioAluno").val(realToBRL(saldoNecessario));			
+				}else{
+					$("#valorNecessarioAluno").val(realToBRL(totalSaldoArr));	
+				}
+				
 			} else {
 				$(item).closest('tr').find('.valorNecessario').val('0');
 				$(item).closest('tr').find('.checkboxNecessidadeCredito').attr('checked', false)
@@ -491,13 +498,19 @@ async function calcValorNecessario(){
 			
 		}else{
 			let totalSaldo = saldoNecessario - saldoAtual;
-			 if(totalSaldo > 0){
-			
-			var totalSaldoArr = parseFloat(totalSaldo.toFixed(2));
+			//console.log(divs.length+'-'+i+'-'+saldoNecessario+'-'+saldoAtual+'-'+totalSaldo);
+			if(totalSaldo > 0){			
+				var totalSaldoArr = parseFloat(totalSaldo.toFixed(2));
 				$("#valorNec-"+idArr[1]).val(totalSaldoArr);
 				//$(item).closest('tr').find('.valorNecessario').val(totalSaldoArr);
 				$(item).closest('tr').find('.checkboxNecessidadeCredito').attr('checked', true);
-				$("#valorNecessarioAluno").val(realToBRL(totalSaldoArr));			
+				
+				if(divs.length > i){
+					$("#valorNecessarioAluno").val(realToBRL(saldoNecessario));			
+				}else{
+					$("#valorNecessarioAluno").val(realToBRL(totalSaldoArr));			
+				}
+				
 			} else {
 				$(item).closest('tr').find('.valorNecessario').val('0');
 				$(item).closest('tr').find('.checkboxNecessidadeCredito').attr('checked', false)

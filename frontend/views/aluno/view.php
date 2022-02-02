@@ -384,11 +384,17 @@ $this->params['breadcrumbs'][] = $this->title;
 										$frase ='Voltar p/ recebido';
 										$novoStatus = SolicitacaoTransporte::STATUS_DEFERIDO;
 									}
+									//$frase ='Voltar p/ recebido';
+									//$novoStatus = SolicitacaoTransporte::STATUS_DEFERIDO;
 									
-									if(($model->status <> 3) && (Yii::$app->user->identity->idPerfil == 1)){
-										return Html::button($frase, ['value' => Url::to(['solicitacao-transporte/alteracao-status-ajax-admin', 'id' => $model->id, 'status' => $novoStatus, 'alterarDadosProtegidos' => true]), 'title' => $frase, 'class' => 'showModalButton  btn btn-success pull-right']);
-									} 	
+									if(($model->status == 1) or ($model->status == 4)or ($model->status == 5)){
 										
+									}else{
+										if(($model->status <> 3) && (Yii::$app->user->identity->idPerfil == 1)){
+											return Html::button($frase, ['value' => Url::to(['solicitacao-transporte/alteracao-status-ajax-admin', 'id' => $model->id, 'status' => $novoStatus, 'alterarDadosProtegidos' => true]), 'title' => $frase, 'class' => 'showModalButton  btn btn-success pull-right']);
+										} 											
+									}
+									
                                 },
 
                             ]

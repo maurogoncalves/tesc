@@ -26,6 +26,7 @@ function td($str)
 	 $totalAluno +=$solAluno->valor;
  } 
  
+  
 ?>
 
 <?= $this->render('dados-iniciais', ['model' => $model, 'mostrarExportacao' => true, 'mostrarAprovacao' => true, 'configuracao' => $configuracao]) ?>
@@ -281,6 +282,7 @@ function td($str)
 $(document).ready(function() {
     $.getJSON("index.php?r=configuracao%2Fview-ajax")
 .done(function(response) {
+	var tipo = <?php echo $tipo;?>;
     if(tipo == 'passeEscolar') {
         valorAtualPasse = parseFloat(response.passeEscolar) * 2
     } else {

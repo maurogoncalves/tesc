@@ -55,10 +55,12 @@ use kartik\select2\Select2;
   ?>
   <a target="_new" href="<?= Url::toRoute(['solicitacao-transporte/mapa', 'idAluno' =>  $model->idAluno, 'idEscola' => $model->idEscola]) ?>">CLIQUE AQUI PARA VISUALIZAR NO MAPA</a>
 </div>
-
+<!-- 
+ Alteração Mauro 14/01/2022
 <div class="alert alert-light" role="alert">
   Para baixar o documento de formalização de <B>solicitação de frete</b>, <a target="_new" href="arquivos/REQUISICAO_FRETE.docx">clique aqui</a>. Para <b>solicitação de passe</b>, <a target="_new" href="arquivos/REQUISICAO_PASSE_ESCOLAR_GRATUITO.docx">clique aqui</a>.
 </div>
+-->
 <div class="alert alert-warning" style="background:#FFF200 !important;color:#000!important;" role="alert">
   <b style="color:red!important;text-align:center !important;">ATENÇÃO!</b><br>
    <!-- 

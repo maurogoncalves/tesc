@@ -166,6 +166,12 @@ $this->params['breadcrumbs'][] = $this->title;
                                                 'cancel' => Yii::t('yii', 'Cancel'),
                                             ],
                                         ]);
+                                },
+								'download' => function ($url, $model) {     
+									if($model->status == 3){
+										return Html::a('<span class="glyphicon glyphicon-ok-circle" style="color:#00FF7F!important"></span>', '', ['title' => Yii::t('app', 'Fluxo Finalizado'),]);                                
+                                    }
+                                  
                                 }
                             ]
                         ]
