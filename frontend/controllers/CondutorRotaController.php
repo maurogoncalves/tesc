@@ -80,21 +80,23 @@ class CondutorRotaController extends Controller
        
         $alunos = [];
         
-
+		
         if (isset($_POST['alunosBanco']) && $_POST['alunosBanco'] != '') {
             $alunosBanco = Aluno::find()->where(['in', 'id', $_POST['alunosBanco']])->all();
             foreach ($alunosBanco as $alunoBanco) {
-                // if(in_array($alunoBanco->idEscola, $escolasDisponiveis)){
+                // if(in_array($alunoBanco->idEscola, $escolasDisponiveis)){					
                     $alunos[] = $alunoBanco;
                 // }
             }
         }
+		
         foreach ($solicitacoes as $solicitacao) {
             // Evita duplicidade no arr e verifica se NÃO está em nenhum ponto
             // mais abaixo temos um PontoAluno::find para tratar alunos que já estão em uma rota oposta
-            if (!in_array($solicitacao->aluno, $alunos) && !$aluno->alunoPonto)
-                $alunos[] = $solicitacao->aluno;
-                
+            if (!in_array($solicitacao->aluno, $alunos) && !$aluno->alunoPonto)				
+				if($solicitacao->aluno->turno == $rota['turno']){
+					$alunos[] = $solicitacao->aluno;
+				}                
         }
 
 

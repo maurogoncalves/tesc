@@ -22,7 +22,7 @@ class SolicitacaoCreditoSearch extends SolicitacaoCredito
     public function rules()
     {
         return [
-            [['id', 'idEscola','status','mesInicio','mesFim','tipoSolicitacao'], 'integer'],
+            [['id', 'idEscola','status','mesInicio','mesFim','tipoSolicitacao','anoSol'], 'integer'],
             [['inicio', 'fim', 'criado'], 'safe'],
         ];
     }
@@ -102,7 +102,11 @@ class SolicitacaoCreditoSearch extends SolicitacaoCredito
             $query->andFilterWhere ( [ '>=' , 'DATE_FORMAT(fim,"%Y-%m-%d")' , date ( 'Y-m-d' , strtotime ( trim($data[0]) ) ) ] );
             $query->andFilterWhere ( [ '<=' , 'DATE_FORMAT(fim,"%Y-%m-%d")' , date ( 'Y-m-d' , strtotime ( trim($data[1]) ) ) ] );
         }
-
+		
+		 if($this->anoSol){
+            $query->andFilterWhere ( [ '=' , 'anoSol' , $this->ano] );
+        }
+		
         // if(!empty($this->fim)) {
         //     $date = \DateTime::createFromFormat( 'd/m/Y', $this->fim); 
         //     $query->andFilterWhere(['<=', 'fim', $date->format('Y-m-d')]);
@@ -116,8 +120,10 @@ class SolicitacaoCreditoSearch extends SolicitacaoCredito
             'mesFim' => $this->mesFim,
             'SolicitacaoCredito.criado' => $this->criado,
             'SolicitacaoCredito.status' => $this->status,
+			'anoSol' => $this->anoSol,
+			
         ]);
-
+		
         return $dataProvider;
     }
 }

@@ -1643,6 +1643,24 @@ class PainelAtendimentoController extends \yii\web\Controller
             return $model->telefoneResidencial2;
         return '-';
     }
+	
+	 protected function getTelefoneValidoAux($model)
+    {
+        if ($model['telefoneCelular'] && strlen($model['telefoneCelular']) > 5){
+			return $model['telefoneCelular'];
+		}            
+        if ($model['telefoneCelular2'] && strlen($model['telefoneCelular2']) > 5){
+			return $model['telefoneCelular2'];
+		}            
+        if ($model['telefoneResidencial'] && strlen($model['telefoneResidencial']) > 5){
+			return $model['telefoneResidencial'];
+		}            
+        if ($model['telefoneResidencial2'] && strlen($model['telefoneResidencial2']) > 5){
+			return $model['telefoneResidencial2'];
+		}
+        return '-';
+    }
+	
     protected function getNecessidades($model)
     {
         $necessidades = $model->necessidades;
@@ -1652,22 +1670,31 @@ class PainelAtendimentoController extends \yii\web\Controller
         }
         return implode(', ', $redes);
     }
-    protected function montarPdfCondutor($dados, $condutor)
+    protected function montarPdfCondutor($condutor)
     {
+		
+
+	$sql="select a.nome as aluno,e.nome as escola,a.RA,a.RAdigito,a.serie,a.turma,a.turno,a.horarioEntrada,a.horarioSaida,a.tipoLogradouro,a.endereco,a.numeroResidencia, a.bairro,a.telefoneResidencial,a.telefoneResidencial2,a.telefoneCelular,a.telefoneCelular2,n.nome as necessidade from  SolicitacaoTransporte st  join Escola e on st.idEscola = e.id join Aluno a on a.id = st.idAluno left join AlunoNecessidadesEspeciais al on a.id = al.idAluno left join NecessidadesEspeciais n on n.id = al.idNecessidadesEspeciais where st.idCondutor = $condutor  and st.`status` = 6 order by e.nome,a.turno,a.horarioEntrada,a.horarioSaida";
+    $dados = Yii::$app->getDb()->createCommand($sql)->queryAll();
+	
+	$sqlCondutor="select * from Condutor c where c.id = $condutor";
+    $condutor = Yii::$app->getDb()->createCommand($sqlCondutor)->queryAll();
+				
         $content =  '<table width="100%">
       <tr>
-        <td><b>CONDUTOR: </b>' . $condutor->nome . '</td>
-        <td><b>ALVARÁ: </b>' . $condutor->alvara . '</td>
-        <td><b>TELEFONE: </b>' . $condutor->telefone . '</td>
+        <td><b>CONDUTOR: </b>' . $condutor[0]['nome'] . '</td>
+        <td><b>ALVARÁ: </b>' . $condutor[0]['alvara'] . '</td>
+        <td><b>TELEFONE: </b>' . $condutor[0]['telefone'] . '</td>
       </tr>
     </table>';
-        $content .= '<table border="0" width="100%" class="table">';
+        $content .= '<table border="0" width="100%" class="table" style="font-size:10px!important">';
         $content .= '
       <tr>
         <th align="center"><b>NOME</b></th>
         <th align="center"><b>ESCOLA</b></th>
         <th align="center"><b>RA</b></th>
         <th align="center"><b>ANO/SÉRIE E TURMA</b></th>
+		<th align="center"><b>TURNO</b></th>
         <th align="center"><b>ENTRADA</b></th>
         <th align="center"><b>SAÍDA</b></th>
         <th align="center"><b>ENDEREÇO</b></th>
@@ -1678,18 +1705,21 @@ class PainelAtendimentoController extends \yii\web\Controller
       </tr>';
 
         foreach ($dados as $model) {
+			
+			
             $content .= '<tr>';
-            $content .= $this->td(20, $model->nome);
-            $content .= $this->td(15, $model->escola->nomeCompleto);
-            $content .= $this->td(5, $model->RA . '-' . $model->RAdigito);
-            $content .= $this->td(7, Aluno::ARRAY_SERIES[$model->serie] . '/' . Aluno::ARRAY_TURMA[$model->turma]);
-            $content .= $this->td(7, $model->horarioEntrada);
-            $content .= $this->td(7, $model->horarioSaida);
-            $content .= $this->td(20, $model->tipoLogradouro . ' ' . $model->endereco . ' Nº ' . $model->numeroResidencia);
-            $content .= $this->td(20, $model->complementoResidencia);
-            $content .= $this->td(10, $model->bairro);
-            $content .= $this->td(7, Yii::$app->formatter->asTelefone($this->getTelefoneValido($model)));
-            $content .= $this->td(10, $this->getNecessidades($model));
+            $content .= $this->td(20, $model['aluno']);
+            $content .= $this->td(15, $model['escola']);
+            $content .= $this->td(5, $model['RA'] . '-' . $model['RAdigito']);
+            $content .= $this->td(7, Aluno::ARRAY_SERIES[$model['serie']] . '/' . Aluno::ARRAY_TURMA[$model['turma']]);
+			$content .= $this->td(7, Aluno::ARRAY_TURNO[$model['turno']]);
+            $content .= $this->td(7, $model['horarioEntrada']);
+            $content .= $this->td(7, $model['horarioSaida']);
+            $content .= $this->td(20, $model['tipoLogradouro'] . ' ' . $model['endereco'] . ' Nº ' . $model['numeroResidencia']);
+            $content .= $this->td(20, $model['complementoResidencia']);
+            $content .= $this->td(10, $model['bairro']);
+            $content .= $this->td(7, Yii::$app->formatter->asTelefone($this->getTelefoneValidoAux($model)));
+            $content .= $this->td(10, $model['necessidade']);
 
             $content .= '</tr>';
         }
@@ -1835,7 +1865,7 @@ class PainelAtendimentoController extends \yii\web\Controller
             $escola = Escola::findOne($_GET['escola']);
             $content = $this->montarPdfEscola($dados, $condutor, $escola);
         } else {
-            $content = $this->montarPdfCondutor($dados, $condutor);
+            $content = $this->montarPdfCondutor($_GET['idCondutor']);
         }
 
 

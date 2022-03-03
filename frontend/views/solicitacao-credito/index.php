@@ -18,6 +18,11 @@ use yii\helpers\Url;
 $this->title = 'Solicitação de crédito';
 $this->params['breadcrumbs'][] = $this->title;
 
+$arrAnos = array();
+$arrAnos[date("Y")] = date("Y");
+$arrAnos[date("Y")-1] = date("Y")-1;
+$arrAnos[date("Y")-2] = date("Y")-2;
+
 ?>
 <div class="row">
     <div class="col-md-12">
@@ -71,7 +76,23 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'placeholder' => '-',
                                 
                             ]
+                        ],		
+						
+						[
+                            'attribute' => 'anoSol',						
+                            'value' => function($model) {
+                                return($model['anoSol']);
+                            },
+							'filterType' => GridView::FILTER_SELECT2,
+                            'filter' => $arrAnos, 
+                            'filterWidgetOptions' => [
+                                'pluginOptions' => ['allowClear' => true],
+                            ],
+                            'filterInputOptions' => [
+                                'placeholder' => '-',
+                            ],
                         ],
+						
                         [
                             'attribute' => 'mesInicio',
                             'value' => function($model) {
@@ -115,21 +136,8 @@ $this->params['breadcrumbs'][] = $this->title;
                         //         ],
                         //     ]),
                         // ], 
-                        // [
-                        //     'class' => '\kartik\grid\DataColumn',
-                        //     'attribute' => 'fim',
-                        //     'format' => ['date', 'php:d/m/Y'],
-                        //     'filter' => DateRangePicker::widget([
-                        //         'model' => $searchModel,
-                        //         'attribute' => 'fim',
-                        //         'convertFormat' => true,
-                        //         'pluginOptions' => [
-                        //             'locale' => [
-                        //                 'format' => 'd/m/Y',
-                        //             ],
-                        //         ],
-                        //     ]),
-                        // ],  
+						
+                    
                         [
                             'contentOptions' => ['style' => 'min-width:100px;'],  //Largura coluna
                             'class' => 'yii\grid\ActionColumn',
@@ -168,8 +176,10 @@ $this->params['breadcrumbs'][] = $this->title;
                                         ]);
                                 },
 								'download' => function ($url, $model) {     
-									if($model->status == 3){
-										return Html::a('<span class="glyphicon glyphicon-ok-circle" style="color:#00FF7F!important"></span>', '', ['title' => Yii::t('app', 'Fluxo Finalizado'),]);                                
+									if($model->status == SolicitacaoCredito::STATUS_TRANSFERIDO){
+										if(!empty($model->valorTransferido)){
+											return Html::a('<span class="glyphicon glyphicon-ok-circle" style="color:#00FF7F!important"></span>', '', ['title' => Yii::t('app', 'Fluxo Finalizado'),]);                                
+										}	
                                     }
                                   
                                 }

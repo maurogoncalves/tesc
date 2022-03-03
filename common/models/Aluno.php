@@ -966,6 +966,9 @@ class Aluno extends \yii\db\ActiveRecord
         }
 
         $hist = HistoricoMovimentacaoRota::find()->where(['idAluno' => $this->id])->andWhere(['tipo' => HistoricoMovimentacaoRota::STATUS_ALUNO_INSERIDO])->andWhere(['idCondutorAtual' => $condutor->id])->orderBy(['id' => SORT_DESC])->one();
-        return $hist->inicioAtendimento;
+		if(!empty($hist->inicioAtendimento)){
+			return $hist->inicioAtendimento;
+		}
+        
     }
 }

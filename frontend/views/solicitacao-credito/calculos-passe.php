@@ -190,6 +190,15 @@ if ($(this).prop('checked')) {
 } else {
     inputAluno($(this), true)
 }
+var id = $(this).attr('id');
+var arr = id.split('-');
+var checado = $("#alunoMarcado-"+arr[1]).is(':checked');
+if(checado == true){
+	$("#saldoRestante-"+arr[1]).val('0');
+}else{
+	$("#saldoRestante-"+arr[1]).val();
+}	
+	
 $(".inputSaldoRestante").trigger("change");
 $(".qtdeAlunos").val(cont);
 calcValorNecessarioTotal();

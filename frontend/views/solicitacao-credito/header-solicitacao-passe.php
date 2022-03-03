@@ -42,7 +42,7 @@ function td($str)
 			<td><input name="valorNecessarioTotal" type="text" id="valorNecessarioTotal" value='<?= $solCred[0]['valorNecessarioTotal'] ? $solCred[0]['valorNecessarioTotal'] : '0'; ?>'  readonly="true" class="form-control mt-15"> </td>
 			<td>
 			<input name="valorNecessarioAluno" type="text" id="valorNecessarioAluno"  readonly="true" class="form-control mt-15">
-			<input name="valorNecessarioTotalAux" type="hidden" id="valorNecessarioTotalAux"  readonly="true" class="form-control mt-15"> 
+			<input name="valorNecessarioTotalAux" type="text" id="valorNecessarioTotalAux"  readonly="true" class="form-control mt-15"> 
 			</td>
 			<td><input name="saldoRestanteEscola" type="text" id="saldoRestanteEscola" class="form-control mt-15 money" value='<?= $solCred[0]['saldoRestante'] ? $solCred[0]['saldoRestante'] : '0'; ?>'> </td>
 			<td> <select name="diasLetivosRestantes" id="diasLetivosRestantes" class="form-control mt-15"  >

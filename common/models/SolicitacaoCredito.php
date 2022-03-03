@@ -12,6 +12,7 @@ use Yii;
  * @property string $inicio Início
  * @property string $fim Fim
  * @property string $criado Criado
+ * @property string $ano Ano
  *
  * @property Escola $escola
  * @property SolicitacaoCreditoAluno[] $solicitacaoCreditoAlunos
@@ -23,12 +24,14 @@ class SolicitacaoCredito extends \yii\db\ActiveRecord
     public $valor;
     public $quantidade;
 
+
     const STATUS_EM_ANDAMENTO = 1;
     const STATUS_EFETIVADA = 2;
     const STATUS_DEFERIDO = 3;
     const STATUS_DEFERIDO_DIRETOR = 4;
     const STATUS_DEFERIDO_DRE = 5;
     const STATUS_INDEFERIDO = 8;
+	const STATUS_TRANSFERIDO = 9;
 
     const ARRAY_STATUS = [ 
         Self::STATUS_EM_ANDAMENTO => 'Andamento',
@@ -37,7 +40,9 @@ class SolicitacaoCredito extends \yii\db\ActiveRecord
         Self::STATUS_DEFERIDO => 'Recebido',
         Self::STATUS_DEFERIDO_DIRETOR => 'Deferido pelo diretor',
         Self::STATUS_DEFERIDO_DRE => 'Deferido pela DRE',
+		Self::STATUS_TRANSFERIDO => 'Transferido',
     ];
+
 
     const TIPO_PASSE_ESCOLAR = 1;
     const TIPO_VALE_TRANSPORTE = 2;
@@ -70,7 +75,7 @@ class SolicitacaoCredito extends \yii\db\ActiveRecord
             // 'inicio', 'fim','status',
             [['idEscola'], 'required'],
             [['idEscola'], 'integer'],
-            [['saldoRemanescente','numeroCartaoAdministrativo','dataTransferencia','valorTransferido','mesFim','mesInicio','diasLetivosFecharMes','antiUe','saldoFinalMes','inicio', 'fim', 'criado','creditoAdministrativo', 'valorNecessarioTotal', 'saldoRestante','diasLetivosRestantes', 'diasLetivosMes', 'saldoRestanteCartoes', 'valorCreditado'], 'safe'],
+            [['saldoRemanescente','numeroCartaoAdministrativo','dataTransferencia','valorTransferido','anoSol','mesFim','mesInicio','diasLetivosFecharMes','antiUe','saldoFinalMes','inicio', 'fim', 'criado','creditoAdministrativo', 'valorNecessarioTotal', 'saldoRestante','diasLetivosRestantes', 'diasLetivosMes', 'saldoRestanteCartoes', 'valorCreditado'], 'safe'],
             [['idEscola'], 'exist', 'skipOnError' => true, 'targetClass' => Escola::className(), 'targetAttribute' => ['idEscola' => 'id']],
             [['numeroCartaoAdministrativo'], 'string', 'max' => 10],
             // [['creditoAdministrativo'], 'integer', 'min' => 30, 'max' => 100],
@@ -213,6 +218,7 @@ class SolicitacaoCredito extends \yii\db\ActiveRecord
             'idEscola' => 'Unidade Escolar',
             'inicio' => 'Início',
             'fim' => 'Fim',
+			'anoSol' => 'Ano',
             'criado' => 'Criado',
             'status' => 'Status',
             'mesInicio' => 'Início',
@@ -231,6 +237,14 @@ class SolicitacaoCredito extends \yii\db\ActiveRecord
     public function getEscola()
     {
         return $this->hasOne(Escola::className(), ['id' => 'idEscola']);
+    }
+
+	 /**
+     * @return \yii\db\ActiveQuery
+     */
+   public function getAno()
+    {
+        return $this->anoSol;
     }
 
     /**
@@ -257,17 +271,21 @@ class SolicitacaoCredito extends \yii\db\ActiveRecord
         $permissoes = self::permissaoActions();
         return strstr($permissoes,'{delete}');
     }
+	 public static function permissaoDowload(){
+        $permissoes = self::permissaoActions();
+        return strstr($permissoes,'{download}');
+    }
 
     public static function permissaoActions(){
         $actions = '';
         switch(\Yii::$app->User->identity->idPerfil){
-            case Usuario::PERFIL_SUPER_ADMIN: $actions = '{create} {view}  {relatorio} {delete}';  break;
-            case Usuario::PERFIL_TESC_DISTRIBUICAO: $actions = '{create} {view} {relatorio}  {delete}'; break;
-            case Usuario::PERFIL_SECRETARIO: $actions = '{create} {view} {relatorio} '; break;
-            case Usuario::PERFIL_DIRETOR: $actions = '{create} {view} {relatorio} '; break;
-            case Usuario::PERFIL_DRE: $actions = '{view} {relatorio} '; break;
-            case Usuario::PERFIL_TESC_PASSE_ESCOLAR: $actions = '{view} {relatorio} '; break;
-            case Usuario::TESC_CONSULTA: $actions = '{view} {relatorio}';break;
+            case Usuario::PERFIL_SUPER_ADMIN: $actions = '{create} {view}  {relatorio} {delete} {download}';  break;
+            case Usuario::PERFIL_TESC_DISTRIBUICAO: $actions = '{create} {view} {relatorio}  {delete} {download}'; break;
+            case Usuario::PERFIL_SECRETARIO: $actions = '{create} {view} {relatorio} {download} '; break;
+            case Usuario::PERFIL_DIRETOR: $actions = '{create} {view} {relatorio} {download} '; break;
+            case Usuario::PERFIL_DRE: $actions = '{view} {relatorio} {download}'; break;
+            case Usuario::PERFIL_TESC_PASSE_ESCOLAR: $actions = '{view} {relatorio} {download}'; break;
+            case Usuario::TESC_CONSULTA: $actions = '{view} {relatorio} {download}';break;
             case Usuario::PERFIL_CONDUTOR: $actions = ''; break;
         }
         return $actions;

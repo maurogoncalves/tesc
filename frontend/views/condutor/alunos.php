@@ -177,6 +177,16 @@ foreach($model->escolas as $escola) {
 						'filter' => Aluno::ARRAY_SERIES
 					],
 					[
+						'attribute' => 'turno',
+						'label' => 'Turno',
+						'value' =>   function($model){
+                            if(isset($model->turno)) {
+                            return  Aluno::ARRAY_TURNO[$model->turno];
+                            }
+						},
+						'filter' => Aluno::ARRAY_TURNO
+					],
+					[
 						'attribute' => 'horarioEntrada',
 						'label' => 'Horário de Entrada',
 						'contentOptions' => ['style' => 'min-width:80px;'],

@@ -638,7 +638,18 @@ class SolicitacaoTransporte extends \yii\db\ActiveRecord
       
             // print_r($solicitacao);
             if ($solicitacao) {
-                $solicitacao->status = self::STATUS_DEFERIDO;
+				
+						//verificar se o aluno já está nos 2 pontos, senão coloca como recebido
+			$sqlTotal ='select count(*) as total from PontoAluno p where p.idAluno  = '.$logAdicionado[0]; 
+			$totalPontos = Yii::$app->getDb()->createCommand($sqlTotal)->queryAll();
+			// print$totalPontos[0]->total;
+			// print'-';
+			// print$totPont = $totalPontos[0]->total  + 1;exit;
+			if($totalPontos[0]->total == 2){
+				 $solicitacao->status = self::STATUS_ATENDIDO;
+			}else{
+				 $solicitacao->status = self::STATUS_DEFERIDO;
+			}      
                 $solicitacao->ultimaMovimentacao = date('Y-m-d');
                 $solicitacao->save();
                 $modelStatus = new SolicitacaoStatus();

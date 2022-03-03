@@ -111,9 +111,10 @@ class SolicitacaoTransporteController extends Controller
         //Antigo forçar mostrar só as do grupo
         //$solicitacoesPermitidas = UsuarioGrupo::solicitacoesPermitidas($solicitacoes);
         foreach ($solicitacoes as $solicitacao) {
-			if(($solicitacao->status <> '3') or ($solicitacao->anoVigente <> $anoVigente)){
-				$solicitacoesPermitidas[] = $solicitacao->id;
-			}            
+			// if(($solicitacao->status <> '3') or ($solicitacao->anoVigente <> $anoVigente)){
+				// $solicitacoesPermitidas[] = $solicitacao->id;
+			// }        
+			$solicitacoesPermitidas[] = $solicitacao->id;	
         }
 
         $searchModel = new SolicitacaoTransporteSearch();
@@ -247,9 +248,9 @@ class SolicitacaoTransporteController extends Controller
         // CASO SEJA UMA SOL DE CANCELAMENTO COM STATUS PARA SER DEFERIDO!
         // PRECISAMOS TER UM STATUS ESPECÍFICO PARA SOL DE CANCELAMENTO 
         // https://trello.com/c/ZZ0cxnoG/95-nomenclatura-de-status-do-cancelamento-de-benef%C3%ADcio-5pts
-        if ($status && $status == SolicitacaoTransporte::STATUS_DEFERIDO && $solicitacao->tipoSolicitacao == SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO) {
-            $status = SolicitacaoTransporte::STATUS_CANCELADO;
-        }
+        // if ($status && $status == SolicitacaoTransporte::STATUS_DEFERIDO && $solicitacao->tipoSolicitacao == SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO) {
+            // $status = SolicitacaoTransporte::STATUS_CANCELADO;
+        // }
 
         if ($status) {
             $model->status = $status;
@@ -270,13 +271,19 @@ class SolicitacaoTransporteController extends Controller
             }
             $solicitacao->ultimaMovimentacao = date('Y-m-d');
 
-
+			if($status == SolicitacaoTransporte::STATUS_DEFERIDO){
+				$solicitacao->tipoSolicitacao = SolicitacaoTransporte::SOLICITACAO_BENEFICIO;		
+			}
             $solicitacao->status = $status;
             $solicitacao->save();
 
 
             if ($status == SolicitacaoTransporte::STATUS_DEFERIDO || $status ==  SolicitacaoTransporte::STATUS_CANCELADO) {
                 // REMOVE DE TODAS AS ROTAS!!!!
+				
+				//tirar de todas as rotas.
+				$this->excluirRota($solicitacao->idAluno);
+				
                 PontoAluno::removerTodasRotas($solicitacao->idAluno);
                 $solicitacoesAntigas = SolicitacaoTransporte::find()->where(['idAluno' => $solicitacao->idAluno])->andWhere(['<>', 'id', $solicitacao->id])->all();
 
@@ -292,7 +299,15 @@ class SolicitacaoTransporteController extends Controller
                     $modelStatus->justificativa = 'ENCERRADO PELO SISTEMA. NOVA SOLICITAÇÃO VIGENTE #' . $solicitacao->id;
                     $modelStatus->save();
                 }
+				
             }
+			
+			if($status == SolicitacaoTransporte::STATUS_INDEFERIDO || $status ==  SolicitacaoTransporte::STATUS_ENCERRADA){
+				//tirar de todas as rotas.
+				$this->excluirRota($solicitacao->idAluno);
+			}
+			
+			
 
             return ['status' => true];
         } else {
@@ -304,7 +319,18 @@ class SolicitacaoTransporteController extends Controller
             ]);
         }
     }
+	private function excluirRota($idAluno){
+		//tirar de todas as rotas.
+		$sqlTodosPontos ='select idPonto from PontoAluno p where p.idAluno  = '.$idAluno; 
+		$todosPontos = Yii::$app->getDb()->createCommand($sqlTodosPontos)->queryAll();
 
+		foreach($todosPontos as $pont){									
+			if($pont['idPonto']){	
+				\Yii::$app->db->createCommand()->delete('PontoAluno', ['idPonto' => $pont['idPonto']])->execute();
+				\Yii::$app->db->createCommand()->delete('Ponto', ['id' => $pont['idPonto']])->execute();
+			}
+		}
+	}
     public function actionViewSolicitacaoAjax($id)
     {
         \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
@@ -641,6 +667,7 @@ class SolicitacaoTransporteController extends Controller
 
                     // mata solicitações antigas
                     $solicitacoes = SolicitacaoTransporte::find()->where(['idAluno' => $model->idAluno])->andWhere(['<>', 'id', $model->id])->all();
+					
                     foreach ($solicitacoes as $solicitacao) {
                         $solicitacao->status = SolicitacaoTransporte::STATUS_ENCERRADA;
                         if ($solicitacao->idRotaIda) {
@@ -651,7 +678,7 @@ class SolicitacaoTransporteController extends Controller
                             SolicitacaoTransporte::logRotaVolta($solicitacao);
                             $solicitacao->idRotaVolta = null;
                         }
-
+						
                         $solicitacao->save();
                         $modelStatus = new SolicitacaoStatus();
                         $modelStatus->idUsuario = \Yii::$app->User->identity->id;
@@ -662,6 +689,42 @@ class SolicitacaoTransporteController extends Controller
                         $modelStatus->save();
                     }
                 }
+				
+				
+				 // mata solicitações antigas
+                    $solicitacoes = SolicitacaoTransporte::find()->where(['idAluno' => $model->idAluno])->andWhere(['<>', 'id', $model->id])->all();
+					
+                    foreach ($solicitacoes as $solicitacao) {
+                        $solicitacao->status = SolicitacaoTransporte::STATUS_ENCERRADA;
+                        if ($solicitacao->idRotaIda) {
+                            SolicitacaoTransporte::logRotaIda($solicitacao);
+                            $solicitacao->idRotaIda = null;
+                        }
+                        if ($solicitacao->idRotaVolta) {
+                            SolicitacaoTransporte::logRotaVolta($solicitacao);
+                            $solicitacao->idRotaVolta = null;
+                        }
+						
+                        $solicitacao->save();
+                        $modelStatus = new SolicitacaoStatus();
+                        $modelStatus->idUsuario = \Yii::$app->User->identity->id;
+                        $modelStatus->dataCadastro = date('Y-m-d');
+                        $modelStatus->status = SolicitacaoTransporte::STATUS_ENCERRADA;
+                        $modelStatus->idSolicitacaoTransporte = $solicitacao->id;
+                        $modelStatus->justificativa = 'FINALIZADO PARA RENOVAÇÃO. NOVA SOLICITAÇÃO VIGENTE #' . $model->id . '.';
+                        $modelStatus->save();
+                    }
+					//tirar de todas as rotas.
+					$sqlTodosPontos ='select idPonto from PontoAluno p where p.idAluno  = '.$model->idAluno; 
+					$todosPontos = Yii::$app->getDb()->createCommand($sqlTodosPontos)->queryAll();
+
+					foreach($todosPontos as $pont){									
+						if($pont['idPonto']){	
+							\Yii::$app->db->createCommand()->delete('PontoAluno', ['idPonto' => $pont['idPonto']])->execute();
+							\Yii::$app->db->createCommand()->delete('Ponto', ['id' => $pont['idPonto']])->execute();
+						}
+					}
+					
                 $this->salvarEscolas($model->EscolasProximas, $model);
                 $this->uploadMultiple($model);
                 if ($model->modalidadeBeneficio == Aluno::MODALIDADE_FRETE && !$model->distanciaEscola) {
@@ -1135,7 +1198,7 @@ class SolicitacaoTransporteController extends Controller
     {
         $solicitacoesPermitidas = [];
         $solicitacoes = SolicitacaoTransporte::find()
-            ->andWhere(['novaSolicitacao' => SolicitacaoTransporte::NOVA_SOLICITACAO])
+            //->andWhere(['novaSolicitacao' => SolicitacaoTransporte::NOVA_SOLICITACAO])
             ->andWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_INDEFERIDO])
             ->andWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_ATENDIDO])
 			->andWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_CONCEDIDO])
@@ -1169,7 +1232,7 @@ class SolicitacaoTransporteController extends Controller
 		
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams, $solicitacoesPermitidas);
         $dataProvider->sort->defaultOrder = ['id' => SORT_ASC];
-        $dataProvider->query->andFilterWhere(['novaSolicitacao' => SolicitacaoTransporte::NOVA_SOLICITACAO]);
+        //$dataProvider->query->andFilterWhere(['novaSolicitacao' => SolicitacaoTransporte::NOVA_SOLICITACAO]);
         $dataProvider->query->andFilterWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_INDEFERIDO]);
         $dataProvider->query->andFilterWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_ATENDIDO]);
 		$dataProvider->query->andFilterWhere(['<>', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_CONCEDIDO]);
@@ -1628,10 +1691,16 @@ class SolicitacaoTransporteController extends Controller
         $solicitacaoAntiga = SolicitacaoTransporte::findOne($id);
         $idSol = $solicitacaoAntiga->id;
         $idAluno = $solicitacaoAntiga->idAluno;
+		
+		//tirar de todas as rotas.
+		$this->excluirRota($solicitacaoAntiga->idAluno);
+		
         PontoAluno::removerTodasRotas($solicitacaoAntiga->idAluno);
         HistoricoMovimentacaoRota::deleteAll(['idSolicitacaoTransporte' => $idSol]);
         $solicitacaoAntiga->delete();
-
+		
+		
+				
         return $this->redirect(['aluno/view', 'id' => $idAluno]);
     }
 }

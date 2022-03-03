@@ -623,21 +623,17 @@ class SolicitacaoCreditoController extends Controller
     }
     public function actionRelatorioFinal($id)
     {   
-        $model =  $this->findModel($id);
-        
+        $model =  $this->findModel($id);       
         // print_r($model->solicitacaoCreditoAlunos);
         if($model->load(Yii::$app->request->post()) && $model->save() ){
-               if($model->tipoSolicitacao > 0){
-                    $this->redirect(['relatorio-final', 'id' => $id]);
-                }
-                else {
-                                $this->redirect(['view', 'id' => $id]);
-
-                }
-                                
-
-        }
-		
+			$model->status = SolicitacaoCredito::STATUS_TRANSFERIDO;
+			$model->save();					
+            if($model->tipoSolicitacao > 0){
+                $this->redirect(['relatorio-final', 'id' => $id]);
+            }else {
+                $this->redirect(['view', 'id' => $id]);
+             }
+        }		
         return $this->render('relatorio-final', [
             'model' => $model,
 			'tipo' => $model->solicitacaoCreditoAlunos[0]['tipo'],
@@ -675,6 +671,7 @@ class SolicitacaoCreditoController extends Controller
         $model = new SolicitacaoCredito();
         $model->tipoSolicitacao = $tipo;
         $model->criado = date('Y-m-d H:i:s');
+		$model->anoSol = date('Y');
         if ( $model->load(Yii::$app->request->post()) ) {			
 			
 		
