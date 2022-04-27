@@ -117,6 +117,51 @@ function escolasAlteradas($id, $nome){
                     ],
                     'telefone',
                     'email:email',
+					[
+                        'attribute' => 'condutores',
+                        'label' => 'Condutores',
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            $lista = '';
+							
+							$sqlEscola ='select c.nome, c.telefone,c.telefone2,c.celular,c.celular2  from CondutorEscola ce  join Escola e on ce.idEscola = e.id join Condutor c on c.id = ce.idCondutor where ce.idEscola = '.$model->id.' order by nome' ;
+							$dadosEscola = Yii::$app->getDb()->createCommand($sqlEscola)->queryAll();
+										
+                            foreach ($dadosEscola as $dado)
+                            {
+                              
+                                $lista .= $dado['nome'].' ';
+								$lista .= $dado['telefone'].' ';
+								$lista .= $dado['telefone2'].' ';
+								$lista .= $dado['celular'].' ';
+								$lista .= $dado['celular2'].' ';
+								$lista .=  '<br><br>';
+                                
+                            }
+                            return $lista;
+                        }
+                    ],
+					[
+                        'attribute' => 'bairros',
+                        'label' => 'Bairros Atendidos',
+                        'format' => 'raw',
+                        'value' => function ($model) {
+                            $lista = '';
+							
+							$sqlBairro ='
+							select distinct a.bairro as bairro from SolicitacaoTransporte st  left join Aluno a on st.idAluno = a.id  where st.idEscola = '.$model->id.'   and st.`status` = 6 and st.modalidadeBeneficio = 1 order by a.bairro' ;
+							$dadosBairro = Yii::$app->getDb()->createCommand($sqlBairro)->queryAll();
+										
+                            foreach ($dadosBairro as $dado)
+                            {
+                              
+                                $lista .= $dado['bairro'].' ';
+								$lista .=  '<br><br>';
+                                
+                            }
+                            return $lista;
+                        }
+                    ],
                     [
                         'attribute' => 'secretarios',
                         'label' => 'Secretário(s)',

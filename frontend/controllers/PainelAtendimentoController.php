@@ -901,6 +901,7 @@ class PainelAtendimentoController extends \yii\web\Controller
             if (Yii::$app->request->get('report') == 'xls')
                 return $this->alunosAtendidosPasseXls($solicitacoes);
             
+
             return $this->render('indexAlunosAtendidosPasseEscolar', [
                 'solicitacoesTransporte' => $solicitacoes,
                 'bairros' => ArrayHelper::map(AgrupamentoBairro::find()->all(), 'nome', 'nome'),
@@ -927,7 +928,7 @@ class PainelAtendimentoController extends \yii\web\Controller
             <th><b>Nome</b></th>
             <th><b>RA</b></th>
             <th><b>Ano/Série</b></th>
-            <th><b>Distância da escola (Km)</b></th>
+            <th><b>Distância da escola (Metros)</b></th>
             <th><b>Barreira física</b></th>
             <th><b>Endereço</b></th>
             <th><b>Bairro</b></th>
@@ -1034,7 +1035,7 @@ class PainelAtendimentoController extends \yii\web\Controller
         $sheet->setCellValue('B'.$i, "Nome");
         $sheet->setCellValue('C'.$i, "RA");
         $sheet->setCellValue('D'.$i, "Ano/Série");
-        $sheet->setCellValue('E'.$i, "Distância da escola (Km)");
+        $sheet->setCellValue('E'.$i, "Distância da escola (Metros)");
         $sheet->setCellValue('F'.$i, "Barreira física");
         $sheet->setCellValue('G'.$i, "Endereço");
         $sheet->setCellValue('H'.$i, "Bairro");
@@ -1160,7 +1161,7 @@ class PainelAtendimentoController extends \yii\web\Controller
         <th><b>Horário de entrada</b></th>
         <th><b>Horário de saída</b></th>
         <th><b>Ano/Série</b></th>
-        <th><b>Distância da escola (Km)</b></th>
+        <th><b>Distância da escola (Metros)</b></th>
         <th><b>Barreira física</b></th>
         <th><b>Endereço</b></th>
         <th><b>Bairro</b></th>
@@ -1298,7 +1299,7 @@ class PainelAtendimentoController extends \yii\web\Controller
         $colNum++;
         $sheet->setCellValue($col[$colNum].$i, "Ano/Série");
         $colNum++;
-        $sheet->setCellValue($col[$colNum].$i, "Distância da escola (Km)");
+        $sheet->setCellValue($col[$colNum].$i, "Distância da escola (Metros)");
         $colNum++;
         $sheet->setCellValue($col[$colNum].$i, "Barreira física");
         $colNum++;
@@ -1673,8 +1674,15 @@ class PainelAtendimentoController extends \yii\web\Controller
     protected function montarPdfCondutor($condutor)
     {
 		
+	$rotas = CondutorRota::find()->where(['idCondutor' => $condutor])->all();
+    $idsRotas = array_column($rotas, 'id');
+	
+	
+	$rotas = implode(", ", $idsRotas);
 
-	$sql="select a.nome as aluno,e.nome as escola,a.RA,a.RAdigito,a.serie,a.turma,a.turno,a.horarioEntrada,a.horarioSaida,a.tipoLogradouro,a.endereco,a.numeroResidencia, a.bairro,a.telefoneResidencial,a.telefoneResidencial2,a.telefoneCelular,a.telefoneCelular2,n.nome as necessidade from  SolicitacaoTransporte st  join Escola e on st.idEscola = e.id join Aluno a on a.id = st.idAluno left join AlunoNecessidadesEspeciais al on a.id = al.idAluno left join NecessidadesEspeciais n on n.id = al.idNecessidadesEspeciais where st.idCondutor = $condutor  and st.`status` = 6 order by e.nome,a.turno,a.horarioEntrada,a.horarioSaida";
+			
+	$sql="select a.nome as aluno,e.nome as escola,a.RA,a.RAdigito,a.serie,a.turma,a.turno,a.horarioEntrada,a.horarioSaida,a.tipoLogradouro,a.endereco,a.numeroResidencia, a.bairro,a.telefoneResidencial,a.telefoneResidencial2,a.telefoneCelular,a.telefoneCelular2,n.nome as necessidade from  SolicitacaoTransporte st  join Escola e on st.idEscola = e.id join Aluno a on a.id = st.idAluno left join AlunoNecessidadesEspeciais al on a.id = al.idAluno left join NecessidadesEspeciais n on n.id = al.idNecessidadesEspeciais where st.`status` = 6 and st.`status` <> 2 and st.idRotaIda in ($rotas) or st.idRotaVolta in ($rotas) and st.idRotaIda is not null and st.idRotaVolta is not null order by e.nome,a.turno,a.horarioEntrada,a.horarioSaida";
+	
     $dados = Yii::$app->getDb()->createCommand($sql)->queryAll();
 	
 	$sqlCondutor="select * from Condutor c where c.id = $condutor";
@@ -1690,6 +1698,7 @@ class PainelAtendimentoController extends \yii\web\Controller
         $content .= '<table border="0" width="100%" class="table" style="font-size:10px!important">';
         $content .= '
       <tr>
+	     <th align="center"><b></b></th>
         <th align="center"><b>NOME</b></th>
         <th align="center"><b>ESCOLA</b></th>
         <th align="center"><b>RA</b></th>
@@ -1703,11 +1712,12 @@ class PainelAtendimentoController extends \yii\web\Controller
         <th align="center"><b>TEL.</b></th>
         <th align="center"><b>NECESSIDADES</b></th>
       </tr>';
-
+		$i=1;
         foreach ($dados as $model) {
 			
 			
             $content .= '<tr>';
+			$content .= $this->td(5, $i);
             $content .= $this->td(20, $model['aluno']);
             $content .= $this->td(15, $model['escola']);
             $content .= $this->td(5, $model['RA'] . '-' . $model['RAdigito']);
@@ -1722,8 +1732,10 @@ class PainelAtendimentoController extends \yii\web\Controller
             $content .= $this->td(10, $model['necessidade']);
 
             $content .= '</tr>';
+			$i++;
         }
         $content .= '</table>';
+
         return $content;
     }
     protected function montarPdfEscola($dados, $condutor, $escola)
@@ -1979,7 +1991,6 @@ class PainelAtendimentoController extends \yii\web\Controller
                     ->join('LEFT JOIN `AlunoNecessidadesEspeciais` ON', '`AlunoNecessidadesEspeciais`.`idAluno` = `Aluno`.`id`')
                     ->andWhere(['<>', 'tipoSolicitacao', SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO])
                     ->andWhere(['=', 'SolicitacaoTransporte.status', SolicitacaoTransporte::STATUS_ATENDIDO])
-                    ->andWhere(['=', 'SolicitacaoStatus.status', SolicitacaoTransporte::STATUS_ATENDIDO])
                     ->andFilterWhere(['or', ['idRotaIda' => $idsRotas], ['idRotaVolta' => $idsRotas]])
 
                     // ->andWhere(['=', 'bb', SolicitacaoTransporte::STATUS_ATENDIDO]);               

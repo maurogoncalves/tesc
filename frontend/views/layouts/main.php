@@ -424,6 +424,14 @@ function lastLogin()
                                             Usuario::PERFIL_CONDUTOR,
                                         ])
                                     ],
+									 [
+                                        'label' => 'Folha de ponto - Online',
+                                        'icon' => 'fa fa-calendar',
+                                        'url' => ['condutor/folha-ponto', 'id' => Yii::$app->user->identity->condutor->id],
+                                        'visible' => !Yii::$app->user->isGuest && Usuario::permissoes([
+                                            Usuario::PERFIL_CONDUTOR,
+                                        ])
+                                    ],
                                     // ['label' => 'RPA', 'icon' => 'fa fa-file', 'url' => ['recibo-pagamento-autonomo/index'],],
 
                                 ],

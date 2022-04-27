@@ -304,6 +304,11 @@ function BRLtoReal(valor){
     return numero.join(',');
 }
 $("#diasLetivosMes").change(function(){
+	
+	$(".inputSaldoRestante").trigger("change");
+	$("#diasLetivosRestantes").trigger("change");
+	
+	calcValorSerCreditado();
     calcValorNecessarioTotal();
     atualizarSaldo();
     calcValorNecessario();
@@ -587,21 +592,95 @@ function calcValorNecessarioTotal(){
 
 $("#salvar").click(function(ev) {
     event.preventDefault(); 
-    return Swal.fire({
-        icon: 'warning',
-        title: 'Atenção!',
-        html: "Não será possível editar a solicitação, tem certeza que deseja continuar?",
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sim',
-        cancelButtonText: 'Não'
-    }).then((result) => {
-        if (result.value) {
-            $( "#formCredito" ).submit();
-            console.log(1)
+	let cont = 0;
+	  $(".alunoMarcado").each(function() {
+        if ($(this).prop('checked')) {
+            cont++;
+            inputAluno($(this), false)
+        } else {
+            inputAluno($(this), true)
         }
     });
+	if(cont == 0){
+		return Swal.fire({
+			icon: 'warning',
+			title: 'Atenção!',
+			html: "É necessário selecionar algum aluno antes de salvar",
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'OK',
+			cancelButtonText: 'Cancelar'
+		}).then((result) => {
+			if (result.value) {
+			}
+		});
+	}else{
+		return Swal.fire({
+			icon: 'warning',
+			title: 'Atenção!',
+			html: "Não será possível editar a solicitação, tem certeza que deseja continuar?",
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Sim',
+			cancelButtonText: 'Não'
+		}).then((result) => {
+			if (result.value) {
+				$("#statusProgresso").val('0');
+				$( "#formCredito" ).submit();
+				console.log(1)
+			}
+		});
+	}	
+		
+		
+});
+$("#salvar2").click(function(ev) {
+    event.preventDefault(); 
+	let cont = 0;
+	  $(".alunoMarcado").each(function() {
+        if ($(this).prop('checked')) {
+            cont++;
+            inputAluno($(this), false)
+        } else {
+            inputAluno($(this), true)
+        }
+    });
+	if(cont == 0){
+		return Swal.fire({
+			icon: 'warning',
+			title: 'Atenção!',
+			html: "É necessário selecionar algum aluno antes de salvar",
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'OK',
+			cancelButtonText: 'Cancelar'
+		}).then((result) => {
+			if (result.value) {
+			}
+		});
+	}else{
+		return Swal.fire({
+			icon: 'warning',
+			title: 'Atenção!',
+			html: "Não será possível editar a solicitação, tem certeza que deseja continuar?",
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Sim',
+			cancelButtonText: 'Não'
+		}).then((result) => {
+			if (result.value) {
+				$("#statusProgresso").val('0');
+				$( "#formCredito" ).submit();
+				console.log(1)
+			}
+		});
+	}	
+		
+		
 });
 </script>
 

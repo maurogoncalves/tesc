@@ -12,7 +12,14 @@ use common\models\Usuario;
 function getAlunos(){
   $alunos = [];
   foreach(Aluno::find()->all() as $aluno){
-    $alunos[$aluno->id] = $aluno->nome.' - '.substr($aluno->horarioEntrada,0,5).' às '.substr($aluno->horarioSaida,0,5);
+	$idade      = date("Y") - $aluno->dataNascimento;
+    if (date("m") < $mesNasc){
+        $idade -= 1;
+    } elseif ((date("m") == $mesNasc) && (date("d") <= $diaNasc) ){
+        $idade -= 1;
+    }
+ 
+    $alunos[$aluno->id] = $aluno->nome.' - '.substr($aluno->horarioEntrada,0,5).' às '.substr($aluno->horarioSaida,0,5).' - Idade '.($idade).' anos';
   }
   return json_encode($alunos);
   // ArrayHelper::map(Aluno::find()->all(), 'id', 'nome')
@@ -405,9 +412,10 @@ function addMarker(tipo, alunos, escolas, lat=0, lng=0){
       case '3':
         icon = 'residencia';
         // console.warn('Ponto Aluno: '+lat);
-
         // Estou plotando este ponto a pedido da Monique no card (https://trello.com/c/ofPqkTc1)...
         // tecnicamente isso não está correto, pois essa tela deveria mostrar os pontos da rota que nem sempre serão a residência do aluno.
+		
+			
         if(alunos.length == 1){
           console.log(alunos)
           //mantive um for mesmo sendo para UM aluno pois no futuro eles podem querer alterar
@@ -913,12 +921,15 @@ $(document).on('hide.bs.modal','#modal', function () {
       payload.idCondutor = $("#condutores-select").val()
     $.get( "index.php?r=condutor-rota/view-ajax", payload )
       .done(function( data ) {
+		  
         console.log(data);
         for (const [key, value] of Object.entries(data.pontos)) {
           let ponto = value;
+		  
           // console.warn(ponto,'p')
           let alunos = ponto.alunos.map(function(item) {return item.id;});
           let escolas = ponto.escolas.map(function(item) {return item.id;});
+		  
           // console.warn(alunos);
           //console.log([
           //     ponto.tipo.toString(),
@@ -952,6 +963,7 @@ $(document).on('hide.bs.modal','#modal', function () {
      
          
     });
+	
   }
 $(document).ready(function() {
 
@@ -1080,6 +1092,7 @@ $(document).ready(function() {
 function salvarPonto(){
   let postPontos = [];
   for (var i = 0; i < pontos.length; i++) {
+	 
         let ponto = pontos[i];
         postPontos.push({
           alunos: ponto.alunos,

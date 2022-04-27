@@ -61,7 +61,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?= DetailView::widget([
                     'model' => $model,
                     'attributes' => [ 
-                        //  Validade da CNH, Início do Contrato, Fim do Contrato, Valor Pago.                        'id',
+						'pendencias',
                        'id',
                         [
                             'attribute' => 'Status',
@@ -69,6 +69,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                    return  Condutor::ARRAY_STATUS[$model->status];
                            },
                        ],
+					   
                        'alvara',
                        [
                             'label' => 'Região de Atuação',
@@ -169,6 +170,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'valorPagoKmViagem',
                         [
                             'attribute' => 'folhaPonto',
+							'label' => 'Link 1',
                             'format' => 'raw',
                             'value' => function ($model) {
                                 return '<a target="_blank" href="'.$model->folhaPonto.'">'.$model->folhaPonto.'</a>';
@@ -176,12 +178,13 @@ $this->params['breadcrumbs'][] = $this->title;
                         ],
                         [
                             'attribute' => 'pesquisaRota',
+							'label' => 'Link 2',
                             'format' => 'raw',
                             'value' => function ($model) {
                                 return '<a target="_blank" href="'.$model->pesquisaRota.'">'.$model->pesquisaRota.'</a>';
                             }
                         ],
-                        'pendencias'
+                        
                      
                     ]
                 ]); ?>

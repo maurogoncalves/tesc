@@ -13,8 +13,9 @@ use kartik\select2\Select2;
 
 $this->title = 'Controle financeiro';
 $this->params['breadcrumbs'][] = $this->title;
-// print_r($historico[350]['diasTrabalhados']);
-// print_r(Yii::$app->request->get("ControleFinanceiroSearch")['diasTrabalhados']);
+
+
+			
 ?>
 <style>
 
@@ -25,7 +26,7 @@ $this->params['breadcrumbs'][] = $this->title;
             <div class="box-body">
                 <?= Html::beginForm(['condutor/controle-financeiro'], 'GET', ['id' => 'formFilter']); ?>
                 <div class="row form-group">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                     <?php
                         echo Html::label('Ano', 'ano');
                         echo Select2::widget([
@@ -40,7 +41,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         ]);
                     ?>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <?php
                         echo Html::label('Mês', 'mes');
                         echo Select2::widget([
@@ -55,7 +56,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         ]);
                     ?>
                 </div>
-                <div class="col-md-12">
+                <div class="col-md-4">
                     <?= Html::submitButton('Confirmar', ['class' => 'btn btn-primary pull-right']) ?>
                 </div>
             </div>
@@ -63,7 +64,104 @@ $this->params['breadcrumbs'][] = $this->title;
             <?php echo Html::endForm(); ?>
         </div>
 
-        
+        <div class="row">
+
+
+
+    <div class="col-md-12">
+		<div class="row">
+            <div class="box box-solid">
+                <div class="box-header with-border">
+					<div class="col-md-3"> <b>Mês/Ano : <?php echo$mes.'/'.$ano?></b></div>
+					<div class="col-md-3" style='color:#000'> <b>Marque os dias (disponíveis) em branco para bloquear </b></div>
+					<div class="col-md-3" style='color:#000'> <b>Marque os dias (bloqueados) em cinza para liberar </b></div>
+					<div class="col-md-3" style='color:#000'> <b>Clique no botão Salvar </b></div>
+					
+                </div>
+            </div>
+        </div>
+		<form method='post' id='formData' action='index.php?r=condutor%2Fgravar-supervisor'> 
+		<input type='hidden'  name="_csrf-frontend" value='mH7B72U_mm1c2Knx_Hz17QQ2JgLbIOZHUDOnicXxlkTfPaO_PEz3Dwnt55W9E4GGfXd8MJdw0XEpdpHiscjOHA=='>
+		<input type='hidden'  name="mes" id="mes" value='<?php echo$mes?>'>
+		<input type='hidden'  name="ano" id="ano" value='<?php echo$ano?>'>
+        <div class="box box-solid">
+            <div class="box-body">
+               <table id="" class="display" style="width:100%">
+							<thead>
+								<tr>
+									<th style="text-align:center;color:#3c8dbc">Dom</th>
+									<th style="text-align:center;color:#3c8dbc">Seg</th>
+									<th style="text-align:center;color:#3c8dbc">Ter</th>
+									<th style="text-align:center;color:#3c8dbc">Qua</th>
+									<th style="text-align:center;color:#3c8dbc">Qui</th>
+									<th style="text-align:center;color:#3c8dbc">Sex</th>
+									<th style="text-align:center;color:#3c8dbc">Sab</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr><td colspan=7 style='border-top: 1px solid white;  border-color:#dedede;' ><br><br></td></tr>				
+								<tr>	
+								 <?php
+									echo ($primeiraSemana);							
+								?>																	
+								</tr>	
+								<tr><td colspan=7 style='border-top: 1px solid white;  border-color:#dedede;' ><BR><BR></td></tr>
+								<tr>									
+									<?php 
+										echo ($segundaSemana);											
+									?>					
+								</tr>
+
+								<tr><td colspan=7 style='border-top: 1px solid white;  border-color:#dedede;' ><BR><BR></td></tr>
+								<tr>									
+									<?php 
+										echo ($terceiraSemana);																					
+									?>					
+								</tr>
+								
+								<tr><td colspan=7 style='border-top: 1px solid white;  border-color:#dedede;' ><BR><BR></td></tr>
+								<tr>
+									<?php 
+										echo ($quartaSemana);																															
+									?>					
+								</tr>								
+								<tr><td colspan=7 style='border-top: 1px solid white;  border-color:#dedede;' ><BR><BR></td></tr>
+								<tr>								
+									<?php 
+										echo ($quintaSemana);																																								
+									?>																
+								</tr>				
+									<tr><td colspan=7 style='border-top: 1px solid white;  border-color:#dedede;' ><BR><BR></td></tr>							
+									<tr>								
+									<?php 
+										echo ($sextaSemana);											
+									?>															
+								</tr>
+								<tr><td colspan=7 style='border-top: 1px solid white;  border-color:#dedede;' ><BR><BR></td></tr>
+								</tbody>					
+								</table>
+				<input type="submit" class="btn btn-success pull-right" name="Salvar" value="Salvar"> 				
+            </div>
+			
+        </div>
+		
+
+		</form>
+    </div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="row">
+				<div class="box box-solid">
+					<div class="box-header with-border" style='color:#000;font-size:12px!important;font-weight:bold;text-align:left'>
+						<div  class="col-md-12" style='color:#000;font-size:12px!important;font-weight:bold' > Ocorrências </div>
+						<div id='ocorrencias' class="col-md-12" style='color:#000;font-size:12px!important;font-weight:bold' > </div>
+					</div>
+				</div>				
+			</div>
+		</div>
+	</div>
+</div>
+
         <?php
 
         if (Yii::$app->request->get('ano') && Yii::$app->request->get('mes'))
@@ -100,48 +198,77 @@ $this->params['breadcrumbs'][] = $this->title;
                         GridView::EXCEL => true
                     ],
                     'columns' => [
-                        [
-                            'class' => 'kartik\grid\CheckboxColumn',
-                            'headerOptions' => ['class' => 'kartik-sheet-style'],
-                            'checkboxOptions' =>
-                                function($model) {
-                                    return ['value' => $model->id, 'class' => 'checkbox-row', 'id' => 'checkbox'];
-                                },
-                            'hAlign'=>'center',
-                            'vAlign'=>'middle',
-                            'hiddenFromExport'=>true,
-                            'mergeHeader'=>true,
-                        ],
-                        [
-                            'attribute' => 'duplicar',
+						[
+                            'attribute' => 'export',
                             'label' => '',
                             'format' => 'raw',
-                            'contentOptions' => ['style' => 'min-width:50px; text-align:center; white-space: normal; display:inline-block;'],
+                            'contentOptions' => ['style' => 'min-width:50px; text-align:center; white-space: normal;'],
                             'value' => function ($model) {
-                                return Html::button('<i class="glyphicon glyphicon-plus"></i>', ['value' => '', 'title' => 'Solicitação', 'class' => 'btn btn-clear bth-xs cloneBtn', 'id' => $model->id]);
+                                return Html::button('<i id='.$model->condutor->id.' class="glyphicon glyphicon-file export"></i>', ['value' => '', 'title' => 'Exportar PDF', 'class' => 'btn btn-clear bth-xs export', 'id' => $model->id]);
                             }
                         ],
+						  [
+                            'attribute' => 'acao',
+                            'label' => '',
+                            'format' => 'raw',
+                            'contentOptions' => ['style' => 'min-width:100px; white-space: normal; display:inline-block;'],
+                            'value' => function ($model) {
+                                return  Html::button('<i class="glyphicon glyphicon-search"></i>', ['value' => Url::to(['condutor/view', 'id' => $model->id, 'ajax' => true]), 'title' => 'Detalhes do condutor', 'class' => 'showModalButton btn btn-primary', 'aria-label' => 'Detalhes']);
+                            }
+                        ],
+                        // [
+                            // 'attribute' => 'duplicar',
+                            // 'label' => '',
+                            // 'format' => 'raw',
+                            // 'contentOptions' => ['style' => 'min-width:50px; text-align:center; white-space: normal; display:inline-block;'],
+                            // 'value' => function ($model) {
+                                // return Html::button('<i class="glyphicon glyphicon-plus"></i>', ['value' => '', 'title' => 'Solicitação', 'class' => 'btn btn-clear bth-xs cloneBtn', 'id' => $model->id]);
+                            // }
+                        // ],
                         [
                             'attribute' => 'nome',
                             'contentOptions' => ['style' => 'min-width:350px;'],
                             'headerOptions' => ['style' => 'min-width:350px;'],
                             'value' => function ($model) {
-                                return $model->condutor->nome;
+								
+								$ano = Yii::$app->request->get('ano');
+								$mes = Yii::$app->request->get('mes');
+
+								$sqlNomeEmpresa ='select c.nomeEmpresa  from ControleFinanceiro c  where c.idCondutor = '.$model->id.' and mes = '.$mes.' and ano = '.$ano ;
+								$dadosNomeEmpresa = Yii::$app->getDb()->createCommand($sqlNomeEmpresa)->queryAll();
+											
+								if($dadosNomeEmpresa[0]['nomeEmpresa']){
+									return $dadosNomeEmpresa[0]['nomeEmpresa'];
+								}else{
+									return $model->condutor->nome;
+								}
+                                
                             }
                         ],
                         [ 
-                            'label' => 'NIT',
-                            'attribute' => 'nit',
-                            'format' => ['Nit'],
+                            'label' => 'Alvará',
+                            'attribute' => 'alvara',
                             'contentOptions' => array('style' => 'min-width:150px;'),
                             'headerOptions' => array('style' => 'min-width:150px;'),
                             'value' => function ($model) {
-                                return $model->condutor->nit;
+								
+								$ano = Yii::$app->request->get('ano');
+								$mes = Yii::$app->request->get('mes');
+
+								$sqlAlvara ='select c.alvara  from ControleFinanceiro c  where c.idCondutor = '.$model->id.' and mes = '.$mes.' and ano = '.$ano ;
+								$dadosAlvara = Yii::$app->getDb()->createCommand($sqlAlvara)->queryAll();
+											
+								if($dadosAlvara[0]['alvara']){
+									return $dadosAlvara[0]['alvara'];
+								}else{
+									return $model->condutor->alvara;
+								}
+								
                             }
                         ],
                         [
                             'attribute' => 'diasTrabalhados',
-                            'header' => 'Dias<br>Trabalhados',
+                            'header' => 'Dias <br>Trabalhados <br> (1)',
                             'format' => 'raw',
                             'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[diasTrabalhados]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['diasTrabalhados'].'">',
                             'contentOptions' => ['style' => 'min-width:100px;'],
@@ -151,31 +278,19 @@ $this->params['breadcrumbs'][] = $this->title;
                                 return $campo;
                             }
                         ],
-                        [
-                            'attribute' => 'sabadoLetivo',
-                            'header' => 'Sábado<br>Letivo',
+						[
+                            'attribute' => 'valorViagemKm1',
+                            'header' => 'Kms rodado / dia <br> Nº viagens / dia <br> (1)',
                             'format' => 'raw',
-                            'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[sabadoLetivo]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['sabadoLetivo'].'">',
-                            'contentOptions' => ['style' => 'min-width:100px;'],
-                            'headerOptions' => ['style' => 'min-width:100px;text-align:center;'],
-                            'value' => function($model) use ($historico) {
-                                $campo = '<input type="number" size="50" class="form-control sabadoLetivo" name="sabadoLetivo[]" id="sabadoLetivo_'.$model->id.'" value="'.$historico[$model->id]['sabadoLetivo'].'" />';
-                                return $campo;
-                            }
-                        ],
-                        [
-                            'attribute' => 'diasExcepcionais1',
-                            'header' => 'Dia(s)<br>Excepcional(is) (1)',
-                            'format' => 'raw',
-                            'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[diasExcepcionais1]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['diasExcepcionais1'].'">',
+                            'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[viagemKm1]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['valorViagemKm1'].'">',
                             'contentOptions' => array('style' => 'min-width:100px;'),
                             'headerOptions' => array('style' => 'min-width:100px;text-align:center;'),
                             'value' => function($model) use ($historico) {
-                                $campo = '<input type="number" size="50" class="form-control diasExcepcionais1" name="diasExcepcionais1[]" id="diasExcepcionais1_'.$model->id.'" value="'.$historico[$model->id]['diasExcepcionais1'].'" />';
+                                $campo = '<input type="number" size="50" class="form-control viagemKm1" name="viagemKm1[]" id="viagemKm1_'.$model->id.'" value="'.$historico[$model->id]['valorViagemKm1'].'" />';
                                 return $campo;
                             }
                         ],
-                        [
+						[
                             'attribute' => 'viagemKm1',
                             'header' => 'Viagem/Km<br>(1)',
                             'format' => 'raw',
@@ -187,18 +302,46 @@ $this->params['breadcrumbs'][] = $this->title;
                                 return $campo;
                             }
                         ],
-                        [
-                            'attribute' => 'diasExcepcionais2',
-                            'header' => 'Dia(s)<br>Excepcional(is) (2)',
+						[
+                            'attribute' => 'viagemKm1',
+                            'header' => 'Total Dias Trab. <br>(1)',
                             'format' => 'raw',
-                            'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[diasExcepcionais2]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['diasExcepcionais2'].'">',
+                            'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[viagemKm1]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['valorDiasUteis'].'">',
                             'contentOptions' => array('style' => 'min-width:100px;'),
                             'headerOptions' => array('style' => 'min-width:100px;text-align:center;'),
                             'value' => function($model) use ($historico) {
-                                $campo = '<input type="number" size="50" class="form-control diasExcepcionais2" name="diasExcepcionais2[]" id="diasExcepcionais2_'.$model->id.'" value="'.$historico[$model->id]['diasExcepcionais2'].'" />';
+                                $campo = '<input type="number" size="50" class="form-control viagemKm1" name="viagemKm1[]" id="viagemKm1_'.$model->id.'" value="'.$historico[$model->id]['valorDiasUteis'].'" />';
                                 return $campo;
                             }
                         ],
+						
+						
+                        [
+                            'attribute' => 'sabadoLetivo',
+                            'header' => 'Sábados <br> Trabalhados <br> (2)',
+                            'format' => 'raw',
+                            'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[sabadoLetivo]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['sabadoLetivo'].'">',
+                            'contentOptions' => ['style' => 'min-width:100px;'],
+                            'headerOptions' => ['style' => 'min-width:100px;text-align:center;'],
+                            'value' => function($model) use ($historico) {
+                                $campo = '<input type="number" size="50" class="form-control sabadoLetivo" name="sabadoLetivo[]" id="sabadoLetivo_'.$model->id.'" value="'.$historico[$model->id]['sabadoLetivo'].'" />';
+                                return $campo;
+                            }
+                        ],
+                       
+					   [
+                            'attribute' => 'valorViagemKm1',
+                            'header' => 'Kms rodado / dia <br> Nº viagens / dia <br> (2)',
+                            'format' => 'raw',
+                            'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[viagemKm1]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['valorViagemKm2'].'">',
+                            'contentOptions' => array('style' => 'min-width:100px;'),
+                            'headerOptions' => array('style' => 'min-width:100px;text-align:center;'),
+                            'value' => function($model) use ($historico) {
+                                $campo = '<input type="number" size="50" class="form-control viagemKm1" name="viagemKm1[]" id="viagemKm1_'.$model->id.'" value="'.$historico[$model->id]['valorViagemKm2'].'" />';
+                                return $campo;
+                            }
+                        ],
+						
                         [
                             'attribute' => 'viagemKm2',
                             'header' => 'Viagem/Km<br>(2)',
@@ -211,9 +354,21 @@ $this->params['breadcrumbs'][] = $this->title;
                                 return $campo;
                             }
                         ],
+						[
+                            'attribute' => 'viagemKm1',
+                            'header' => 'Total Sábados <br>(2)',
+                            'format' => 'raw',
+                            'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[viagemKm1]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['valorSabado'].'">',
+                            'contentOptions' => array('style' => 'min-width:100px;'),
+                            'headerOptions' => array('style' => 'min-width:100px;text-align:center;'),
+                            'value' => function($model) use ($historico) {
+                                $campo = '<input type="number" size="50" class="form-control viagemKm1" name="viagemKm1[]" id="viagemKm1_'.$model->id.'" value="'.$historico[$model->id]['valorSabado'].'" />';
+                                return $campo;
+                            }
+                        ],
                         [
                             'attribute' => 'valorNota',
-                            'header' => 'Valor<br>Nota',
+                            'header' => 'Valor Total <br>Nota',
                             'format' => 'raw',
                             'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[valorNota]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['valorNota'].'">',
                             'contentOptions' => array('style' => 'min-width:200px;text-align:center;'),
@@ -223,71 +378,15 @@ $this->params['breadcrumbs'][] = $this->title;
                                 return $campo;
                             }
                         ],
-                        [
-                            'attribute' => 'protocoloTESC',
-                            'header' => 'Protocolo<br>TESC',
-                            'format' => 'raw',
-                            'filter' => '<input type="date" class="form-control" name="ControleFinanceiroSearch[protocoloTESC]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['protocoloTESC'].'">',
-                            'headerOptions' => array('style' => 'min-width:100px;text-align:center;'),
-                            'value' => function($model) use ($historico) {
-                                $campo = '<input type="date" class="form-control protocoloTESC" name="protocoloTESC[]" id="protocoloTESC_'.$model->id.'" value="'.$historico[$model->id]['protocoloTESC'].'" max="1979-12-31" />';
-                                return $campo;
-                            }
-                        ],
-                        [
-                            'attribute' => 'protocoloGC',
-                            'header' => 'Protocolo<br>GC',
-                            'format' => 'raw',
-                            'filter' => '<input type="date" class="form-control" name="ControleFinanceiroSearch[protocoloGC]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['protocoloGC'].'">',
-                            'headerOptions' => array('style' => 'min-width:100px;text-align:center;'),
-                            'value' => function($model) use ($historico) {
-                                $campo = '<input type="date" class="form-control protocoloGC" name="protocoloGC[]" id="protocoloGC_'.$model->id.'" value="'.$historico[$model->id]['protocoloGC'].'" max="1979-12-31" />';
-                                return $campo;
-                            }
-                        ],
-                        [
-                            'attribute' => 'lote',
-                            'header' => 'Lote',
-                            'format' => 'raw',
-                            'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[lote]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['lote'].'">',
-                            'headerOptions' => array('style' => 'min-width:100px;text-align:center;'),
-                            'value' => function($model) use ($historico) {
-                                $campo = '<input type="number" size="50" class="form-control lote" name="lote[]" id="lote_'.$model->id.'" value="'.$historico[$model->id]['lote'].'" />';
-                                return $campo;
-                            }
-                        ],
-                        [
-                            'attribute' => 'saldoAF',
-                            'label' => 'Saldo AF',
-                            'format' => 'raw',
-                            'filter' => '<input type="number" class="form-control" name="ControleFinanceiroSearch[saldoAF]" value="'.Yii::$app->request->get('ControleFinanceiroSearch')['saldoAF'].'">',
-                            'headerOptions' => array('style' => 'min-width:200px;text-align:center;'),
-                            'value' => function($model) use ($historico) {
-                                $campos = '<input size="50" class="form-control saldoAF" name="saldoAF[]" id="saldoAF_'.$model->id.'" readonly value="'.sprintf('%0.2f', $historico[$model->id]['saldoAF']).'" />';
-                                $campos .= '<input type="hidden" class="form-control valorPago" name="valorPago[]" id="valorPago_'.$model->id.'" value="'.$model->condutor->valorPagoKmViagem.'" />';
-                                $campos .= '<input type="hidden" class="form-control kmViagemAtual" name="kmViagemAtual[]" id="kmViagemAtual_'.$model->id.'" value="'.$model->condutor->kmViagemAtual.'" />';
-                                $campos .= '<input type="hidden" class="form-control kmViagemSabadoLetivo" name="kmViagemSabadoLetivo[]" id="kmViagemSabadoLetivo_'.$model->id.'" value="'.$model->condutor->kmViagemSabadoLetivo.'" />';
-                                $campos .= '<input type="hidden" class="form-control saldoAFAnterior" name="saldoAFAnterior[]" id="saldoAFAnterior_'.$model->id.'" value="'.$model->condutor->saldoAFAnterior.'" />';
-                                $campos .= '<input type="hidden" class="form-control condutores" name="condutores[]" value="'.$model->idCondutor.'" value="'.$historico[$model->id]['diasTrabalhados'].'" />';
-                                return $campos;
-                            }
-                        ],
-                        [
-                            'attribute' => 'acao',
-                            'label' => '',
-                            'format' => 'raw',
-                            'contentOptions' => ['style' => 'min-width:100px; white-space: normal; display:inline-block;'],
-                            'value' => function ($model) {
-                                return  Html::button('<i class="glyphicon glyphicon-search"></i>', ['value' => Url::to(['condutor/view', 'id' => $model->id, 'ajax' => true]), 'title' => 'Detalhes do condutor', 'class' => 'showModalButton btn btn-primary', 'aria-label' => 'Detalhes']);
-                            }
-                        ],
+                       
+                      
                     ]
                 ]); ?>
                 <?php Pjax::end(); ?> 
             </div>
 
             <div class="box-footer">
-                <?= Html::submitButton('Salvar Dados', ['class' => 'btn btn-success pull-right']) ?>
+                <!--  <?= Html::submitButton('Salvar Dados', ['class' => 'btn btn-success pull-right']) ?>  -->
                 <!-- <button class="btn btn-success pull-right" id="saveBtn">Salvar</button> -->
             </div>
         <?php 
@@ -302,12 +401,44 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
         <?php } ?>
     </div>
-</div>
+	
 
+</div>
 
 <script type="text/javascript">
 
-    function gerenciadorPdf(){
+function buscar(){
+	let mes = $("#mes").val();
+	let ano = $("#ano").val();
+	$.ajax({	
+		type: 'POST',
+		url: 'index.php?r=condutor/buscar-ocorrencia',
+		data:{
+		  buscar: '1',
+		  mes : mes,
+		  ano : ano,
+		},
+		}).done(function(data) {
+			if(data){			
+				$("#ocorrencias").html(data);
+			}			
+		});
+};
+
+$(document).ready(function() {
+	buscar();	
+});
+
+$(document).on('click', '.export', function () {
+    var idCondutor = $(this).attr('id');
+	
+	let get = window.location.search;
+	get = get.replace('condutor%2Fcontrole-financeiro', 'condutor/export-folha-ponto');
+    window.open(get + '&idCondutor=' + idCondutor)
+	
+});
+
+function gerenciadorPdf(){
         let get = window.location.search;
 
         get = get.replace('condutor%2Fcontrole-financeiro', 'condutor/report-financeiro-pdf');
@@ -460,5 +591,72 @@ $this->params['breadcrumbs'][] = $this->title;
     }
     $('body').on('input', 'input[type="number"]', forceNumeric);
 
+
+$(document).on('click', '.ocorrencia', function () {
+    var dataGravar = $(this).attr('id');
+	Swal.fire({
+		title: "Preencher as informações referentes a ocorrência.",			
+		html: '<input id="oco"  class="swal2-input" placeholder="Ocorrência">',
+		showCancelButton: true ,
+		confirmButtonColor: 'green'
+	}).then((result) => {				
+		var oco =  document.getElementById('oco').value;
+		if(oco){
+			$.ajax({	
+				type: 'POST',
+				url: 'index.php?r=condutor/gravar-ocorrencia',
+				data:{
+					data: dataGravar,
+					ocorrencia: oco,
+				},
+			}).done(function(data) {
+				if(data == 1){				
+					Swal.fire({
+						width: '600px',
+						title: 'Atenção usuário',
+						text: "A ocorrência foi gravada",
+						icon: 'warning',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'Ok',
+					}).then((result) => {
+						buscar();	
+						
+
+					});	
+				}	
+			});
+		}
+	});
+});
+
+$(document).on('click', '.excluir', function () {
+    var dataApagar = $(this).attr('id');
+	$.ajax({	
+				type: 'POST',
+				url: 'index.php?r=condutor/gravar-ocorrencia',
+				data:{
+					data: dataApagar,
+					ocorrencia: '-',
+				},
+			}).done(function(data) {
+				if(data == 1){				
+					Swal.fire({
+						width: '600px',
+						title: 'Atenção usuário',
+						text: "A ocorrência foi apagada",
+						icon: 'warning',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'Ok',
+					}).then((result) => {
+						buscar();	
+						location.reload()
+					});	
+				}	
+			});
+});
 
 </script>

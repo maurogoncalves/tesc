@@ -249,7 +249,7 @@ $this->params['breadcrumbs'][] = $this->title;
             </div>
             <div class="box-header with-border">
                 <?= SolicitacaoTransporte::permissaoCriar() ?  Html::button('Cancelar benefício', ['value' => Url::to(['solicitacao-transporte/create-ajax', 'idAluno' => $model->id, 'idEscola' => $model->idEscola, 'tipoSolicitacao' => SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO]), 'title' => 'Cancelar Solicitação', 'class' => 'showModalButton btn btn-danger pull-right', 'style' => 'margin-left: 5px;']) : ''; ?>
-                <?= SolicitacaoTransporte::permissaoCriar() ?  Html::button('RENOVAÇÃO / Nova Solicitação', ['value' => Url::to(['solicitacao-transporte/create-ajax', 'idAluno' => $model->id, 'idEscola' => $model->idEscola, 'tipoSolicitacao' => SolicitacaoTransporte::SOLICITACAO_BENEFICIO]), 'title' => 'Nova Solicitação', 'class' => 'showModalButton btn btn-success pull-right']) : ''; ?>
+                <?= SolicitacaoTransporte::permissaoCriar() ?  Html::button('RENOVAÇÃO / Nova Solicitação', ['value' => Url::to(['solicitacao-transporte/create-ajax', 'idAluno' => $model->id, 'idEscola' => $model->idEscola, 'tipoSolicitacao' => SolicitacaoTransporte::SOLICITACAO_BENEFICIO,'cartaoPasseEscolar' => $model->cartaoPasseEscolar]), 'title' => 'Nova Solicitação', 'class' => 'showModalButton btn btn-success pull-right']) : ''; ?>
 
             </div>
 

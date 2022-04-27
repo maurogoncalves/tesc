@@ -148,6 +148,67 @@ $this->params['breadcrumbs'][] = $this->title;
                             // 'idAluno',
                             // 'idEscola',
                             // 'data',
+							[
+								
+                                'attribute' => 'novaSolicitacao',
+                                'label' => 'Sugestão de Rotas',
+								'format' => 'raw',
+                                'value' => function($model){
+                                    
+									$sqlRotas ="select distinct p.idCondutorRota,c.nome from Ponto p  join PontoAluno pp on pp.idPonto = p.id
+									left join Aluno a on a.id = pp.idAluno left join CondutorRota cr on cr.id = p.idCondutorRota left join Condutor c on c.id = cr.idCondutor
+									where pp.sentido = 1 and a.bairro = '".$model->aluno->bairro."' and a.turno = '".$model->aluno->turno."' and a.idEscola = '".$model->aluno->idEscola."'  ";
+									$dadosRota = Yii::$app->getDb()->createCommand($sqlRotas)->queryAll();
+									
+									$texto = '';
+									foreach($dadosRota as $rota){
+										$link ="?r=condutor-rota/roterizar&idCondutorRota=".$rota['idCondutorRota'];
+										$nome = $rota['nome'];
+										$link = '<a target="_blank" href="'.$link.'">'.$rota['idCondutorRota'].'</a>';
+										$texto .= '<span title="'.$nome.'">'.$link.'</span>, ';
+									}
+									
+									$sqlRotas ="select distinct p.idCondutorRota,c.nome from Ponto p  join PontoAluno pp on pp.idPonto = p.id
+									left join Aluno a on a.id = pp.idAluno left join CondutorRota cr on cr.id = p.idCondutorRota left join Condutor c on c.id = cr.idCondutor
+									where pp.sentido = 2 and a.bairro = '".$model->aluno->bairro."' and a.turno = '".$model->aluno->turno."' and a.idEscola = '".$model->aluno->idEscola."'  ";
+									$dadosRota = Yii::$app->getDb()->createCommand($sqlRotas)->queryAll();
+									
+									
+									foreach($dadosRota as $rota){
+										$link ="?r=condutor-rota/roterizar&idCondutorRota=".$rota['idCondutorRota'];
+										$nome = $rota['nome'];
+										$link = '<a target="_blank" href="'.$link.'">'.$rota['idCondutorRota'].'</a>';
+										$texto .= '<span title="'.$nome.'">'.$link.'</span>, ';
+									}
+									if (Usuario::permissoes([Usuario::PERFIL_TESC_DISTRIBUICAO, Usuario::PERFIL_SUPER_ADMIN, Usuario::PERFIL_TESC_PASSE_ESCOLAR])) {
+										return $texto;
+									}	
+
+                                },	
+									
+                            ],
+							
+							[
+                                'attribute' => 'irmao',
+                                'label' => 'Irmãos',
+								'format' => 'raw',
+                                'value' => function($model){
+                                    
+									if(($model->modalidadeBeneficio == 1) or ($model->modalidadeBeneficio == 2)){
+										$sqlTemIrmao ='select count(*) as total,a.id
+										 from SolicitacaoTransporte st  
+										 join Aluno a on st.idAluno = a.id 
+										 join CondutorRota c on c.id = st.idRotaIda 
+										 join CondutorRota cc on cc.id = st.idRotaVolta where  a.cpfResponsavel = '.$model->aluno->cpfResponsavel.'  and st.`status` = 6 and st.idAluno <> '.$model->aluno->id;
+										$sqlTemIrmao = Yii::$app->getDb()->createCommand($sqlTemIrmao)->queryAll();
+										if($sqlTemIrmao[0]['total'] <> 0){	
+											return 	Html::tag('span', Html::decode('<i id='.$sqlTemIrmao[0]['id'].' class="fa fa-user-times irmao" aria-hidden="true" style="color:#ff0000;top:5px!important;cursor: pointer;"></i>'));
+										}
+									}
+
+                                },								
+                            ],
+							
                             'anoVigente',
   
                             [
@@ -290,6 +351,12 @@ $this->params['breadcrumbs'][] = $this->title;
                                     'placeholder' => '-',
                                 ]
                             ],
+							[
+                                'label' => 'Período',
+                                'value' => function ($model) {
+                                    return Aluno::ARRAY_TURNO[$model->aluno->turno];
+                                },
+                            ],
                             [
                                 'label' => 'Endereço do Aluno',
                                 'attribute' => 'idAluno',
@@ -305,6 +372,14 @@ $this->params['breadcrumbs'][] = $this->title;
                                     'placeholder' => '-',
                                 ]
                             ],
+							[
+                            'attribute' => 'numeroResidencia',
+                            'label' => 'Número',
+                            'value' => function($model) {
+                                return $model->aluno->numeroResidencia;
+                            },
+							'filter'=>'',
+							],
                             [
                                 'label' => 'Complemento',
                                 'attribute' => 'complementoResidencia',
@@ -396,11 +471,12 @@ $this->params['breadcrumbs'][] = $this->title;
                             [
                                 'attribute' => 'distanciaEscola',
                                 'format' => 'raw',
+								'label' => 'Distância entre metros',
                                 'value' => function($model) {
                                     if (!Usuario::permissao(Usuario::PERFIL_TESC_PASSE_ESCOLAR))
-                                        return '<div id="val-distancia-escola">'.(($model->distanciaEscola) ? $model->distanciaEscola . ' KM' : '-').'</div><div class="input-group margin" style="display:none;" id="distancia-escola"><input id="new-distancia-escola" type="number" class="form-control"><span class="input-group-btn"><button type="button" id="save-distancia-escola" class="btn btn-success btn-flat">Salvar</button></span></div><button id="update-distancia-escola" class="btn btn-primary btn-sm margin pull-right"><span class="glyphicon glyphicon-pencil"></span></button>';
+                                        return '<div id="val-distancia-escola">'.(($model->distanciaEscola) ? $model->distanciaEscola . ' ' : '-').'</div><div class="input-group margin" style="display:none;" id="distancia-escola"><input id="new-distancia-escola" type="number" class="form-control"><span class="input-group-btn"><button type="button" id="save-distancia-escola" class="btn btn-success btn-flat">Salvar</button></span></div><button id="update-distancia-escola" class="btn btn-primary btn-sm margin pull-right"><span class="glyphicon glyphicon-pencil"></span></button>';
                                     else
-                                        return (($model->distanciaEscola) ? $model->distanciaEscola . ' KM' : '-').'</div>';
+                                        return (($model->distanciaEscola) ? $model->distanciaEscola . ' ' : '-').'</div>';
                                 }
                             ],
                             [
@@ -769,6 +845,59 @@ var btnUpdateVT = '';
         })
     })
 
+});
+
+$(document).on('click', '.irmao', function () {
+	var id = $(this).attr('id');
+	$.ajax({	
+		type: 'POST',
+		url: 'index.php?r=solicitacao-transporte/irmao',
+		dataType: 'json', /* Tipo de transmissão */			
+		data:{
+			  aluno: id
+		},
+		}).done(function(data) {
+			
+			var Texto = "";
+			  Texto = Texto + '<p align="left"> <b>Mãe </b> :'+data[0].nomeMae+' <br>';
+			  Texto = Texto + ' <b>Pai </b>:'+data[0].nomePai+' <br><br>';
+			  Texto = Texto + ' <b>Irmão(a) </b>:'+data[0].nome+' <br><br>';
+			  if(data[0].idRotaIda){
+				Texto = Texto + ' <b>Rota Ida </b>:'+data[0].idRotaIda+' <br>';  
+			  }else{
+				  Texto = Texto + ' <b>Rota Ida </b>: Sem rota definida <br>';
+			  }			  
+			  if(data[0].descricao_ida){
+				 Texto = Texto + ' <b>Descrição Rota Ida </b>:'+data[0].descricao_ida+' <br><br>';
+			  }
+			  if(data[0].idRotaVolta){
+				Texto = Texto + ' <b>Rota Volta </b>:'+data[0].idRotaVolta+' <br>';  
+			  }else{
+				  Texto = Texto + ' <b>Rota Volta </b>: Sem rota definida <br>';
+			  }
+			  
+			  if(data[0].descricao_volta){
+				Texto = Texto + ' <b>Descrição Rota Volta </b>:'+data[0].descricao_volta+' </p>';
+			  }
+			  
+			  
+			  
+  
+			Swal.fire({
+				width: '600px',
+				title: 'Atenção usuário(a) esse aluno tem irmão(a)',
+				 html: Texto,
+				//text: "Mãe: "+data[0].nomeMae+" \n Pai: "+data[0].nomePai+" \n Irmão(a): "+data[0].nome+" \n Rota Ida: "+data[0].idRotaIda+" \n Descrição Rota Ida: "+data[0].descricao_ida+" \n Rota Volta: "+data[0].idRotaVolta+" \n Descrição Rota Volta: "+data[0].descricao_volta,
+				icon: 'warning',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Ok',
+			}).then((result) => {
+				console.log('OK')
+			});
+						
+	});
 });
 
 </script>

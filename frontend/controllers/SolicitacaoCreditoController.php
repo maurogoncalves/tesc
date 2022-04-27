@@ -366,10 +366,21 @@ class SolicitacaoCreditoController extends Controller
           
                 foreach($model->solicitacaoCreditoAlunos as $solAluno) {
                     if($model->tipoSolicitacao == SolicitacaoCredito::TIPO_PASSE_ESCOLAR){
-                        $cartao = $solAluno->aluno->solicitacaoAtivaPasse->cartaoPasseEscolar;
+						
+						$sqlCartao ='select a.cartaoPasseEscolar,a.cartaoValeTransporte from  Aluno a where a.id = '.$solAluno->idAluno;
+						$dadosCartao = Yii::$app->getDb()->createCommand($sqlCartao)->queryAll();
+			
+                        //$cartao = $solAluno->aluno->solicitacaoAtivaPasse->cartaoPasseEscolar;
+						$cartao = $dadosCartao[0]['cartaoPasseEscolar'];
                     } else {
-                        $cartao = $solAluno->aluno->solicitacaoAtivaPasse->cartaoValeTransporte;
+						
+						$sqlCartao ='select a.cartaoPasseEscolar,a.cartaoValeTransporte from  Aluno a where a.id = '.$solAluno->idAluno ;
+						$dadosCartao = Yii::$app->getDb()->createCommand($sqlCartao)->queryAll();
+			
+                        //$cartao = $solAluno->aluno->solicitacaoAtivaPasse->cartaoValeTransporte;
+						$cartao = $dadosCartao[0]['cartaoPasseEscolar'];
                     }
+
                     if($solAluno->valor > 0 )
                         fwrite($fp, $cartao.';'.\Yii::$app->formatter::DoubletoReal($solAluno->valor).'
 ');
@@ -849,7 +860,8 @@ class SolicitacaoCreditoController extends Controller
 
     public function actionCreditoAdministrativo($id){
         $model = $this->findModel($id);
-        if($model->load(Yii::$app->request->post())){
+        if($model->load(Yii::$app->request->post())){			
+			$model->status = SolicitacaoCredito::STATUS_TRANSFERIDO;
             $model->save(false);
         }
         return $this->render('credito-administrativo', [

@@ -74,6 +74,20 @@ class ConfiguracaoController extends Controller
             'dataProvider' => $dataProvider,
         ]);
     }
+	
+	/**
+     * Delete all pendences.
+     * @return mixed
+     */
+    public function actionApagar()
+    {
+        if($_POST){
+			
+			$pendencias ='';
+			\Yii::$app->db->createCommand()->update('Condutor', ['pendencias' => $pendencias], 'id <> 0')->execute();
+			echo 1;
+		}
+    }
 
     /**
      * Displays a single Configuracao model.

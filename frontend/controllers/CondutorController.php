@@ -3,7 +3,9 @@
 namespace frontend\controllers;
 
 use common\models\Aluno;
+use common\models\SolicitacaoTransporte;
 use Yii;
+use common\models\Escola;
 use common\models\Condutor;
 use common\models\CondutorRegiao;
 use common\models\CondutorRota;
@@ -94,8 +96,514 @@ class CondutorController extends Controller
             'dataProvider' => $dataProvider,
         ]);
     }
-
 	
+	
+    public function actionEscolas()
+    {
+		\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+       if($_POST){		
+			
+			$sqlEscolas ='select distinct e.nome as nome,e.tipo,e.unidade from SolicitacaoTransporte st  join CondutorEscola  c on c.idCondutor = st.idCondutor join Escola  e on c.idEscola = e.id  where st.`status` = 6 and  c.idCondutor = '.$_POST['condutor'].' order by e.nome' ;
+			$dadosEscola = Yii::$app->getDb()->createCommand($sqlEscolas)->queryAll();
+			
+			$escolas = '';
+			$escolas.='<BR>';
+			foreach($dadosEscola as $esc){				
+				$escolas.= Escola::ARRAY_UNIDADE[$esc['unidade']];
+				$escolas.= ' - ';
+				$escolas.= Escola::ARRAY_TIPO[$esc['tipo']];
+				$escolas.= ' - ';
+				$escolas.= '<B>'.$esc['nome'].'</B>';
+				
+				$escolas.='<BR>';
+			}
+			
+			return $escolas;
+			
+			
+	   }else{
+		   echo false;
+	   }
+    }
+
+	 public function actionBairros()
+    {
+		\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+       if($_POST){		
+			
+			$sqlBairros ='select distinct a.bairro as bairro from SolicitacaoTransporte st  left join Aluno a on st.idAluno = a.id 	where st.idCondutor = '.$_POST['condutor'].'  and st.`status` = 6 order by a.bairro' ;
+			$dadosBairro = Yii::$app->getDb()->createCommand($sqlBairros)->queryAll();
+			$bairros = '';
+			$bairros.='<BR>';
+			foreach($dadosBairro as $esc){				
+				$bairros.= '<B>'.$esc['bairro'].'</B>';				
+				$bairros.='<BR>';
+			}
+			
+			return $bairros;
+			
+			
+	   }else{
+		   echo false;
+	   }
+    }
+	
+	public function actionGravarControle()
+    {	
+		$condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();		
+		if($_POST['mes'] and $_POST['ano']){			
+			$mes = $_POST['mes'];
+			$ano = $_POST['ano'];
+			$diasTrabalhados = $_POST['diasTrabalhados'];
+			$totalFeito = $_POST['totalFeito'];
+			$valor = $_POST['valor'];			
+			$sabadosTrabalhados = $_POST['sabadosTrabalhados'];
+			$totalFeitoSabado = $_POST['totalFeitoSabado'];
+			$valorSabado = $_POST['valorSabado'];			
+			$total = $_POST['total'];
+			$totalSabado = $_POST['totalSabado'];			
+			$totalGeral = $_POST['totalGeral'];
+			$empresa = $_POST['empresa'];
+			$alvara = $_POST['alvara'];
+			$sqlControleFinanceiro ="select count(*) as total from ControleFinanceiro f where f.idCondutor = $condutor->id  and f.mes = $mes and ano = $ano" ;
+			$dadosFinanceiro = Yii::$app->getDb()->createCommand($sqlControleFinanceiro)->queryAll();
+			if($dadosFinanceiro[0]['total'] <> 0 ){		
+				\Yii::$app->db->createCommand("UPDATE ControleFinanceiro
+				SET 
+				diasTrabalhados=:diasTrabalhados, 
+				sabadoLetivo=:sabadosTrabalhados, 
+				viagemKm1=:viagemKm1 , 
+				viagemKm2=:viagemKm2 ,
+				valorDiasUteis=:valorDiasUteis ,
+				valorSabado=:valorSabado ,
+				valorViagemKm1=:valorViagemKm1 ,
+				valorViagemKm2=:valorViagemKm2 ,
+				valorNota=:valorNota,
+				nomeEmpresa=:empresa ,
+				alvara=:alvara				
+				WHERE idCondutor=".$condutor->id." and mes=".$mes." and ano=".$ano)
+				->bindValue(':diasTrabalhados', $diasTrabalhados)
+				->bindValue(':viagemKm1', $totalFeito)
+				->bindValue(':sabadosTrabalhados', $sabadosTrabalhados)
+				->bindValue(':viagemKm2', $totalFeitoSabado)
+				->bindValue(':valorSabado', $totalSabado)
+				->bindValue(':valorViagemKm1', $valor)
+				->bindValue(':valorViagemKm2', $valorSabado)
+				->bindValue(':valorDiasUteis', $total)
+				->bindValue(':empresa', $empresa)
+				->bindValue(':alvara', $alvara)
+				->bindValue(':valorNota', $totalGeral)->execute();				
+			}else{
+			
+				Yii::$app->getDb()->createCommand()->insert('ControleFinanceiro', [
+					'idCondutor'=> $condutor->id,
+					'ano' => $ano ,
+					'mes' => $mes ,
+					'diasTrabalhados' => $_POST['diasTrabalhados'] ,
+					'sabadoLetivo' => $_POST['sabadosTrabalhados'] ,
+					'viagemKm1' => $_POST['totalFeito'] ,
+					'viagemKm2' => $_POST['totalFeitoSabado'] ,
+					'valorSabado' => $_POST['valorSabado'] ,
+					'valorDiasUteis' => $_POST['total'] ,
+					'valorNota' => $_POST['totalGeral'] ,
+					'valorViagemKm1' => $_POST['valor'] ,
+					'valorViagemKm2' => $_POST['valorSabado'] ,
+					'nomeEmpresa' => $_POST['empresa'] ,
+					'alvara' => $_POST['alvara'] ,
+				])->execute();
+			}	
+			echo 1;
+		}else{
+			echo 0;
+		}		
+	}
+	
+	public function actionFolhaPonto()
+    {	
+		$mes = date("m");
+		if($mes < 10){
+			$mes = str_replace("0", "", $mes);
+		}		
+		$ano = date("Y");
+		$primeiroDia = '1';	
+		$diaCorrente =  date("d");
+		//$diaCorrente =  24;
+
+		$diaCorte =  date("t") - 7;
+		if(($diaCorrente <= $diaCorte)){
+			$mes = $mes - 1;
+		}
+		$ultimoDia =  date("t");
+		$ultimoDiaMes =  date("t", strtotime($ano.'-'.$mes.'-'.$primeiroDia)) . "\n";	
+		$primeiraSemana = array();
+		$segundaSemana = array();
+		$terceiraSemana = array();
+		$quartaSemana = array();
+		$quintaSemana = array();
+		$sextaSemana = array();
+		
+		for($i=1;$i<=7;$i++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $i.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			if($diaSemana == 0){
+				break;
+			}else{
+				$primeiraSem[$diaSemana] = $ano.'-'.$mes.'-'.$i;
+			}			
+		}		
+		$ate = $i+6;
+		for($j=$i;$j<=$ate;$j++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $j.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			$segundaSem[$diaSemana] = $ano.'-'.$mes.'-'.$j;		
+		}
+		$ate = $j+6;
+		for($m=$j;$m<=$ate;$m++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $m.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			$terceiraSem[$diaSemana] = $ano.'-'.$mes.'-'.$m;			
+		}	
+		$ate = $m+6;
+		for($n=$m;$n<=$ate;$n++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $n.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			$quartaSem[$diaSemana] = $ano.'-'.$mes.'-'.$n;
+		}		
+		$ate = $n+6;
+		for($o=$n;$o<=$ate;$o++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $o.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			if($o<=$ultimoDiaMes){
+				$quintaSem[$diaSemana] = $ano.'-'.$mes.'-'.$o;
+			}			
+		}
+		$ate = $ultimoDia;
+		for($p=$o;$p<=$ate;$p++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $p.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			if($p<=$ultimoDiaMes){
+				$sextaSem[$diaSemana] = $ano.'-'.$mes.'-'.$p;
+			}			
+		}		
+		$cor = '#98FB98';
+		$imprime = '0';
+		$primeiraSemana = $this->buscaConsultaDiaCondutor($primeiraSem,0,$cor,$imprime);
+		$segundaSemana = $this->buscaConsultaDiaCondutor($segundaSem,0,$cor,$imprime);
+		$terceiraSemana = $this->buscaConsultaDiaCondutor($terceiraSem,0,$cor,$imprime); 
+		$quartaSemana = $this->buscaConsultaDiaCondutor($quartaSem,0,$cor,$imprime);
+		$quintaSemana = $this->buscaConsultaDiaCondutor($quintaSem,0,$cor,$imprime);
+		$sextaSemana = $this->buscaConsultaDiaCondutor($sextaSem,0,$cor,$imprime);	
+
+		$condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();		
+		$sqlEscolas ='select distinct e.nome as nome,e.tipo,e.unidade,e.id from  CondutorEscola  c  join Escola  e on c.idEscola = e.id  where  c.idCondutor  = '.$condutor->id.' order by e.nome' ;
+		$dadosEscola = Yii::$app->getDb()->createCommand($sqlEscolas)->queryAll();
+	
+		$escolas = array();
+		$i=1;
+		foreach($dadosEscola as $esc){				
+			$escolas[$i]['id'] = $esc['id'];
+			$escolas[$i]['tipo'] = Escola::ARRAY_TIPO[$esc['tipo']];
+			$escolas[$i]['nome'] = $esc['nome'];
+			$i++;
+
+		}
+		
+		$ini = $ano.'-'.$mes.'-'.$primeiroDia;
+		$fim = $ano.'-'.$mes.'-'.$ultimoDia;
+		$sqlDiasTrabalhados ="select count(*) as total from FolhaPonto f where f.idCondutor = $condutor->id and f.`data` between '$ini' and '$fim' and DAYOFWEEK(f.data) <> 7" ;
+		$diasTrabalhados = Yii::$app->getDb()->createCommand($sqlDiasTrabalhados)->queryAll();
+		
+		$sqlSabadosTrabalhados ="select count(*) as total from FolhaPonto f where f.idCondutor = $condutor->id and f.`data` between '$ini' and '$fim' and DAYOFWEEK(f.data) = 7" ;
+		$sabadosTrabalhados = Yii::$app->getDb()->createCommand($sqlSabadosTrabalhados)->queryAll();
+		
+		$sqlControleFinanceiro ="select f.viagemKm1,f.valorViagemKm1,f.diasTrabalhados,f.valorNota,f.sabadoLetivo,f.viagemKm2,f.valorViagemKm2,f.valorSabado,f.valorDiasUteis,f.nomeEmpresa,f.alvara from ControleFinanceiro f where f.idCondutor = $condutor->id  and f.mes = $mes and ano = $ano" ;
+		$dadosFinanceiro = Yii::$app->getDb()->createCommand($sqlControleFinanceiro)->queryAll();
+		
+		if($dadosFinanceiro[0]['diasTrabalhados']){
+			$nomeEmpresa = $dadosFinanceiro[0]['nomeEmpresa'];
+		}else{
+			$nomeEmpresa = $model->nome;
+		}
+		
+		if($dadosFinanceiro[0]['alvara']){
+			$alvara = $dadosFinanceiro[0]['alvara'];
+		}else{
+			$alvara = $model->alvara;
+		}
+		
+		 return $this->render('folha-ponto', [
+            'primeiraSemana' => $primeiraSemana,
+			'segundaSemana' => $segundaSemana,
+			'terceiraSemana' => $terceiraSemana,
+			'quartaSemana' => $quartaSemana,
+			'quintaSemana' => $quintaSemana,
+			'sextaSemana' => $sextaSemana,            
+			'escolas' => $escolas,         
+			'diasTrabalhados' => $diasTrabalhados[0]['total'],    
+			'sabadosTrabalhados' => $sabadosTrabalhados[0]['total'],    
+			'tipoContrato' => $condutor->tipoContrato, 
+			'dadosFinanceiro' => $dadosFinanceiro, 
+			'ini' => $ini, 
+			'fim' => $fim, 	
+			'mes' => $mes, 	
+			'ano' => $ano, 	
+			'alvara' => $alvara, 	
+			'nomeEmpresa' => $nomeEmpresa, 	
+			'idCondutor' => $condutor->id, 
+        ]);		
+	}	
+	
+	public function actionBuscar()
+	{	
+		if($_POST){
+			$condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();			
+			if($_POST['buscar']){
+				$dia = $_POST['dia'];
+				$ini = $_POST['ini'];
+				$fim = $_POST['fim'];
+				if($dia == 1){
+					$sqlDiasTrabalhados ="select count(*) as total from FolhaPonto f where f.idCondutor = $condutor->id and f.`data` between '$ini' and '$fim'  and DAYOFWEEK(f.data) <> 7" ;
+				}else{
+					$sqlDiasTrabalhados ="select count(*) as total from FolhaPonto f where f.idCondutor = $condutor->id and f.`data` between '$ini' and '$fim'  and DAYOFWEEK(f.data) = 7" ;
+				}
+				
+				$diasTrabalhados = Yii::$app->getDb()->createCommand($sqlDiasTrabalhados)->queryAll();
+				\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;	
+				return $diasTrabalhados;
+			
+			}else{
+				echo 0 ;
+			}			
+		}else{
+			echo 0 ;
+		}		
+	}
+	
+	public function actionGravar()
+	{	
+		if($_POST){
+			$condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();			
+			if($_POST['data']){
+				$dataGravar = $_POST['data'];
+				if($_POST['justificativa']){
+					$just = $_POST['justificativa'];
+				}else{
+					$just = '-';
+				}
+				if($_POST['idEscola']){
+					$idEscola = $_POST['idEscola'];
+				}else{
+					$idEscola = '0';
+				}
+				Yii::$app->getDb()->createCommand()->insert('FolhaPonto', [
+					'idCondutor'=> $condutor->id,
+					'data' => $dataGravar ,
+					'justificativa' => $just ,
+					'idEscola' => $idEscola
+				])->execute();
+				echo 1 ;
+			}else{
+				echo 0 ;
+			}			
+		}else{
+			echo 0 ;
+		}		
+	}
+	public function actionApagar()
+	{	
+		if($_POST){
+			$condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();			
+			if($_POST['data']){
+				$dataApagar = $_POST['data'];
+				$diaSemanaNumero = date('w', strtotime($dataApagar));
+				\Yii::$app->db->createCommand()->delete('FolhaPonto', ['data' => $dataApagar])->execute();
+				if($diaSemanaNumero == 6){
+					echo 2 ;
+				}else{
+					echo 1 ;
+				}
+				
+			}else{
+				echo 0 ;
+			}			
+		}else{
+			echo 0 ;
+		}		
+	}
+	
+
+	public function buscaConsultaDiaCondutor($array,$id = 0,$cor,$imprime )
+	{		
+		if($id == 0){
+			$condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();
+		}else{
+			$condutor->id = $id;
+		}
+		
+		$hoje =  strtotime(date('d-m-Y'));
+		$html='';
+		for($i=0;$i<=6;$i++){										
+			$key = array_key_exists ($i, $array);							
+			if($key){
+				$dia = array_search($i, $array);
+				$diaArr = explode('-',$array[$i]);
+				$primeiroDiaMes =  strtotime($array[$i]);
+				
+				$sqlDiaSupervisor ="select status from DiasFolhaPonto p where p.`data` = '$array[$i]' ";
+				$dadosDiaSupervisor = Yii::$app->getDb()->createCommand($sqlDiaSupervisor)->queryAll();						
+				if($dadosDiaSupervisor[0]['status'] == '1'){
+					$html .='<td id="'.$array[$i].'" class=""  style="text-align:center;color:.;background-color:#dedede">'.$diaArr[2].'</td>';
+				}else{
+					$sqlDia ="select count(*) as total,justificativa from FolhaPonto p where p.`data` = '$array[$i]' and  p.idCondutor = ".$condutor->id  ;
+					$dadosDia = Yii::$app->getDb()->createCommand($sqlDia)->queryAll();
+					if($dadosDia[0]['total'] == '1'){
+						if($imprime == 1){
+							$html .='<td id="'.$array[$i].'" class="apagar" style="font-weight:bold;text-align:center;color:#000;background-color:'.$cor.'">
+							<table style="font-weight:bold;width:100%">
+							<tr><td></td><td style="width:50%"> x </td><td></td></tr>
+							<tr><td></td><td style="width:50%">'.$diaArr[2].'</td><td></td></tr></table> </td>';		
+						}else{
+							$html .='<td id="'.$array[$i].'" class="apagar" style="font-weight:bold;text-align:center;color:#000;background-color:'.$cor.'">'.$diaArr[2].' </td>';		
+						}		
+					}else{
+						if(($i == 0) or $i == 6){
+							if($imprime == 1){
+								$html .='<td id="'.$array[$i].'" class="gravarComJustificativa" style="cursor: pointer;text-align:center;font-weight:bold;color:#000;background-color:#dedede"> '.$diaArr[2].' </td>';
+							}else{
+								$html .='<td id="'.$array[$i].'" class="gravarComJustificativa" style="cursor: pointer;text-align:center;font-weight:bold;color:#000">'.$diaArr[2].'</td>';
+							}									
+						}else{
+							if($imprime == 1){
+								$html .='<td id="'.$array[$i].'" class="gravar" style="cursor: pointer;text-align:center;font-weight:bold;color:#000;background-color:#dedede"> '.$diaArr[2].' </td>';
+							}else{
+								$html .='<td id="'.$array[$i].'" class="gravar" style="cursor: pointer;text-align:center;font-weight:bold;color:#000;">'.$diaArr[2].'</td>';
+							}			
+						}	
+					}			
+					
+				}					
+								
+			}else{
+				$html .='<td style="text-align:center;font-weight:bold"><br></td>';
+			}
+		}
+		return $html;
+	}
+	
+	public function buscaConsultaDiaSupervisor($array)
+	{		
+
+		$hoje =  strtotime(date('d-m-Y'));
+		$html='';
+		for($i=0;$i<=6;$i++){										
+			$key = array_key_exists ($i, $array);							
+			if($key){
+				$dia = array_search($i, $array);
+				$diaArr = explode('-',$array[$i]);
+				$primeiroDiaMes =  strtotime($array[$i]);
+				
+				$sqlDia ="select status,data from DiasFolhaPonto p where p.`data` = '$array[$i]' " ;
+				$dadosDia = Yii::$app->getDb()->createCommand($sqlDia)->queryAll();
+				
+				if($dadosDia[0]['status'] == 1){
+					$html .='<td style="cursor: pointer;text-align:center;font-weight:bold;color:#000!important;background-color:#dedede"><input type="checkbox" id="status" name="dia[]" value="'.$array[$i].'|'.$dadosDia[0]['status'].'" > '.$diaArr[2].'</td>'; 
+				}else{
+					$html .='<td class="ocorrencia" id="'.$array[$i].'" style="cursor: pointer;text-align:center;font-weight:bold;color:#000!important;background-color:#fff"><input type="checkbox" id="status" name="dia[]" value="'.$array[$i].'|'.$dadosDia[0]['status'].'" > '.$diaArr[2].'</td>';
+				}		
+				
+			}else{
+				$html .='<td style="text-align:center;font-weight:bold"><br></td>';
+			}
+		}
+		return $html;
+	}
+	
+	public function actionGravarOcorrencia()
+	{	
+		if($_POST){
+			if($_POST['data']){
+				$dataGravar = $_POST['data'];
+				if($_POST['ocorrencia'] == '-'){
+					$ocorrencia = '-';
+					$status = 0;
+				}else{
+					$ocorrencia = $_POST['ocorrencia'];
+					$status = 1;
+				}
+				\Yii::$app->db->createCommand("UPDATE DiasFolhaPonto SET ocorrencia=:ocorrencia,status=:status WHERE data=:data")->bindValue(':data', $dataGravar)->bindValue(':ocorrencia', $ocorrencia)->bindValue(':status', $status)->execute();					
+				echo 1 ;
+			}else{
+				echo 0 ;
+			}			
+		}else{
+			echo 0 ;
+		}		
+	}
+	
+	
+	
+	public function actionBuscarOcorrencia()
+	{	
+		if($_POST){
+			if($_POST['buscar']){		
+				$mes = $_POST['mes'];
+				$ano = $_POST['ano'];				
+				$ultimoDia = date("t", mktime(0,0,0,$mes,'01',$ano)); 				
+				$ini =$ano.'-'.$mes.'-01';
+				$fim =$ano.'-'.$mes.'-'.$ultimoDia;				
+				$sqlOcorrencias ="select d.data,d.ocorrencia,DATE_FORMAT(d.data,'%d-%m-%Y') as dataBr  from DiasFolhaPonto d where d.`data` between '$ini' and '$fim' and d.ocorrencia <> '-'" ;
+				$ocorrencias = Yii::$app->getDb()->createCommand($sqlOcorrencias)->queryAll();				
+				
+				$isArrayLog =  is_array($ocorrencias) ? '1' : '0';
+				if($isArrayLog == 1) {
+					foreach($ocorrencias as $dado){			
+						$arquivo = "<i class='glyphicon glyphicon-trash'></i>";				
+						$json .= "<span title='Excluir'  style='cursor: pointer' id=".$dado['data']." class='excluir' >".$dado['dataBr'].' - '.$dado['ocorrencia'].' - '.$arquivo."</span> <BR>";
+					}
+				}else{
+					$json .= "0";
+				}
+				
+	
+				
+				\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;	
+				return $json;			
+			}else{
+				echo 0 ;
+			}			
+		}else{
+			echo 0 ;
+		}			
+	}
+	
+	public function actionGravarSupervisor()
+    {
+		if($_POST['dia']){
+			foreach($_POST['dia'] as $val){
+				$arr = explode('|',$val);
+				if($arr[1] == '1'){
+					$status = 2;
+					$ocorrencia = '-';
+					\Yii::$app->db->createCommand("UPDATE DiasFolhaPonto SET status=:status,ocorrencia=:ocorrencia WHERE data=:data")->bindValue(':data', $arr[0])->bindValue(':status', $status)->bindValue(':ocorrencia', $ocorrencia)->execute();					
+				}else{
+					$status = 1;
+					\Yii::$app->db->createCommand("UPDATE DiasFolhaPonto SET status=:status WHERE data=:data")->bindValue(':data', $arr[0])->bindValue(':status', $status)->execute();					
+				}					
+				
+			}
+			$mes = $_POST['mes'];
+			$ano = $_POST['ano'];				
+
+			 \Yii::$app->getSession()->setFlash('success', 'Os dados foram salvos');
+			return $this->redirect(['condutor/controle-financeiro', 'ano' => $ano, 'mes' => $mes]);
+			
+			exit(0);	  
+		}else{
+			\Yii::$app->getSession()->setFlash('error', 'Escolha mês e ano');
+			return $this->redirect(['condutor/controle-financeiro']);
+			exit(0);	  
+		}
+	}
     public function actionControleFinanceiro()
     {
         $ano = Yii::$app->request->get('ano');
@@ -117,9 +625,11 @@ class CondutorController extends Controller
                     $historico->mes = $mes;
                     $historico->idCondutor = $condutor->id;
                     $historico->saldoAF = $condutor->saldoAFAnterior;
-                    $historico->save();
+                    //$historico->save();
                 }
             }
+			
+
 
         }
         // $searchModel = new CondutorSearch();
@@ -153,13 +663,97 @@ class CondutorController extends Controller
                 'protocoloGC' => $registro->protocoloGC,
                 'lote' => $registro->lote,
                 'saldoAF' => $registro->saldoAF,
+				'valorViagemKm1' => $registro->valorViagemKm1,
+				'valorViagemKm2' => $registro->valorViagemKm2,
+				'valorSabado' => $registro->valorSabado,
+				'valorDiasUteis' => $registro->valorDiasUteis,
+				
             ];
         }
-// throw new NotFoundHttpException(print_r($arrayHistorico[350]['diasTrabalhados'], true));
+		
+		
+		if (empty($ano) && empty($mes)){
+			$mes = date("m");
+			$ano = date("Y");
+		}	
+		
+		$primeiroDia = '1';	
+		$ultimoDia = date("t", mktime(0,0,0,$mes,'01',$ano)); 
+		$ultimoDiaMes =  date("t", strtotime($ano.'-'.$mes.'-'.$primeiroDia));	
+		$primeiraSemana = array();
+		$segundaSemana = array();
+		$terceiraSemana = array();
+		$quartaSemana = array();
+		$quintaSemana = array();
+		$sextaSemana = array();
+		
+		for($i=1;$i<=7;$i++){					
+			$date = \DateTime::createFromFormat('d/m/Y H:i:s', $i.'/'.$mes.'/'.$ano.' 00:00:00');		
+			$diaSemana = $date->format('w');
+			if($diaSemana == 0){
+				break;
+			}else{
+				$primeiraSem[$diaSemana] = $ano.'-'.$mes.'-'.$i;
+			}			
+		}		
+		
+		$ate = $i+6;
+		for($j=$i;$j<=$ate;$j++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $j.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			$segundaSem[$diaSemana] = $ano.'-'.$mes.'-'.$j;		
+		}
+		$ate = $j+6;
+		for($m=$j;$m<=$ate;$m++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $m.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			$terceiraSem[$diaSemana] = $ano.'-'.$mes.'-'.$m;			
+		}	
+		$ate = $m+6;
+		for($n=$m;$n<=$ate;$n++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $n.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			$quartaSem[$diaSemana] = $ano.'-'.$mes.'-'.$n;
+		}		
+		$ate = $n+6;
+		for($o=$n;$o<=$ate;$o++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $o.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			if($o<=$ultimoDiaMes){
+				$quintaSem[$diaSemana] = $ano.'-'.$mes.'-'.$o;
+			}			
+		}
+		$ate = $ultimoDia;
+		for($p=$o;$p<=$ate;$p++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $p.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			if($p<=$ultimoDiaMes){
+				$sextaSem[$diaSemana] = $ano.'-'.$mes.'-'.$p;
+			}			
+		}		
+		$primeiraSemana = $this->buscaConsultaDiaSupervisor($primeiraSem);
+		$segundaSemana = $this->buscaConsultaDiaSupervisor($segundaSem);
+		$terceiraSemana = $this->buscaConsultaDiaSupervisor($terceiraSem); 
+		$quartaSemana = $this->buscaConsultaDiaSupervisor($quartaSem);
+		$quintaSemana = $this->buscaConsultaDiaSupervisor($quintaSem);
+		$sextaSemana = $this->buscaConsultaDiaSupervisor($sextaSem);
+		
+
+
         return $this->render('controle-financeiro', [
+			'primeiraSemana' => $primeiraSemana,
+			'segundaSemana' => $segundaSemana,
+			'terceiraSemana' => $terceiraSemana,
+			'quartaSemana' => $quartaSemana,
+			'quintaSemana' => $quintaSemana,
+			'sextaSemana' => $sextaSemana,            
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
-            'historico' => $arrayHistorico
+            'historico' => $arrayHistorico,
+			'mes' => $mes,
+			'ano' => $ano,
+			'ocorrencias' => $dadosOco[0]['data']
+			
         ]);
     }
 
@@ -330,22 +924,22 @@ class CondutorController extends Controller
 	$sheet->getColumnDimension('AE')->setWidth(20);
 	$sheet->getColumnDimension('AF')->setWidth(20);
 	$sheet->getColumnDimension('AG')->setWidth(40);
-	
+	$sheet->getColumnDimension('AH')->setWidth(40);
 	
     //
     $i = 1;
     // PRÓXIMA LINHA
     $sheet->mergeCells('A'.$i.':B'.($i+4));
-    $sheet->mergeCells('C'.$i.':AG'.$i);
-    $sheet->mergeCells('C'.($i+1).':AG'.($i+1));
+    $sheet->mergeCells('C'.$i.':AI'.$i);
+    $sheet->mergeCells('C'.($i+1).':AI'.($i+1));
     $sheet->setCellValue('C'.($i+1), "Secretaria de Educação e Cidadania");
     $sheet->getStyle('C'.($i+1))->applyFromArray($left)->getFont()->setBold(true);
 
-    $sheet->mergeCells('C'.($i+2).':AG'.($i+4));
+    $sheet->mergeCells('C'.($i+2).':AI'.($i+4));
     $sheet->setCellValue('C'.($i+2), "Setor de Transporte Escolar\nE-mail: transporte.escolar@sjc.sp.gov.br\nTelefone: (12) 3901-2165");
     $sheet->getStyle('C'.($i+2))->getAlignment()->setWrapText(true);
 
-    $sheet->getStyle('A'.($i+2).':AG'.($i+2))->applyFromArray($left);
+    $sheet->getStyle('A'.($i+2).':AI'.($i+2))->applyFromArray($left);
 
 
     $i+=5;
@@ -384,17 +978,19 @@ class CondutorController extends Controller
 	$sheet->setCellValue('AE'.$i, "CPF DO MONITOR");
 	$sheet->setCellValue('AF'.$i, "RG DO MONITOR");
 	$sheet->setCellValue('AG'.$i, "TELEFONES DO MONITOR");
+	$sheet->setCellValue('AH'.$i, "PENDÊNCIAS");
+	$sheet->setCellValue('AI'.$i, "BAIRROS ATENDIDOS");
 
-    $sheet->getStyle('A'.$i.':AG'.$i)
+    $sheet->getStyle('A'.$i.':AI'.$i)
     ->getAlignment()->setWrapText(true);
-    $sheet->getStyle('A'.$i.':AG'.$i)->getFill()
+    $sheet->getStyle('A'.$i.':AI'.$i)->getFill()
     ->setFillType(Fill::FILL_SOLID)
     ->getStartColor()->setARGB('FF000000');
 
-    $sheet->getStyle('A'.$i.':AG'.$i)->getFont()->setBold(true);
+    $sheet->getStyle('A'.$i.':AI'.$i)->getFont()->setBold(true);
 
-    $sheet->getStyle('A'.$i.':AG'.$i)->getFont()->setColor( $colorWhite );
-    $sheet->setAutoFilter('A'.$i.':AG'.$i);
+    $sheet->getStyle('A'.$i.':AI'.$i)->getFont()->setColor( $colorWhite );
+    $sheet->setAutoFilter('A'.$i.':AI'.$i);
 
 	if(!empty($status)){
 		$query = Condutor::find()->andWhere(['status' => $status])->orderBy(['nome' => SORT_ASC]);
@@ -413,15 +1009,15 @@ class CondutorController extends Controller
     foreach($query->all() as $model) {
     $i++;
         if($i % 2 == 0) {
-            $sheet->getStyle('A'.$i.':AG'.$i)->getFill()
+            $sheet->getStyle('A'.$i.':AI'.$i)->getFill()
             ->setFillType(Fill::FILL_SOLID)
             ->getStartColor()->setRGB('F6F6F6');
         
         }
         // $sheet->getStyle('A'.$i.':H'.$i)->applyFromArray($borderSoft);
-        $sheet->getStyle('B'.$i.':AG'.$i)->applyFromArray($center);
-        $sheet->getStyle('A'.$i.':AG'.$i)->applyFromArray($borderSoft);
-        $sheet->getStyle('A'.$i.':AG'.$i)->getAlignment()->setWrapText(true);
+        $sheet->getStyle('B'.$i.':AI'.$i)->applyFromArray($center);
+        $sheet->getStyle('A'.$i.':AI'.$i)->applyFromArray($borderSoft);
+        $sheet->getStyle('A'.$i.':AI'.$i)->getAlignment()->setWrapText(true);
         $sheet->setCellValue('A'.$i, ' '.$model->nome);
 		if($model->status == 1){
 			$statusCondutor ='ATIVO';
@@ -539,8 +1135,17 @@ class CondutorController extends Controller
 		$sheet->setCellValue('AE'.$i, $model->cpfMonitor);
 		$sheet->setCellValue('AF'.$i, $model->rgMonitor);
 		$sheet->setCellValue('AG'.$i, $model->telefoneMonitor.' '.$model->telefoneMonitorWhatsapp);
-        
+        $sheet->setCellValue('AH'.$i, $model->pendencias);
+		
+		$sqlBairros ='select distinct a.bairro as bairro from SolicitacaoTransporte st  left join Aluno a on st.idAluno = a.id 	where st.idCondutor = '.$model->id.'  and st.`status` = 6 order by a.bairro' ;
+		$dadosBairro = Yii::$app->getDb()->createCommand($sqlBairros)->queryAll();
+		$bairros = '';
+		foreach($dadosBairro as $esc){				
+			$bairros.=$esc['bairro'];				
+			$bairros.=',';
+		}
 
+        $sheet->setCellValue('AI'.$i,  $bairros);
     }
     
     $base = "arquivos/_exportacoes/";
@@ -701,6 +1306,15 @@ class CondutorController extends Controller
 				$l .= ';'.$model->cpfMonitor;
 				$l .= ';'.$model->rgMonitor;
 				$l .= ';'.$model->telefoneMonitor.' '.$model->telefoneMonitorWhatsapp;
+				$sqlBairros ='select distinct a.bairro as bairro from SolicitacaoTransporte st  left join Aluno a on st.idAluno = a.id 	where st.idCondutor = '.$model->id.'  and st.`status` = 6 order by a.bairro' ;
+				$dadosBairro = Yii::$app->getDb()->createCommand($sqlBairros)->queryAll();
+				$bairros = '';
+				foreach($dadosBairro as $esc){				
+					$bairros.=$esc['bairro'];				
+					$bairros.=',';
+				}
+				$l .= ';'.$bairros;			
+				$l .= ';'.$model->pendencias;				
 				$l .= '
 ';			
                 fwrite($fp,$l);
@@ -854,6 +1468,17 @@ class CondutorController extends Controller
 				$l .= ';'.$model->cpfMonitor;
 				$l .= ';'.$model->rgMonitor;
 				$l .= ';'.$model->telefoneMonitor.' '.$model->telefoneMonitorWhatsapp;
+				
+				
+				$sqlBairros ='select distinct a.bairro as bairro from SolicitacaoTransporte st  left join Aluno a on st.idAluno = a.id 	where st.idCondutor = '.$model->id.'  and st.`status` = 6 order by a.bairro' ;
+				$dadosBairro = Yii::$app->getDb()->createCommand($sqlBairros)->queryAll();
+				$bairros = '';
+				foreach($dadosBairro as $esc){				
+					$bairros.=$esc['bairro'];				
+					$bairros.=',';
+				}
+				$l .= ';'.$bairros;	
+				$l .= ';'.$model->pendencias;
 				$l .= '
 ';			
                 fwrite($fp,$l);
@@ -1112,11 +1737,15 @@ class CondutorController extends Controller
 
     public function actionAlunos()
     {
+
         $model = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();
-
-	ini_set('error_reporting', E_ALL);
         $condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();
-
+		
+		$hoje = date("d-m-Y");
+		$hojeMenosDez =  date('d-m-Y', strtotime('-10 days', strtotime($hoje)));
+		$strHojeMenosDez = strtotime($hojeMenosDez);
+		$strHoje = strtotime($hoje);
+		$alunoNovo = '0';
         $arrayData = [];
         $titulo = 'Relação de alunos transportados';
 
@@ -1136,40 +1765,66 @@ class CondutorController extends Controller
 
             $idsAluno = [];
 			if($condutor){
-				foreach ($condutor->alunos as $aluno)
-					$idsAluno[] = $aluno->id;
+				foreach ($condutor->alunos as $aluno){
+					$idsAluno[] = $aluno->id;		
+					
+					
+					$result = Aluno::find()->where(['in', 'Aluno.id', $idsAluno]);
+					
+					if (isset($get['escola']) && $get['escola'] != '')
+						$result->andFilterWhere(['=', 'idEscola', $get['escola']]);
+
+					if (isset($get['aluno']) && $get['aluno'] != '')
+						$result->andFilterWhere(['like', 'nome', $get['aluno']]);
+
+					$result->orderBy([
+						'idEscola' => SORT_ASC,
+						'nome' => SORT_ASC,
+						'horarioEntrada'=>SORT_ASC
+					]);				  
 				
-			$result = Aluno::find()->where(['in', 'Aluno.id', $idsAluno]);
+					$sqlSol ="select a.*,e.nome as escola, DATE_FORMAT(st.data,'%d-%m-%Y') as dataSol,st.id as idSol,st.idRotaIda,st.idRotaVolta,st.idCondutor,DATE_FORMAT(st.data - INTERVAL 10 DAY,'%d/%m/%Y')  as hoje_menos_dez  from SolicitacaoTransporte st  join Aluno a on a.id = st.idAluno  join Escola e on e.id = st.idEscola where st.idCondutor = ".$condutor->id." and st.idAluno = ".$aluno->id."  and st.`status` = 6  and st.idRotaIda is not null and st.idRotaVolta is not null order by st.data"; 
+					$dadosSol = Yii::$app->getDb()->createCommand($sqlSol)->queryAll();
+					
+					$strDataSol = strtotime($dadosSol[0]['dataSol']);
+					
+					if(!empty($dadosSol[0]['nome'])){						
+						if( $dadosSol[0]['cienteCondutor'] == 0 ){
+							$dadosSol[0]['alunoNovo']  = $alunoNovo = 1;							
+							
+						}					
+						$arrayData[] = $dadosSol[0];						
+					}
+											
 
-				if (isset($get['escola']) && $get['escola'] != '')
-					$result->andFilterWhere(['=', 'idEscola', $get['escola']]);
-
-				if (isset($get['aluno']) && $get['aluno'] != '')
-					$result->andFilterWhere(['like', 'nome', $get['aluno']]);
-
-				$result->orderBy([
-					'idEscola' => SORT_ASC,
-					'nome' => SORT_ASC,
-					'horarioEntrada'=>SORT_ASC
-				  ]);
-				$arrayData = $result->all();
+					// if( ($strDataSol <= $strHoje) and ($strDataSol >= $strHojeMenosDez) and ($dadosSol[0]['cienteCondutor'] == 0 )){
+						// $dadosSol[0]['alunoNovo']  = $alunoNovo = 1;							
+					// }					
+					//$arrayData = $result->all();
+					
+					
+					
+				}
+					
+				
 			}else{
 				$arrayData ='';
 			}
-		
-
             if (!$arrayData)
                 \Yii::$app->getSession()->setFlash('error', 'Nenhum resultado encontrado.');
         }
-
+		
+		
+	
         $this->session->set('alunos', $arrayData);
-
         return $this->render('alunos', [
             'model' => $condutor,
+			'alunoNovo' => $alunoNovo,
             'data' => $arrayData,
             'titulo' => $titulo,
             'get' => $get
         ]);
+		
     }
 
     /**
@@ -1182,6 +1837,76 @@ class CondutorController extends Controller
 
         return $this->render('ao-vivo');
     }
+	
+	 /**
+     * salvar pendencia.
+     * @return mixed
+     */
+    public function actionSalvar()
+    {
+		$this->enableCsrfValidation = false;
+		if($_POST){
+			$condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();
+			
+			
+			if($_POST['tipo'] == '1'){
+				$antes = $condutor->pendencias;
+				$depois ='O condutor '.$condutor->nome.' está ciente das pendências';
+				
+				if($_POST['idCondutor'] == $condutor->id){
+					Yii::$app->getDb()->createCommand()->insert('Log', [
+					'acao'=>1,
+					 'referencia' => 'Condutor-' . \Yii::$app->User->identity->id,
+					 'tabela' => 'Condutor',
+					 'coluna' => 'Condutor - Pendências',
+					 'antes' => $antes,
+					 'depois' => $depois,
+					 'idUsuario' =>  \Yii::$app->User->identity->id,
+					])->execute();
+					echo true;
+				}else{
+					echo false;
+				}
+				
+			}else{
+				
+				$antes = 'Aluno novo na rota';
+				$depois ='O condutor '.$condutor->nome.' está ciente que deve entrar em contato com o responsável';
+				if($_POST['idCondutor'] == $condutor->id){
+					
+					Yii::$app->getDb()->createCommand()->insert('Log', [
+					'acao'=>1,
+					 'referencia' => 'Condutor-' . \Yii::$app->User->identity->id,
+					 'tabela' => 'Condutor',
+					 'coluna' => 'Condutor',
+					 'antes' => $antes,
+					 'depois' => $depois,
+					 'idUsuario' =>  \Yii::$app->User->identity->id,
+					])->execute();
+				
+					$aluno = Aluno::findOne($_POST['aluno']);
+
+					if(!$aluno){
+						echo false;
+					}else{										
+						$aluno->cienteCondutor = 1;
+						$aluno->save();
+						echo true;	
+					}
+
+				}else{
+					echo false;
+				}
+				
+			}		
+
+			
+			
+		}else{
+			echo false;
+		}
+    }
+
 
     public function actionAoVivoAjax()
     {
@@ -2649,7 +3374,349 @@ class CondutorController extends Controller
         // return the pdf output as per the destination setting
         return $pdf->render();
     }
+	
+	public function actionExportFolhaPonto()
+    {
+		$ARRAY_MESES = ['','JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];		
+		$ano = Yii::$app->request->get('ano');
+        $mes = Yii::$app->request->get('mes');
+		$id = Yii::$app->request->get('idCondutor');
+		
+		$mesCompleto = $ARRAY_MESES[$mes];
+		
+		$model = Condutor::findOne($id);
+		
+		$primeiroDia = '1';	
+		$ultimoDiaMes =  date("t", strtotime($ano.'-'.$mes.'-'.$primeiroDia));
+		$primeiraSemana = array();
+		$segundaSemana = array();
+		$terceiraSemana = array();
+		$quartaSemana = array();
+		$quintaSemana = array();
+		$sextaSemana = array();
+		
+		$primDia =$ano.'-'.$mes.'-'.$primeiroDia;
+		$ultiDia =$ano.'-'.$mes.'-'.$ultimoDiaMes;
+		
+		for($i=1;$i<=7;$i++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $i.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			if($diaSemana == 0){
+				break;
+			}else{
+				$primeiraSem[$diaSemana] = $ano.'-'.$mes.'-'.$i;
+			}			
+		}		
+		$ate = $i+6;
+		for($j=$i;$j<=$ate;$j++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $j.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			$segundaSem[$diaSemana] = $ano.'-'.$mes.'-'.$j;		
+		}
+		$ate = $j+6;
+		for($m=$j;$m<=$ate;$m++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $m.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			$terceiraSem[$diaSemana] = $ano.'-'.$mes.'-'.$m;			
+		}	
+		$ate = $m+6;
+		for($n=$m;$n<=$ate;$n++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $n.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			$quartaSem[$diaSemana] = $ano.'-'.$mes.'-'.$n;
+		}		
+		$ate = $n+6;
+		for($o=$n;$o<=$ate;$o++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $o.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			if($o<=$ultimoDiaMes){
+				$quintaSem[$diaSemana] = $ano.'-'.$mes.'-'.$o;
+			}			
+		}
+		$ate = $ultimoDia;
+		for($p=$o;$p<=$ate;$p++){			
+			$date = \DateTime::createFromFormat('d/m/Y H:i', $p.'/'.$mes.'/'.$ano.' 00:00');		
+			$diaSemana = $date->format('w');
+			if($p<=$ultimoDiaMes){
+				$sextaSem[$diaSemana] = $ano.'-'.$mes.'-'.$p;
+			}			
+		}		
+		$cor = '#fff';
+		$imprime ='1';
+		$primeiraSemana = $this->buscaConsultaDiaCondutor($primeiraSem,$id,$cor,$imprime);
+		$segundaSemana = $this->buscaConsultaDiaCondutor($segundaSem,$id,$cor,$imprime);
+		$terceiraSemana = $this->buscaConsultaDiaCondutor($terceiraSem,$id,$cor,$imprime); 
+		$quartaSemana = $this->buscaConsultaDiaCondutor($quartaSem,$id,$cor,$imprime);
+		$quintaSemana = $this->buscaConsultaDiaCondutor($quintaSem,$id,$cor,$imprime);
+		$sextaSemana = $this->buscaConsultaDiaCondutor($sextaSem,$id,$cor,$imprime);	
 
+		
+		$sqlJust ='select p.justificativa,DATE_FORMAT(p.data,"%d/%m/%Y") as data,e.nome,p.idEscola from FolhaPonto p left join Escola e on e.id = p.idEscola where p.idCondutor = '.$id.' and p.`data` between "'.$primDia.'" and "'.$ultiDia.'" and DAYOFWEEK(data) = 7 or DAYOFWEEK(data) = 1  order by p.data' ;
+		$dadosJust = Yii::$app->getDb()->createCommand($sqlJust)->queryAll();
+		
+		$ocorrencia = '-';
+		$sqlOco ='select DATE_FORMAT(p.data,"%d/%m/%Y") as data,p.ocorrencia from DiasFolhaPonto p  where  p.`data` between "'.$primDia.'" and "'.$ultiDia.'" and p.ocorrencia <> "'.$ocorrencia.'" order by p.data' ;
+		$dadosOco = Yii::$app->getDb()->createCommand($sqlOco)->queryAll();
+		
+		$sqlControleFinanceiro ="select * from ControleFinanceiro f where f.idCondutor = $id  and f.mes = $mes and ano = $ano" ;
+		$dadosFinanceiro = Yii::$app->getDb()->createCommand($sqlControleFinanceiro)->queryAll();
+
+		$isArrayLog =  is_array($dadosOco) ? '1' : '0';
+		if($isArrayLog == 1) {
+			foreach($dadosOco as $dado){			
+				$ocor .= "<tr><td style='border-top: 1px solid white;  border-color:#000;width:100%'>".$dado['data'].' - '.$dado['ocorrencia']."</td><tr>";
+			}
+		}else{
+			$ocor .= "<tr><td style='border-top: 1px solid white;  border-color:#000;width:100%'></td></tr>";
+		}
+		
+		if($dadosFinanceiro[0]['diasTrabalhados']){
+			$nomeEmpresa = strtoupper($dadosFinanceiro[0]['nomeEmpresa']);
+		}else{
+			$nomeEmpresa = strtoupper($model->nome);
+		}
+		
+		if($dadosFinanceiro[0]['alvara']){
+			$alvara = strtoupper($dadosFinanceiro[0]['alvara']);
+		}else{
+			$alvara = strtoupper($model->alvara);
+		}
+		
+		$valorViagemKm1Arr = explode(".",$dadosFinanceiro[0]['valorViagemKm1']);
+		$valorViagemKm1Arr[1] = str_replace("0","",$valorViagemKm1Arr[1]);
+		if($valorViagemKm1Arr[1] <= 0) {
+			$dadosFinanceiro[0]['valorViagemKm1']= $valorViagemKm1Arr[0];
+		}
+		
+		$viagemKm1Arr = explode(".",$dadosFinanceiro[0]['viagemKm1']);
+		$viagemKm1Arr[1] = str_replace("0","",$viagemKm1Arr[1]);
+		if($viagemKm1Arr[1] <= 0) {
+			$dadosFinanceiro[0]['viagemKm1']= $viagemKm1Arr[0];
+		}
+		
+		$valorViagemKm2Arr = explode(".",$dadosFinanceiro[0]['valorViagemKm2']);
+		$valorViagemKm2Arr[1] = str_replace("0","",$valorViagemKm2Arr[1]);
+		if($valorViagemKm2Arr[1] <= 0) {
+			$dadosFinanceiro[0]['valorViagemKm2']= $valorViagemKm2Arr[0];
+		}
+		
+		$viagemKm2Arr = explode(".",$dadosFinanceiro[0]['viagemKm2']);
+		$viagemKm2Arr[1] = str_replace("0","",$viagemKm2Arr[1]);
+		if($viagemKm2Arr[1] <= 0) {
+			$dadosFinanceiro[0]['viagemKm2']= $viagemKm2Arr[0];
+		}
+		
+								
+		$html = '
+		<table id="" style="width:100%;font-size:70%">
+		<tr>
+		<td  ><b>CONTRATADO (A) </b>: '.$nomeEmpresa.'</td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ><b>ALVARÁ </b>: '.$alvara.'</td>
+		<tr>
+		<td > <b> *  Srs. Condutores favor assinalar com um “X” no calendário somente os dias trabalhados.</b></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		</tr>
+		<tr>
+		<td > <b> *  Se houver sábado letivo, será obrigatório justificar o evento ocorrido.</b></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		</tr>
+		<tr>
+		<td > <b> *  Entregar no PRIMEIRO dia letivo do PRÓXIMO mês,  com ocorrências se houver.</b></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		<td  ></td>
+		</tr>
+		</table>
+		<table id="" class="display" style="width:100%;font-size:70%">
+							<thead>
+								<tr>
+									<th colspan=7 style="text-align:center;color:#FFF;background-color:#000">'.$mesCompleto.' - '.$ano.'</th>									
+								</tr>
+								<tr>
+									<th style="text-align:center;color:#000">DOM</th>
+									<th style="text-align:center;color:#000">SEG</th>
+									<th style="text-align:center;color:#000">TER</th>
+									<th style="text-align:center;color:#000">QUA</th>
+									<th style="text-align:center;color:#000">QUI</th>
+									<th style="text-align:center;color:#000">SEX</th>
+									<th style="text-align:center;color:#000">SAB</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr><td colspan=7 style="border-top: 1px solid white;  border-color:#dedede;" ><br><br></td></tr>				
+								<tr>	
+									'.$primeiraSemana.'																						
+								</tr>	
+								<tr><td colspan=7 style="border-top: 1px solid white;  border-color:#dedede;" ><BR><BR></td></tr>
+								<tr>									
+									'.$segundaSemana.'	
+								</tr>
+
+								<tr><td colspan=7 style="border-top: 1px solid white;  border-color:#dedede;" ><BR><BR></td></tr>
+								<tr>		
+									'.$terceiraSemana.'																															
+								</tr>
+								
+								<tr><td colspan=7 style="border-top: 1px solid white;  border-color:#dedede;" ><BR><BR></td></tr>
+								<tr>
+									'.$quartaSemana.'
+								</tr>								
+								<tr><td colspan=7 style="border-top: 1px solid white;  border-color:#dedede;" ><BR><BR></td></tr>
+								<tr>
+									'.$quintaSemana.'
+								</tr>				
+									<tr><td colspan=7 style="border-top: 1px solid white;  border-color:#dedede;" ><BR><BR></td></tr>							
+									<tr>
+									'.$sextaSemana.'	
+								</tr>
+								</tbody>					
+								</table>
+								<table id="" class="display" style="width:100%;font-size:70%">
+								<tr>
+								<td style="border-top: 1px solid white;  border-color:#000;">Dias Letivos <br> Trabalhados</td>
+								<td style="border-top: 1px solid white;  border-color:#000;">Kms rodado por dia  / <br> Nº de viagens por dia	</td>
+								<td style="border-top: 1px solid white;  border-color:#000;">Valor por Km  /  Valor <br> por Viagem		</td>
+								<td style="border-top: 1px solid white;  border-color:#000;" >Total (R$)</td>
+								<tr>		
+								<tr>
+								<td style="border-top: 1px solid white;  border-color:#000;">'.$dadosFinanceiro[0]['diasTrabalhados'].'</td>
+								<td style="border-top: 1px solid white;  border-color:#000;">'.$dadosFinanceiro[0]['valorViagemKm1'].'</td>
+								<td style="border-top: 1px solid white;  border-color:#000;">'.$dadosFinanceiro[0]['viagemKm1'].'</td>
+								<td style="border-top: 1px solid white;  border-color:#000;">'.$dadosFinanceiro[0]['valorDiasUteis'].'</td>
+								<tr>		
+								<tr>
+								<td style="border-top: 1px solid white;  border-color:#000;">'.$dadosFinanceiro[0]['sabadoLetivo'].'</td>
+								<td style="border-top: 1px solid white;  border-color:#000;">'.$dadosFinanceiro[0]['valorViagemKm2'].'</td>
+								<td style="border-top: 1px solid white;  border-color:#000;">'.$dadosFinanceiro[0]['viagemKm2'].'</td>
+								<td style="border-top: 1px solid white;  border-color:#000;">'.$dadosFinanceiro[0]['valorSabado'].'</td>
+								<tr>		
+								<tr>
+								<td colspan="3" style="text-align:right;font-weight:bold!important;border-top: 1px solid white;  border-color:#000;"><b>Valor Total</b></td>
+								<td style="border-top: 1px solid white;  border-color:#000;">'.$dadosFinanceiro[0]['valorNota'].'</td>
+								<tr>		
+								</table>
+								
+								<table id="" class="display" style="width:100%">
+								<tr>
+								<td  style="border-top: 1px solid white;  border-color:#000;width:100"><br></td>
+								</tr>	
+								</table>
+								
+								<table id="" class="display" style="width:100%;font-size:70%">
+								<tr>
+								<td colspan=3 style="border-top: 1px solid white;  border-color:#000;width:100%;font-weight:bold">Srs. Condutores - Por favor preencher as informações referentes ao(s) sábado(s) trabalhado(s).</td>
+								<tr>		
+								<tr>
+								<td  style="border-top: 1px solid white;  border-color:#000;width:5%">Data</td>
+								<td  style="border-top: 1px solid white;  border-color:#000;width:45%">Unidade Escolar</td>
+								<td  style="border-top: 1px solid white;  border-color:#000;width:50%">Justificativa</td>
+								</tr>	
+								';
+								
+								foreach($dadosJust as $just){	
+									if($just['idEscola'] == '0'){
+										$just['nome'] ='TODAS ESCOLAS';
+									}elseif($just['idEscola'] == '1'){
+										$just['nome'] ='OUTRA UNIDADE';
+									}
+									$html.='<tr>';
+									$html.='<td  style="border-top: 1px solid white;  border-color:#000;width:20%">'.$just['data'].'</td>';
+									$html.='<td  style="border-top: 1px solid white;  border-color:#000;width:40%">'.$just['nome'].'</td>';
+									$html.='<td  style="border-top: 1px solid white;  border-color:#000;width:40%">'.$just['justificativa'].'</td>';
+									$html.='</tr>';			
+								}
+								$html.='</table>
+								<table id="" class="display" style="width:100%;font-size:70%">
+								<tr>
+								<td  style="border-top: 1px solid white;  border-color:#000;width:100"><br></td>
+								</tr>	
+								</table>
+								
+								<table id="" class="display" style="width:100%;font-size:70%">
+								<tr>
+								<td  style="border-top: 1px solid white;  border-color:#000;width:100%"><b>Ocorrências:</b></td>
+								</tr>		
+								'.$ocor.'
+								<tr>
+								<td  style="border-top: 1px solid white;  border-color:#000;width:100"><br></td>
+								</tr>	
+								</table>	
+								<table id="" class="display" style="width:100%;font-size:70%">
+								<tr>
+								<td  style="border-top: 1px solid white;  border-color:#000;width:100"><br><br><br><br><br><br></td>
+								</tr>	
+								</table>
+								<table id="" class="display" style="width:100%;font-size:70%">
+								<tr>
+								<td  style="border-top: 1px solid white;  border-color:#000;width:30%;text-align:center">Data</td>
+								<td  style="width:40%"></td>
+								<td  style="border-top: 1px solid white;  border-color:#000;width:30%;text-align:center">Assinatura do Condutor</td>
+								<tr>		
+								</table>		
+		
+					';	
+			
+			
+		 $pdf = new Pdf([
+            'mode' => 'c',
+            'marginTop' => 50,
+            'marginBottom' => 20,
+            'marginLeft' => 5,
+            'marginRight' => 5,
+            // set to use core fonts only
+            'mode' => Pdf::MODE_CORE,
+            // A4 paper format
+            'format' => Pdf::FORMAT_A4,
+            // portrait orientation
+            'orientation' => Pdf::ORIENT_PORTRAIT,
+            // stream to browser inline
+            'destination' => Pdf::DEST_BROWSER,
+            // your html content input
+            'content' => $html,
+            // format content from your own css file if needed or use the
+            // enhanced bootstrap css built by Krajee for mPDF formatting 
+            'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
+            // any css to be embedded if required
+            'cssInline' => '.kv-heading-1{font-size:10px} .table table { border-collapse: collapse; } .table table, .table th, .table td { border: 1px solid black;} .table th td { padding-left: 1px;}',
+            // set mPDF properties on the fly
+            'options' => ['title' => 'Krajee Report Title'],
+            // call mPDF methods on the fly
+            'methods' => [
+                'SetHeader' => ['
+                <table width="100%">
+                <tr>
+                  <Td align="center">
+                  <img src="img/brasaoFull.png">
+                  </Td>
+                </tr>
+              </table>'],
+                'SetFooter' => ['Emitido em ' . date('d/m/Y') . '|| {PAGENO}'],
+            ]
+        ]);
+
+        // return the pdf output as per the destination setting
+        return $pdf->render();
+		
+		
+	}	
     public function actionReportFinanceiroXls()
     {
         $ano = Yii::$app->request->get('ano');

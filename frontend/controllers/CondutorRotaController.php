@@ -93,10 +93,16 @@ class CondutorRotaController extends Controller
         foreach ($solicitacoes as $solicitacao) {
             // Evita duplicidade no arr e verifica se NÃO está em nenhum ponto
             // mais abaixo temos um PontoAluno::find para tratar alunos que já estão em uma rota oposta
-            if (!in_array($solicitacao->aluno, $alunos) && !$aluno->alunoPonto)				
-				if($solicitacao->aluno->turno == $rota['turno']){
+            if (!in_array($solicitacao->aluno, $alunos) && !$aluno->alunoPonto)	
+
+				if($solicitacao->aluno->turno == 4){
 					$alunos[] = $solicitacao->aluno;
-				}                
+				}else{
+					if($solicitacao->aluno->turno == $rota['turno']){
+						$alunos[] = $solicitacao->aluno;
+					}                
+				}
+				
         }
 
 
@@ -366,10 +372,11 @@ class CondutorRotaController extends Controller
             if($rota->idCondutor != $idCondutor)
                 $rota->oldIdCondutor = $rota->idCondutor;
             $rota->idCondutor = $idCondutor;
+			$rota->save();
         }
 			
 
-        $rota->save();
+        
 
 
         $logs = [];
@@ -440,6 +447,9 @@ class CondutorRotaController extends Controller
             foreach ($ponto->pontoAlunos as $aluno) {
                 // print 'tentar retornar deferido'.$aluno->idAluno.' <br>';
                 SolicitacaoTransporte::retornarDeferido($aluno->idAluno, $rota, $logRemovido);
+				
+				\Yii::$app->db->createCommand("UPDATE Aluno	SET cienteCondutor=:cienteCondutor 	WHERE id=".$aluno->idAluno)->bindValue(':cienteCondutor', 0)->execute();				
+				
             }
 
         }

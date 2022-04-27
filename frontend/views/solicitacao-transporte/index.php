@@ -48,7 +48,13 @@ $this->params['breadcrumbs'][] = $this->title;
                      'summary' => "Exibindo <b>{begin}</b>-<b>{end}</b> de <b>{totalCount}</b> itens.",
 
                     'toolbar' => \Yii::$app->showEntriesToolbar->create(),
-                    'columns' => [                     
+                    'columns' => [      
+						[
+                           'contentOptions' => ['style' => 'min-width:80px;'],  //Largura coluna 
+                           'class' => 'yii\grid\ActionColumn',
+                           'template' => '{view} ',
+                           'buttons' => []
+                        ],
                         [
                             'class'=>'\kartik\grid\DataColumn',
                             'attribute'=>'id',
@@ -136,6 +142,19 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'placeholder' => '-',
                             ]
                         ],
+						[
+							'attribute' => 'idade',
+							'label' => 'Idade',
+							'value' => function($model){
+								$idade      = date("Y") - $model->aluno->dataNascimento;
+								if (date("m") < $mesNasc){
+									$idade -= 1;
+								} elseif ((date("m") == $mesNasc) && (date("d") <= $diaNasc) ){
+									$idade -= 1;
+								}
+								return $idade.' anos';
+							}
+						],
                         [
                             'attribute' => 'idEscola',
                             'value' => function($model){
@@ -271,12 +290,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 return $model->rotaVolta ? $model->rotaVolta->condutor->telefone : '-';
                             }
                         ],
-                        [
-                           'contentOptions' => ['style' => 'min-width:80px;'],  //Largura coluna 
-                           'class' => 'yii\grid\ActionColumn',
-                           'template' => '{view} ',
-                           'buttons' => []
-                        ]
+                        
                     ]
                 ]); ?>
             </div>

@@ -402,8 +402,8 @@ class Aluno extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['ensino', 'turma', 'serie', 'numeroResidencia', 'dataNascimento', 'nome', 'idEscola', 'endereco', 'nomeMae', 'RAdigito', 'RA', 'RAdigito', 'horarioEntrada', 'horarioSaida', 'turno', 'cpfResponsavel', 'dataNascimentoResponsavel'], 'required'],
-            [['idEscola', 'modalidadeBeneficio', 'barreiraFisica'], 'integer'],
+            [['ensino', 'turma', 'turno', 'serie', 'numeroResidencia', 'dataNascimento', 'nome', 'idEscola', 'endereco', 'nomeMae', 'RAdigito', 'RA', 'RAdigito', 'horarioEntrada', 'horarioSaida', 'turno', 'cpfResponsavel', 'dataNascimentoResponsavel'], 'required'],
+            [['idEscola', 'modalidadeBeneficio', 'barreiraFisica', 'cienteCondutor'], 'integer'],
             [[
                 'dataNascimento',
                 'horarioEntrada',
@@ -436,6 +436,7 @@ class Aluno extends \yii\db\ActiveRecord
                 'rg',
                 'ensino',
                 'turma',
+				'turno',
                 'serie',
                 'cep',
                 'lat',
@@ -445,6 +446,7 @@ class Aluno extends \yii\db\ActiveRecord
                 'tipoLogradouro',
                 'cidade',
                 'bairro',
+				'cienteCondutor',
             ], 'safe'],
             [['lat', 'lng'], 'number'],
             [['cpf'], 'unique'],
@@ -587,12 +589,14 @@ class Aluno extends \yii\db\ActiveRecord
             'dataNascimentoResponsavel' => 'Nascimento do responsável',
             'serie' => 'Ano/Série',
             'turma' => 'Turma',
+			'turno' => 'Turno',
             'ensino' => 'Ensino',
             'cep' => 'CEP',
             'numeroResidencia' => 'Nº',
             'complementoResidencia' => 'Complemento',
             'tipoLogradouro' => 'Tipo',
             'bairro' => 'Bairro',
+			'cienteCondutor' => 'ciente Aluno',
 			
         ];
     }

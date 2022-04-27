@@ -83,13 +83,13 @@ use common\models\TipoLogradouro;
     <div class="col-md-4">
       <?= $form->field($model, 'nome')->textInput(['maxlength' => true, 'autocomplete' => 'off']) ?>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
       <?= $form->field($model, 'RA')->textInput(['maxlength' => 9, 'autocomplete' => 'off']) ?>
     </div>
     <div class="col-md-2">
       <?= $form->field($model, 'RAdigito')->textInput(['maxlength' => 1, 'autocomplete' => 'off']) ?>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
       <?php
       echo $form->field($model, 'cpf')->textInput(
         [
@@ -99,6 +99,16 @@ use common\models\TipoLogradouro;
         ]
       )
       ?>
+    </div>
+	 <div class="col-md-2">
+      <?php
+      echo $form->field($model, 'cartaoPasseEscolar')->textInput(
+        [
+          'maxlength' => '30'
+        ]
+      )->label('N° Carteira de Passe escolar',['class'=>'label-class'])
+      ?>
+	  
     </div>
   </div>
   <div class="row">
@@ -414,7 +424,7 @@ use common\models\TipoLogradouro;
           'onKeyPress' => 'MascaraTelefone(this);',
           'maxlength' => '15'
         ]
-      )
+      )->label('Telefone 1',['class'=>'label-class'])
       ?>
     </div>
     <div class="col-md-3">
@@ -425,7 +435,7 @@ use common\models\TipoLogradouro;
           'onKeyPress' => 'MascaraTelefone(this);',
           'maxlength' => '15'
         ]
-      )
+      )->label('Telefone 2',['class'=>'label-class'])
       ?>
     </div>
     <div class="col-md-3">
@@ -436,7 +446,7 @@ use common\models\TipoLogradouro;
           'onKeyPress' => 'MascaraTelefone(this);',
           'maxlength' => '15'
         ]
-      )
+      )->label('Telefone 3',['class'=>'label-class'])
       ?>
 
     </div>
@@ -448,7 +458,7 @@ use common\models\TipoLogradouro;
           'onKeyPress' => 'MascaraTelefone(this);',
           'maxlength' => '15'
         ]
-      )
+      )->label('Telefone 4',['class'=>'label-class'])
       ?>
     </div>
   </div>

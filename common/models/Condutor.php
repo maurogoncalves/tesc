@@ -498,12 +498,32 @@ class Condutor extends \yii\db\ActiveRecord
         $permissoes = self::permissaoActions();
         return strstr($permissoes,'{delete}');
     }
+	
+	 public static function permissaoPendencia(){
+        $permissoes = self::permissaoActions();
+        return strstr($permissoes,'{pendencia}');
+    }
+	
+	 public static function verEscola(){
+        $permissoes = self::permissaoActions();
+        return strstr($permissoes,'{verEscola}');
+    }
+	
+	public static function verBairro(){
+        $permissoes = self::permissaoActions();
+        return strstr($permissoes,'{verBairro}');
+    }
+	
+	public static function verUsuario(){
+        $permissoes = self::permissaoActions();
+        return strstr($permissoes,'{verUsuario}');
+    }
 
     public static function permissaoActions(){
         $actions = '';
         switch(\Yii::$app->User->identity->idPerfil){
-            case Usuario::PERFIL_SUPER_ADMIN: $actions = '{create} {view} {update} {cartaApresentacao} {folhaPonto} {delete}';  break;
-            case Usuario::PERFIL_TESC_DISTRIBUICAO: $actions = '{create} {view} {update} {cartaApresentacao} {folhaPonto} {delete}'; break;
+            case Usuario::PERFIL_SUPER_ADMIN: $actions = '{create} {view} {update} {cartaApresentacao} {folhaPonto} {delete} {pendencia} {verEscola} {verBairro} {verUsuario}';  break;
+            case Usuario::PERFIL_TESC_DISTRIBUICAO: $actions = '{create} {view} {update} {cartaApresentacao} {folhaPonto} {delete} {pendencia} {verEscola} {verBairro} {verUsuario}'; break;
             case Usuario::PERFIL_SECRETARIO: $actions = ''; break;
             case Usuario::PERFIL_DIRETOR: $actions = ''; break;
             case Usuario::PERFIL_DRE: $actions = ''; break;

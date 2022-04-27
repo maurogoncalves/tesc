@@ -755,19 +755,24 @@ class SolicitacaoTransporte extends \yii\db\ActiveRecord
         $permissoes = self::permissaoActions();
         return strstr($permissoes, '{delete}');
     }
+	
+	 public static function permissaoIrmao(){
+        $permissoes = self::permissaoActions();
+        return strstr($permissoes,'{verIrmao}');
+    }
 
     public static function permissaoActions()
     {
         $actions = '';
         switch (\Yii::$app->User->identity->idPerfil) {
             case Usuario::PERFIL_SUPER_ADMIN:
-                $actions = '{create} {view} {update} {delete}';
+                $actions = '{create} {view} {update} {delete} {verIrmao}';
                 break;
             case Usuario::PERFIL_TESC_DISTRIBUICAO:
-                $actions = '{create} {view} {update} {delete}';
+                $actions = '{create} {view} {update} {delete} {verIrmao}{verIrmao}';
                 break;
             case Usuario::PERFIL_SECRETARIO:
-                $actions = '{create} {view} {update}';
+                $actions = '{create} {view} {update} ';
                 break;
             case Usuario::PERFIL_DIRETOR:
                 $actions = '{create} {view} {update}';

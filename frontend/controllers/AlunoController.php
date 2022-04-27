@@ -91,7 +91,7 @@ class AlunoController extends Controller
             'key' => 'id',
             'allModels' => $models,
             'sort' => [
-                'attributes' => ['condutor', 'nome', 'RA', 'idEscola', 'redeEnsino', 'ensino', 'modalidadeBeneficio', 'tipoFrete', 'status', 'serie', 'turma'],
+                'attributes' => ['condutor', 'nome', 'RA', 'idEscola', 'redeEnsino', 'ensino', 'modalidadeBeneficio', 'tipoFrete', 'status', 'serie', 'turma', 'turno'],
             ],
             'pagination' => [
                 'pageSize' => isset($_GET['pageSize']) ? $_GET['pageSize'] : 20,
@@ -114,10 +114,12 @@ class AlunoController extends Controller
                 $escolas = Escola::find()->rightJoin('Aluno', 'Aluno.idEscola=Escola.id')->all();
                 break;
         }
+		
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
             'escolas' => $escolas,
+
         ]);
     }
 

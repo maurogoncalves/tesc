@@ -83,7 +83,30 @@ class SolicitacaoTransporteController extends Controller
         ];
     }
 
-
+	 public function actionIrmao()
+    {
+		if($_POST['aluno']){
+			$sqlDadosIrmao ='select a.nomeMae,a.nomePai,a.nome,a.cpfResponsavel,st.idRotaIda,st.idRotaVolta,c.descricao as descricao_ida,cc.descricao as descricao_volta from SolicitacaoTransporte st  left join Aluno a on st.idAluno = a.id left join CondutorRota c on c.id = st.idRotaIda left join CondutorRota cc on cc.id = st.idRotaVolta where st.idAluno = '.$_POST['aluno'].'  and st.`status` = 6 ' ;
+			$dadosIrmao = Yii::$app->getDb()->createCommand($sqlDadosIrmao)->queryAll();
+			
+			\Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+			
+			// $obj = array();
+			// $obj['nome']= $dadosIrmao[0]['nome'];
+			// $obj['nomeMae']= $dadosIrmao[0]['nomeMae'];
+			// $obj['nomePai']= $dadosIrmao[0]['nomePai'];
+			// $obj['cpfResponsavel']= $dadosIrmao[0]['cpfResponsavel'];
+			// $obj['idRotaIda']= $dadosIrmao[0]['idRotaIda'];
+			// $obj['idRotaVolta']= $dadosIrmao[0]['idRotaVolta'];
+			// $obj['descricaoIda']= $dadosIrmao[0]['descricao_ida'];
+			// $obj['descricaoVolta']= $dadosIrmao[0]['descricao_volta'];
+			
+			return $dadosIrmao;
+	
+		}
+        
+    }
+	
     public function actionTeste()
     {
         // $distanceMatrix = new GoogleDistanceMatrix('AIzaSyCLdXxxtVSN5I0NA2WJ2buip_pEwfF2pW0');
@@ -219,10 +242,13 @@ class SolicitacaoTransporteController extends Controller
 
             PontoAluno::removerTodasRotas($solicitacao->idAluno);
             HistoricoMovimentacaoRota::deleteAll(['idSolicitacaoTransporte' => $solicitacao->id]);
-
+			
             // Fim da alteração (19/04/2020)
 
-
+			$aluno = Aluno::findOne($solicitacao->idAluno);
+			$aluno->cienteCondutor = 0;
+			$aluno->save();
+					
             return ['status' => true];
         } else {
             return $this->renderAjax('statusAjax', [
@@ -308,7 +334,10 @@ class SolicitacaoTransporteController extends Controller
 			}
 			
 			
-
+			$aluno = Aluno::findOne($solicitacao->idAluno);
+			$aluno->cienteCondutor = 0;
+			$aluno->save();
+			
             return ['status' => true];
         } else {
             return $this->renderAjax('statusAjax', [
@@ -545,6 +574,8 @@ class SolicitacaoTransporteController extends Controller
         if (Yii::$app->request->get('idAluno'))
             $model->idAluno = Yii::$app->request->get('idAluno');
 
+		if (Yii::$app->request->get('cartaoPasseEscolar'))
+            $model->cartaoPasseEscolar = Yii::$app->request->get('cartaoPasseEscolar');
 
         if (Yii::$app->request->get('idEscola'))
             $model->idEscola = Yii::$app->request->get('idEscola');
@@ -594,8 +625,12 @@ class SolicitacaoTransporteController extends Controller
 							\Yii::$app->db->createCommand()->delete('Ponto', ['id' => $pont['idPonto']])->execute();
 						}
 					}
-									
-					 return ['status' => true];
+					
+					$aluno = Aluno::findOne($model->idAluno);
+					$aluno->cienteCondutor = 0;
+					$aluno->save();	
+					
+					return ['status' => true];
 				}
 			}
             
@@ -625,7 +660,11 @@ class SolicitacaoTransporteController extends Controller
             if (Yii::$app->request->post('aluno-turma')) {
                 $aluno->turma = Yii::$app->request->post('aluno-turma');
             }
-            $aluno->save(false);
+			
+			if ($_POST['SolicitacaoTransporte']['cartaoPasseEscolar']) {				
+               $aluno->cartaoPasseEscolar = $_POST['SolicitacaoTransporte']['cartaoPasseEscolar'];
+            }
+             $aluno->save(false);
 
             if ($model->tipoSolicitacao == SolicitacaoTransporte::SOLICITACAO_CANCELAMENTO) {
                 $model->modalidadeBeneficio = $solicitacaoAtiva->modalidadeBeneficio;
@@ -737,6 +776,11 @@ class SolicitacaoTransporteController extends Controller
                     $model->ultimaMovimentacao = date('Y-m-d');
                     $model->save();
                 }
+				
+				$aluno = Aluno::findOne($model->idAluno);
+				$aluno->cienteCondutor = 0;
+				$aluno->save();
+			
             } else {
                 return [
                     'success' => false,

@@ -20,7 +20,7 @@ class AlunoSearch extends Aluno
     {
         return [
             [['id', 'idEscola', 'modalidadeBeneficio', 'barreiraFisica', 'idRgAluno', 'idComprovanteEndereco', 'idRgResponsavel', 'idDeclaracaoVizinhos', 'idLaudoMedico', 'idTransporteEspecialAdaptado', 'idDeclaracaoInexistenciaVaga','tipoFrete'], 'integer'],
-            [['nome', 'dataNascimento', 'nomeMae', 'nomePai', 'RA', 'endereco', 'cartaoPasseEscolar', 'horarioEntrada', 'horarioSaida', 'telefoneResidencial', 'telefoneResidencial2', 'telefoneCelular', 'telefoneCelular2','cartaoPasseEscolar','status','redeEnsino','modalidadeBeneficio','tipoFrete','turma','serie'], 'safe'],
+            [['nome', 'dataNascimento', 'nomeMae', 'nomePai', 'RA', 'endereco', 'cartaoPasseEscolar', 'horarioEntrada', 'horarioSaida', 'telefoneResidencial', 'telefoneResidencial2', 'telefoneCelular', 'telefoneCelular2','cartaoPasseEscolar','status','redeEnsino','modalidadeBeneficio','tipoFrete','turma','turno','serie'], 'safe'],
             [['lat', 'lng', 'distanceEscola','ensino','necessidadeEspecial'], 'number'],
         ];
     }
@@ -120,6 +120,7 @@ class AlunoSearch extends Aluno
             'Aluno.ensino' => $this->ensino,
             'Aluno.serie' => $this->serie,
             'Aluno.turma' => $this->turma,
+			'Aluno.turno' => $this->turno,
             // 'modalidadeBeneficio' => $this->modalidadeBeneficio,
             'Aluno.horarioEntrada' => $this->horarioEntrada,
             'Aluno.horarioSaida' => $this->horarioSaida,

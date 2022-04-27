@@ -411,11 +411,21 @@ $pdfFooter = [
                     'cartaoValeTransporte',
 
 
-                    [
+                    // [
+						// 'attribute' => 'status',
+						// 'label' => 'Início',
+						// 'value' => function($model){
+							// $data = $model->recebimento->dataCadastro;
+							// return ($model && $data != '0000-00-00')?Yii::$app->formatter->asDate($data, 'dd/MM/Y'):'-';
+					
+						// }
+					// ],				
+					
+					 [
 						'attribute' => 'status',
-						'label' => 'Início',
+						'label' => 'Início Beneficio',
 						'value' => function($model){
-							$data = $model->recebimento->dataCadastro;
+							$data = $model->data;
 							return ($model && $data != '0000-00-00')?Yii::$app->formatter->asDate($data, 'dd/MM/Y'):'-';
 					
 						}

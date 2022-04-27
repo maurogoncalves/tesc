@@ -14,8 +14,6 @@ use kartik\select2\Select2;
 /* @var $model common\models\Planoconta */
 /* @var $form yii\widgets\ActiveForm */
 
-		
-
 ?>
 <style type="text/css">
   #justificativa-barreira,
@@ -44,6 +42,7 @@ use kartik\select2\Select2;
 <?= $form->field($model, 'idAluno')->hiddenInput(['maxlength' => true])->label(false); ?>
 <?= $form->field($model, 'idEscola')->hiddenInput(['maxlength' => true])->label(false); ?>
 <?= $form->field($model, 'tipoSolicitacao')->hiddenInput(['maxlength' => true])->label(false); ?>
+
 
 <div class="alert alert-warning" role="alert">
   ESCOLAS PRÓXIMAS: <?= '<span style="color:yellow;font-weight:bold;  "><b>' . Escola::ARRAY_TIPO[$model->escola->tipo] . ' ' . $model->escola->nome . '</b></span>'; ?>
@@ -90,12 +89,21 @@ use kartik\select2\Select2;
       <?= $form->field($model, 'modalidadeBeneficio')->dropDownList(Aluno::ARRAY_MODALIDADE, ['prompt' => 'SELECIONE']) ?>
     </div>
     <div class="col-md-3">
-      <?= $form->field($model, 'distanciaEscola')->textInput(['maxlength' => true, 'class' => 'form-control meters', 'autocomplete' => 'off', 'type' => 'text']); ?>
+      <?= $form->field($model, 'distanciaEscola')->textInput(['maxlength' => '5', 'class' => 'form-control meters', 'autocomplete' => 'off', 'type' => 'text'])->label('Distância entre metros'); ?>
     </div>
 
     <div id="inputs-cartao">
       <div class="col-md-3">
-        <?= $form->field($model, 'cartaoPasseEscolar')->textInput(['maxlength' => true, 'autocomplete' => 'off', 'type' => 'number']) ?>
+	  
+	  
+	  <?=
+        $form->field($model, 'cartaoPasseEscolar')->textInput([
+          'data' => $model->cartaoPasseEscolar,
+          'value' =>  $model->cartaoPasseEscolar,
+        ]);
+      ?>
+	  
+	  
       </div>
       <div class="col-md-3">
         <?= $form->field($model, 'cartaoValeTransporte')->textInput(['maxlength' => true, 'autocomplete' => 'off', 'type' => 'number']) ?>
@@ -324,7 +332,7 @@ use kartik\select2\Select2;
         $("#inputs-barreira").css("display", "block");
         $(".field-solicitacaotransporte-tipofrete").hide();
         $('#validarSolicitacaoVizinho').hide();
-        $("#solicitacaotransporte-cartaopasseescolar").val("");
+        //$("#solicitacaotransporte-cartaopasseescolar").val("");
         $("#solicitacaotransporte-cartaovaletransporte").val("");
         $("#solicitacaotransporte-tipofrete").val("");
 

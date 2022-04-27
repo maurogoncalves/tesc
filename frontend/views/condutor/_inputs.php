@@ -216,6 +216,9 @@ use common\models\TipoLogradouro;
       <div class="col-md-3">
         <?= $form->field($model, 'email')->textInput(['maxlength' => true]) ?>
       </div>
+	   <div class="col-md-3">
+        <?= $form->field($model, 'idUsuario')->textInput(['maxlength' => true,'disabled' => true]) ?>
+      </div>
     </div>
     <div class="row">
       <div class="col-md-3">
@@ -421,11 +424,13 @@ use common\models\TipoLogradouro;
       </div>
     </div>
     <div class="row">
-      <div class="col-md-6">
-        <?= $form->field($model, 'folhaPonto')->textInput(['maxlength' => true, 'placeholder' => 'http://www.google.com']) ?>
+      <div class="col-md-6">  
+        <?= $form->field($model, 'folhaPonto')->textInput(
+		['maxlength' => true, 'placeholder' => 'http://www.google.com']
+		)->label('Link 1')?>
       </div>
       <div class="col-md-6">
-        <?= $form->field($model, 'pesquisaRota')->textInput(['maxlength' => true]) ?>
+        <?= $form->field($model, 'pesquisaRota')->textInput(['maxlength' => true])->label('Link 2') ?>
       </div>
     </div>
 
@@ -519,9 +524,7 @@ use common\models\TipoLogradouro;
         <div class="substituir-arquivos">Clique aqui para substituir os arquivos</div>
       </div>   
     </div>
-  <?php }
-  else 
-  { ?>
+  <?php } else  { ?>
 
     <div class="row">
       <div class="col-md-4">
@@ -604,6 +607,9 @@ use common\models\TipoLogradouro;
     <div class="box-header with-border">
       <h4>Documentos do monitor</h4>
     </div>
+
+	
+ 
 
     <div class="row">
       <div class="col-md-4">

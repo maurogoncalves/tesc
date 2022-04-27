@@ -15,7 +15,9 @@ $this->title = 'Condutores';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <style>
-
+.swal2-modal {
+  min-height: 300px;
+}
 </style>
 <div class="row">
     <div class="col-md-12">
@@ -72,10 +74,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'value' => function($model){
                         return  Condutor::ARRAY_STATUS[$model->status];
                     },
-                ],
-
-              
-          
+                ],          
                 [ 
                     'label' => 'Região de atuação',
                     'attribute' => 'regiao',
@@ -105,29 +104,52 @@ $this->params['breadcrumbs'][] = $this->title;
                     },
                     'filter' => Veiculo::ARRAY_ADAPTADO
                 ],
-
+				[
+                    'attribute' => 'veiculoAdaptadoCondutor',
+                    'label' => 'Placa Veículo',
+                    'value' => function($data) {
+                        return $data->veiculo->placa;
+                    },
+                ],
                 [
                 'contentOptions' => ['style' => 'min-width:80px;'],  //Largura coluna                
                 'class' => 'yii\grid\ActionColumn',
                 'template' => Condutor::permissaoActions(),
                 'buttons' => [
-                'folhaPonto' => function ($url, $model) {
-                    return '';
-                    // return  Html::a('<i class="fa fa-address-book" aria-hidden="true"></i>', Url::to(['pdf/folha-ponto', 'pdf' => 1, 'id' => $model->id]), ['data-pjax' => 0,'target' => '_blank', 'title' => Yii::t('app', 'Gerar relatório'),
-                    //     ]);
-                },
-                'delete' => function($url, $model){
-                    return Html::a('<span class="glyphicon glyphicon-trash"></span>', $url,
-                        [                                    
-                        'data' => [
-                        'confirm' => 'Tem certeza que deseja excluir este item?',
-                        'method' => 'post',
-                        'pjax' => 0,
-                        'ok' => Yii::t('yii', 'Confirm'),
-                        'cancel' => Yii::t('yii', 'Cancel'),
-                        ],
-                        ]);
-                }
+					'folhaPonto' => function ($url, $model) {
+						return '';
+						// return  Html::a('<i class="fa fa-address-book" aria-hidden="true"></i>', Url::to(['pdf/folha-ponto', 'pdf' => 1, 'id' => $model->id]), ['data-pjax' => 0,'target' => '_blank', 'title' => Yii::t('app', 'Gerar relatório'),
+						//     ]);
+					},
+					'delete' => function($url, $model){
+						return Html::a('<span class="glyphicon glyphicon-trash"></span>', $url,
+							[                                    
+							'data' => [
+							'confirm' => 'Tem certeza que deseja excluir este item?',
+							'method' => 'post',
+							'pjax' => 0,
+							'ok' => Yii::t('yii', 'Confirm'),
+							'cancel' => Yii::t('yii', 'Cancel'),
+							],
+							]);
+					},
+					'pendencia' => function ($url, $model) {     
+						if(!empty($model->pendencias)){
+							return Html::a('<span class="glyphicon glyphicon-warning-sign" style="color:#000!important;background:#FFFF00"></span>', '', ['title' => Yii::t('app', 'Pendências'),]);                                
+						}	
+					},
+					'verEscola' => function ($url, $model) {     
+						return Html::tag('span', Html::decode('<span title="Ver Escolas" id='.$model->id.' style="color:#3c8dbc;cursor: pointer;" class="glyphicon glyphicon-zoom-in verEscolas" ></span>'));
+					},
+					'verBairro' => function ($url, $model) {     
+						return Html::tag('span', Html::decode('<span title="Ver Bairros" id='.$model->id.' style="color:#3c8dbc;cursor: pointer;" class="glyphicon glyphicon-map-marker verBairros" ></span>'));
+					},
+					
+					'verUsuario' => function ($url, $model) {     
+					    $link ="?r=usuario/update&id=".$model->idUsuario;
+					    $link = '<a title="Verificar usuário" target="_blank" href="'.$link.'"><span class="glyphicon glyphicon-user" style="color:#000!important;background:#FFFF00"></span></a>';
+						return $link;
+					}
                 ]
                 ]
 
@@ -141,7 +163,65 @@ $this->params['breadcrumbs'][] = $this->title;
 
 
 <script> 
+$(document).on('click', '.verEscolas', function () {
+	var id = $(this).attr('id');
+	$.ajax({	
+		type: 'POST',
+		url: 'index.php?r=condutor/escolas',
+		dataType: 'json', /* Tipo de transmissão */			
+		data:{
+			  condutor: id
+		},
+		}).done(function(data) {			
+			 var Texto = "";
+			Texto = Texto + '<p align="left"> '+data+' <br>';
+			Swal.fire({
+				width: '600px',
+				title: 'Escolas atendidas pelo condutor',
+				html: Texto,
+				icon: 'warning',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Ok',
+			}).then((result) => {
+				console.log('OK')
+			});
+						
+	});
+});
+
+$(document).on('click', '.verBairros', function () {
+	var id = $(this).attr('id');
+	$.ajax({	
+		type: 'POST',
+		url: 'index.php?r=condutor/bairros',
+		dataType: 'json', /* Tipo de transmissão */			
+		data:{
+			  condutor: id
+		},
+		}).done(function(data) {			
+			 var Texto = "";
+			Texto = Texto + '<p align="left"> '+data+' <br>';
+			Swal.fire({
+				width: '600px',
+				title: 'Bairros atendidos pelo condutor',
+				html: Texto,
+				icon: 'warning',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Ok',
+			}).then((result) => {
+				console.log('OK')
+			});
+						
+	});
+});
+
 $(document).ready(function() {
+	
+	
 setTimeout(() => $("#w2").html($("#w66").html()), 200)
 
     

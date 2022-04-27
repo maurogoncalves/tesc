@@ -27,8 +27,13 @@ foreach($model->escolas as $escola) {
 }
 
 
+if($model->pendencias){
+	$pendencia = 1;
+}else{
+	$pendencia = 0;
+}	
+	
 ?>
-
 <style type="text/css">
 	#w1 {
 		display: none;
@@ -135,14 +140,29 @@ foreach($model->escolas as $escola) {
 
 	                // 'filterModel' => $searchModel,
 	                // 'showPageSummary' => true,
+					
 	                'columns' => [
+						[
+							'header' => 'Ciente',
+							'class' => 'kartik\grid\CheckboxColumn',
+							'headerOptions' => ['class' => 'kartik-sheet-style'],
+							'checkboxOptions' =>
+								function($model) {
+									return ['value' => $model['id'], 'class' => 'checkbox-ciente', 'id' => 'checkbox' ,'checked' => $model['naoEstaUtilizando']];
+								},
+							'hAlign'=>'center',
+							'vAlign'=>'middle',
+							'hiddenFromExport'=>true,
+							'mergeHeader'=>true,
+
+						],
 						[
 							'header' => 'Alunos que não estão usando o benefício',
 							'class' => 'kartik\grid\CheckboxColumn',
 							'headerOptions' => ['class' => 'kartik-sheet-style'],
 							'checkboxOptions' =>
 								function($model) {
-									return ['value' => $model->id, 'class' => 'checkbox-row', 'id' => 'checkbox' ,'checked' => $model->naoEstaUtilizando];
+									return ['value' => $model['id'], 'class' => 'checkbox-row', 'id' => 'checkbox' ,'checked' => $model['naoEstaUtilizando']];
 								},
 							'hAlign'=>'center',
 							'vAlign'=>'middle',
@@ -152,26 +172,70 @@ foreach($model->escolas as $escola) {
 						],
 	                // ['class' => 'yii\grid\SerialColumn'],
                     // 'id',
-                    [
-	                	'attribute' => 'idEscola',
-                        'value' => 'escola.nome',
-						'label' => 'Escola',
-	                ],
-	                'nome',
-	                 // 'dataNascimento',
+					[
+	                    'attribute' => 'data',
+	                    'label' => 'Data Início Benefício',
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
+	                    'value' => function($model){
+	                        return $model['dataSol'];
+	                    }
+					],
+					[
+	                    'attribute' => 'idEscola',
+	                    'label' => 'Escola',
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
+	                    'value' => function($model){
+	                        return $model['escola'];
+	                    }
+					],
+					 [
+	                    'attribute' => 'nome',
+	                    'label' => 'Nome',
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
+	                    'value' => function($model){
+	                        return $model['nome'];
+	                    }
+					],
 	                [
 	                    'attribute' => 'RA',
 	                    'label' => 'RA',
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 	                    'value' => function($model){
-	                        return $model->RA.' '.$model->RAdigito;
+	                        return $model['RA'].' '.$model['RAdigito'];
 	                    }
 					],
 					[
 						'attribute' => 'serie',
 						'label' => 'Ano/Série/Turma',
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'value' =>   function($model){
-                            if(isset($model->serie) && isset($model->turma)) {
-                            return  Aluno::ARRAY_SERIES[$model->serie].'/'.Aluno::ARRAY_TURMA[$model->turma];
+                            if(isset($model['serie']) && isset($model['turma'])) {
+                            return  Aluno::ARRAY_SERIES[$model['serie']].'/'.Aluno::ARRAY_TURMA[$model['turma']];
                             }
 						},
 						'filter' => Aluno::ARRAY_SERIES
@@ -179,9 +243,15 @@ foreach($model->escolas as $escola) {
 					[
 						'attribute' => 'turno',
 						'label' => 'Turno',
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'value' =>   function($model){
-                            if(isset($model->turno)) {
-                            return  Aluno::ARRAY_TURNO[$model->turno];
+                            if(isset($model['turno'])) {
+                            return  Aluno::ARRAY_TURNO[$model['turno']];
                             }
 						},
 						'filter' => Aluno::ARRAY_TURNO
@@ -189,63 +259,104 @@ foreach($model->escolas as $escola) {
 					[
 						'attribute' => 'horarioEntrada',
 						'label' => 'Horário de Entrada',
-						'contentOptions' => ['style' => 'min-width:80px;'],
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'value' => function($data) use ($model) {
-							if ($data->solicitacaoAtiva)
-								if ($data->solicitacaoAtiva->rotaIda)
-									if ($data->solicitacaoAtiva->rotaIda->idCondutor == $model->id)
-										return $data->horarioEntrada;
+							// if ($data->solicitacaoAtiva)
+								// if ($data->solicitacaoAtiva->rotaIda)
+									// if ($data->solicitacaoAtiva->rotaIda->idCondutor == $model->id)
+										// return $data->horarioEntrada;
 									
-							return '-';
+							// return '-';
+							return $data['horarioEntrada'];
 						}
 					],
 					[
 						'attribute' => 'horarioSaida',
 						'label' => 'Horário de Saída',
-						'contentOptions' => ['style' => 'min-width:80px;'],
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'value' => function($data) use ($model){
-							if ($data->solicitacaoAtiva)
-								if ($data->solicitacaoAtiva->rotaVolta)
-									if ($data->solicitacaoAtiva->rotaVolta->idCondutor == $model->id)
-										return $data->horarioSaida;
+							// if ($data->solicitacaoAtiva)
+								// if ($data->solicitacaoAtiva->rotaVolta)
+									// if ($data->solicitacaoAtiva->rotaVolta->idCondutor == $model->id)
+										// return $data->horarioSaida;
 								
-							return '-';
+							// return '-';
+							return $data['horarioSaida'];
 						}
 					],
 					 [
 						'attribute' => 'nomeMae',
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'label' => 'Nome da mãe'
 					 ],
 					 [
 						 'attribute' => 'nomePai',
+						 'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						 'label' => 'Nome do pai'
 					 ],
 					 [
 						'attribute' => 'endereco',
 						'label' => 'Endereço',
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'value' => function($model) {
-							return $model->enderecoCompleto();
+							return $model['endereco'].' '.$model['numeroResidencia'];
 						}
 					],
 					[
 						'attribute' => 'bairro',
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'label' => 'Bairro'
 					],
 
 					[
 						'attribute' => 'telefoneResidencial',
 						'label' => 'Telefones',
-						'contentOptions' => ['style' => 'min-width:80px;'],
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'value' => function($model) {
 							$tel='';
-							if($model->telefoneCelular && strlen($model->telefoneCelular) > 5)
-								 $tel .= $model->telefoneCelular.'/';
-							if($model->telefoneCelular2 && strlen($model->telefoneCelular2) > 5)
-								 $tel .= $model->telefoneCelular2.'/';
-							if($model->telefoneResidencial && strlen($model->telefoneResidencial) > 5)
-								 $tel .= $model->telefoneResidencial.'/';
-							if($model->telefoneResidencial2 && strlen($model->telefoneResidencial2) > 5)
-								 $tel .= $model->telefoneResidencial2.'/';
+							if($model['telefoneCelular'] && strlen($model['telefoneCelular']) > 5)
+								 $tel .= $model['telefoneCelular'].'/';
+							if($model['telefoneCelular2'] && strlen($model['telefoneCelular2']) > 5)
+								 $tel .= $model['telefoneCelular2'].'/';
+							if($model->telefoneResidencial && strlen($model['telefoneResidencial']) > 5)
+								 $tel .= $model['telefoneResidencial'].'/';
+							if($model['telefoneResidencial2'] && strlen($model['telefoneResidencial2']) > 5)
+								 $tel .= $model['telefoneResidencial2'].'/';
 
 							// return '-';
 							return substr($tel, 0, -1);
@@ -255,9 +366,15 @@ foreach($model->escolas as $escola) {
 					[
 						'attribute' => 'telefoneResidencial',
 						'label' => 'Início',
-						'contentOptions' => ['style' => 'min-width:80px;'],
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'value' => function($model) {
-							return $model->entradaRota();
+							//return $model->entradaRota();
+							return $model['dataSol'];
 						}
 					],
 
@@ -265,8 +382,14 @@ foreach($model->escolas as $escola) {
 					[
 						'attribute' => 'telefoneResidencial',
 						'label' => 'Viagem Ida',
-						'contentOptions' => ['style' => 'min-width:80px;'],
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'value' => function($model) {
+							return $model['idRotaIda'];
 							// $condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();
 							// foreach($model->meusPontos as $alunoPonto) {
 								// if($alunoPonto->ponto->condutorRota->sentido == CondutorRota::SENTIDO_IDA)
@@ -278,13 +401,19 @@ foreach($model->escolas as $escola) {
 										[
 						'attribute' => 'telefoneResidencial',
 						'label' => 'Viagem Volta',
-						'contentOptions' => ['style' => 'min-width:80px;'],
+						'contentOptions'=>function($model, $key, $index, $column) { 
+							if($model['alunoNovo'] == '1' and $model['cienteCondutor'] == '0')
+								return ['style' => 'color:red'];  
+							else
+								return ['style' => ''];  
+						 },	 
 						'value' => function($model) {
-							// $condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();
-							foreach($model->meusPontos as $alunoPonto) {
-								if($alunoPonto->ponto->condutorRota->sentido == CondutorRota::SENTIDO_VOLTA)
-										return $alunoPonto->ponto->condutorRota->viagem;
-							}
+							return $model['idRotaVolta'];
+							// // $condutor = Condutor::find()->where(['idUsuario' => \Yii::$app->User->identity->id])->one();
+							// foreach($model->meusPontos as $alunoPonto) {
+								// if($alunoPonto->ponto->condutorRota->sentido == CondutorRota::SENTIDO_VOLTA)
+										// return $alunoPonto->ponto->condutorRota->viagem;
+							// }
 						}
 					],
 					
@@ -295,7 +424,8 @@ foreach($model->escolas as $escola) {
                         'template' => '{roterizar}', 
                         'buttons' => [
                         'roterizar' => function ($url, $model) {
-                            return  Html::a('<i class="fa fa-street-view" aria-hidden="true"></i>', Url::to(['condutor-rota/roterizar', 'idCondutorRota' => $model->alunoPontoRota->ponto->idCondutorRota]), ['data-pjax' => 0,'target' => '_blank', 'title' => Yii::t('app', 'Rota'),
+                            //return  Html::a('<i class="fa fa-street-view" aria-hidden="true"></i>', Url::to(['condutor-rota/roterizar', 'idCondutorRota' => $model->alunoPontoRota->ponto->idCondutorRota]), ['data-pjax' => 0,'target' => '_blank', 'title' => Yii::t('app', 'Rota'),
+							return  Html::a('<i class="fa fa-street-view" aria-hidden="true"></i>', Url::to(['condutor-rota/roterizar', 'idCondutorRota' => $model['idRotaVolta']]), ['data-pjax' => 0,'target' => '_blank', 'title' => Yii::t('app', 'Rota'),
                                 ]);
                         },
                         ]
@@ -337,18 +467,6 @@ foreach($model->escolas as $escola) {
 <?php //} ?>
 
 <script type="text/javascript">
-	$(document).ready(function() {
-	 //    $('#relatorio').DataTable({
-	 //    	"paging":   false,
-	 //        "ordering": true,
-	 //        "order": [[ 1, "desc" ]],
-	 //        "info":     false,
-	 //        "bFilter": false
-	 //    });
-
-		// $('#relatorio_wrapper').doubleScroll({resetOnWindowResize: true});
-	/* Defaults */
-	});
 
 	// $('#formFilter').submit(function() {
 	// 	if (!$( "#inscricaoEstadual").val() && !$( "#cnpj").val() && !$( "#contribuinte").val())
@@ -386,6 +504,40 @@ foreach($model->escolas as $escola) {
 		return await $.post( "index.php?r=condutor/beneficio-aluno", { idAluno: idAluno, justificativa: justificativa, marcado: marcado })
 	
 	}
+	
+	$('.checkbox-ciente').change(async function() {
+		var idAluno = $(this).val();
+	
+		if($(this).is(":checked")) {
+			
+			  Swal.fire({
+						title: '😊 Atenção usuário(a)!',
+						text: 'Está ciente que precisa entrar em contato com o responsável do estudante?',
+						icon: 'warning',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'Sim, estou',
+					}).then((result) => {
+						$.ajax({	
+							type: 'POST',
+							url: 'index.php?r=condutor/salvar',
+								data:{
+								  idCondutor: '<?php echo(\Yii::$app->User->identity->condutor->id)?>',
+								  tipo: '2',
+								  aluno: idAluno
+								},
+							}).done(function(data) {
+								window.location.href = 'index.php?r=condutor/alunos/';
+							
+						});
+					});	
+					
+		
+		} 
+		
+	});	
+	
 	$('.checkbox-row').change(async function() {
 		// returnStatus = true;
 
@@ -445,9 +597,72 @@ foreach($model->escolas as $escola) {
 
 <script> 
 $(document).ready(function() {
+	
 setTimeout(() => $("#w2").html($("#w66").html()), 200)
 
-    
+   
+	
+	if('<?php echo $alunoNovo?>' == 1){
+			let TextoNovosAlunos = '<br> <p align="left"> <b>NOVO(S) ALUNO(S) INSERIDO(S) EM SUA LISTA</b> <br><br> ';
+			TextoNovosAlunos =  TextoNovosAlunos +  ' Por favor, entrar em contato com o responsável do estudante. </p>';
+
+			  Swal.fire({
+				title: 'Atenção condutor(a)!',
+				html: TextoNovosAlunos,
+				icon: 'warning',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Ok, vou verificar',
+			}).then((result) => {
+				 let Texto = '<p align="left" > <b>Condutor :</b> <br><br> ';
+				 Texto =  Texto +  ' Regularize as pendência(s) para não incorrer nas penalidades previstas no contrato de prestação de serviço <br>  e legislação pertinente. <br><br>';
+				 Texto =  Texto +  ' Verifique a pendência no seu perfil. </p>';
+				 console.log('oi');
+				 if('<?php echo $pendencia?>' == 1){
+					  Swal.fire({
+						title: 'Atenção condutor(a)!',
+						html: Texto,
+						icon: 'warning',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'Ok, vou verificar',
+					}).then((result) => {
+						$.ajax({	
+							type: 'POST',
+							url: 'index.php?r=condutor/salvar',
+								data:{
+								  idCondutor: '<?php echo(\Yii::$app->User->identity->condutor->id)?>',
+								  tipo: '1',
+								  aluno: '0'
+								},
+							}).done(function(data) {
+							
+						});
+					});	
+				}
+			});
+		}else{
+			 if('<?php echo $pendencia?>' == 1){
+					 let Texto = '<p align="left" > <b>Condutor :</b> <br><br> ';
+						Texto =  Texto +  ' Regularize as pendência(s) para não incorrer nas penalidades previstas no contrato de prestação de serviço <br>  e legislação pertinente. <br><br>';
+						Texto =  Texto +  ' Verifique a pendência no seu perfil. </p>';
+					  Swal.fire({
+						title: '😊 Atenção usuário(a)!',
+						html: Texto,
+						icon: 'warning',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'Ok, vou verificar',
+					}).then((result) => {
+						console.log('OK VOU VERIFICAR')
+					});	
+			}
+		}
+	
+	
 });
 setTimeout(() => {
     try {
@@ -488,4 +703,68 @@ function gerenciarExportacao(event, tipo){
 
 
     }
+
+		if('<?php echo $alunoNovo?>' == 1){
+			let TextoNovosAlunos = '<br> <p align="left"> <b>NOVO(S) ALUNO(S) INSERIDO(S) EM SUA LISTA</b> <br><br> ';
+			TextoNovosAlunos =  TextoNovosAlunos +  ' Por favor, entrar em contato com o responsável do estudante. </p>';
+
+			  Swal.fire({
+				title: 'Atenção condutor(a)!',
+				html: TextoNovosAlunos,
+				icon: 'warning',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Ok, vou verificar',
+			}).then((result) => {
+				 let Texto = '<p align="left" > <b>Condutor :</b> <br><br> ';
+				 Texto =  Texto +  ' Regularize as pendência(s) para não incorrer nas penalidades previstas no contrato de prestação de serviço <br>  e legislação pertinente. <br><br>';
+				 Texto =  Texto +  ' Verifique a pendência no seu perfil. </p>';
+				 if('<?php echo $pendencia?>' == 1){
+					  Swal.fire({
+						title: 'Atenção condutor(a)!',
+						html: Texto,
+						icon: 'warning',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'Ok, vou verificar',
+					}).then((result) => {
+						$.ajax({	
+							type: 'POST',
+							url: 'index.php?r=condutor/salvar',
+								data:{
+								  idCondutor: '<?php echo(\Yii::$app->User->identity->condutor->id)?>',
+								  tipo: '1',
+								  aluno: '0'
+								},
+							}).done(function(data) {
+							
+						});
+					});	
+				}
+			});
+		}else{
+			 if('<?php echo $pendencia?>' == 1){
+					 let Texto = '<p align="left" > <b>Condutor :</b> <br><br> ';
+						Texto =  Texto +  ' Regularize as pendência(s) para não incorrer nas penalidades previstas no contrato de prestação de serviço <br>  e legislação pertinente. <br><br>';
+						Texto =  Texto +  ' Verifique a pendência no seu perfil. </p>';
+					  Swal.fire({
+						title: '😊 Atenção usuário(a)!',
+						html: Texto,
+						icon: 'warning',
+						showCancelButton: false,
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'Ok, vou verificar',
+					}).then((result) => {
+						console.log('OK VOU VERIFICAR')
+					});	
+				}
+		}
+	
+	
+ 
+	
+   
 </script>

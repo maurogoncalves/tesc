@@ -37,7 +37,7 @@ $this->params['breadcrumbs'][] = $this->title;
 	
 	<div class="col-md-1"> 
 	<input type='hidden' id='statusProgresso' name='statusProgresso' value='0'>
-	<button  class="btn btn-danger pull-left" name='salvar' id="salvar">Salvar e Finalizar</button>
+	<p  class="btn btn-danger pull-right"  name='salvar' id="salvar">Salvar e Finalizar</p>
 	</div>
     <div class="col-md-12">
         <div class="box box-solid" >
@@ -145,7 +145,10 @@ $this->params['breadcrumbs'][] = $this->title;
 		<p  class="btn btn-primary pull-right"  name='salvarProgresso' id="salvarProgresso">Salvar Progresso</p>
 		</div>
 		<div class="col-md-1"> 
+		<p  class="btn btn-danger pull-right"  name='salvar2' id="salvar2">Salvar e Finalizar</p>
+		<!--
 		<button  class="btn btn-danger pull-right" id="salvar" name="salvar">Salvar e Finalizar</button>
+		-->
 		</div>
 		
 		
@@ -158,7 +161,41 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <script type="text/javascript">
 $(document).on('click', '#salvarProgresso', function () {
-   $("#statusProgresso").val('1');
-   $("#formCredito").submit();
+	
+	let cont = 0;
+	  $(".alunoMarcado").each(function() {
+        if ($(this).prop('checked')) {
+            cont++;
+            inputAluno($(this), false)
+        } else {
+            inputAluno($(this), true)
+        }
+    });
+	
+	if(cont == 0){
+		
+		return Swal.fire({
+			icon: 'warning',
+			title: 'Atenção!',
+			html: "É necessário selecionar algum aluno antes de salvar",
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'OK',
+			cancelButtonText: 'Cancelar'
+		}).then((result) => {
+			if (result.value) {
+			}
+		});
+		
+	}else{
+		$("#statusProgresso").val('1');
+		$("#formCredito").submit();
+	}
+	
+	
+  
 });
+
+
 </script>	

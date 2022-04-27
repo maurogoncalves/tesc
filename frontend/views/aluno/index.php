@@ -18,6 +18,13 @@ use common\models\Atendimento;
 $this->title = 'Alunos';
 $this->params['breadcrumbs'][] = $this->title;
 
+ const ARRAY_TURNO = [
+        1 => 'MANHÃ',
+        2 => 'TARDE',
+        3 => 'NOITE',     
+		4 => 'INTEGRAL', 	
+    ];
+	
 ?>
 <div class="row">
     <div class="col-md-12">
@@ -55,6 +62,19 @@ $this->params['breadcrumbs'][] = $this->title;
                 // ['class' => 'yii\grid\SerialColumn'],
                 // 'id',
                 'nome',
+				[
+                    'attribute' => 'idade',
+                    'label' => 'Idade',
+                    'value' => function($model){
+						$idade      = date("Y") - $model->dataNascimento;
+						if (date("m") < $mesNasc){
+							$idade -= 1;
+						} elseif ((date("m") == $mesNasc) && (date("d") <= $diaNasc) ){
+							$idade -= 1;
+						}
+                        return $idade.' anos';
+                    }
+                ],
                  // 'dataNascimento',
                  // 'nomeMae',
                  // 'nomePai',
@@ -80,6 +100,30 @@ $this->params['breadcrumbs'][] = $this->title;
                         return Aluno::ARRAY_TURMA[$model->turma];
                     },
                     'filter' => Aluno::ARRAY_TURMA
+                ],
+				[
+                    'attribute' => 'turno',
+                    'label' => 'Turno',
+                    'value' =>   function($model){
+                        return Aluno::ARRAY_TURNO[$model->turno];
+                    },
+					 'filter' => ARRAY_TURNO
+                ],
+				[
+                    'attribute' => 'horarioEntrada',
+                    'label' => 'Horário de Entrada',
+                    'value' =>   function($model){
+                        return $model->horarioEntrada;
+                    },
+					
+                ],
+				[
+                    'attribute' => 'horarioSaida',
+                    'label' => 'Horário de Saída',
+                    'value' =>   function($model){
+                        return $model->horarioSaida;
+                    },
+					 
                 ],
                 [
                     'attribute' => 'idEscola',

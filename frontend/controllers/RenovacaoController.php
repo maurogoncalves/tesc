@@ -123,7 +123,7 @@ class RenovacaoController extends Controller
 			$aluno->horarioEntrada =$entrada;
 			$aluno->horarioSaida =$saida;
 			$aluno->telefoneResidencial =$telefone;
-			
+			$aluno->cienteCondutor = 0;
 			
 			//pegar tipo da escola
 			$escola = Escola::findOne($aluno->idEscola);			
@@ -308,6 +308,9 @@ class RenovacaoController extends Controller
 								}
 							}
 							//criar/renovar a solicitação, inserir na rota
+							
+							
+					
 							$this->gravar($solicitacao,$escola,$idSol,$status);	
 						}						
 					}

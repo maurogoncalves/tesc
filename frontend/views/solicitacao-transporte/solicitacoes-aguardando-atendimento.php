@@ -20,7 +20,15 @@ use common\models\UsuarioGrupo;
 
 $this->title = 'Solicitações Aguardando Atendimento ';
 $this->params['breadcrumbs'][] = 'Solicitações Aguardando Atendimento';
+
+
 ?>
+<style>
+.swal2-modal {
+  min-height: 300px;
+}
+</style>
+<link href="https://use.fontawesome.com/releases/v5.0.1/css/all.css" rel="stylesheet">
 <div class="row">
     <div class="col-md-12">
         <div class="row">
@@ -48,7 +56,29 @@ $this->params['breadcrumbs'][] = 'Solicitações Aguardando Atendimento';
                     ],
                     'summary' => "Exibindo <b>{begin}</b>-<b>{end}</b> de <b>{totalCount}</b> itens.",
                     'toolbar' => \Yii::$app->showEntriesToolbar->create(),
-                    'columns' => [                     
+                    'columns' => [       
+					[		
+                           'contentOptions' => ['style' => 'min-width:80px;'],  //Largura coluna 
+                           'class' => 'yii\grid\ActionColumn',
+                           'template' => '{verIrmao} {view} ',
+                           'buttons' => [
+						   'verIrmao' => function ($url, $model) { 
+						   
+									if(($model->tipoFrete == 1) or ($model->tipoFrete == 2)){
+										$sqlTemIrmao ='select count(*) as total,a.id
+										 from SolicitacaoTransporte st  
+										 join Aluno a on st.idAluno = a.id 
+										 join CondutorRota c on c.id = st.idRotaIda 
+										 join CondutorRota cc on cc.id = st.idRotaVolta where  a.cpfResponsavel = '.$model->aluno->cpfResponsavel.'  and st.`status` = 6 and st.idAluno <> '.$model->aluno->id;
+										$sqlTemIrmao = Yii::$app->getDb()->createCommand($sqlTemIrmao)->queryAll();
+										if($sqlTemIrmao[0]['total'] <> 0){	
+											return 	Html::tag('span', Html::decode('<i id='.$sqlTemIrmao[0]['id'].' class="fa fa-user-times irmao" aria-hidden="true" style="color:#ff0000;top:5px!important;cursor: pointer;"></i>'));
+										}
+									}
+									
+								}
+						   ]
+                        ],					
                         [
                             'class'=>'\kartik\grid\DataColumn',
                             'attribute'=>'id',
@@ -168,6 +198,90 @@ $this->params['breadcrumbs'][] = 'Solicitações Aguardando Atendimento';
                                 'placeholder' => '-',
                             ]
                         ],
+						[
+							'attribute' => 'idade',
+							'label' => 'Idade',
+							'value' => function($model){
+								$idade      = date("Y") - $model->aluno->dataNascimento;
+								if (date("m") < $mesNasc){
+									$idade -= 1;
+								} elseif ((date("m") == $mesNasc) && (date("d") <= $diaNasc) ){
+									$idade -= 1;
+								}
+								return $idade.' anos';
+							}
+						],
+						[
+                            'attribute' => 'ra',
+                            'label' => 'RA',
+                            'value' => function($model) {
+                                return $model->aluno->RA.'-'.$model->aluno->RAdigito;
+                            },
+							'filter'=>'',
+                        ],
+						[
+                            'attribute' => 'endereco',
+                            'label' => 'Endereço',
+                            'value' => function($model) {
+                                return $model->aluno->endereco;
+                            },
+							'filter'=>'',
+                        ],
+						[
+                            'attribute' => 'numeroResidencia',
+                            'label' => 'Número',
+                            'value' => function($model) {
+                                return $model->aluno->numeroResidencia;
+                            },
+							'filter'=>'',
+                        ],
+						[
+                            'attribute' => 'bairro',
+                            'label' => 'Bairro',
+                            'value' => function($model) {
+                                return $model->aluno->bairro;
+                            },
+							'filter'=>'',
+                        ],
+						[
+                            'attribute' => 'complementoResidencia',
+                            'label' => 'Complemento',
+                            'value' => function($model) {
+                                return $model->aluno->complementoResidencia;
+                            },
+							'filter'=>'',
+                        ],
+						[
+							'attribute' => 'serie',
+							'label' => 'Ano/Série e Turma',
+							'value' =>   function($model){
+								return  Aluno::ARRAY_SERIES[$model->aluno->serie].'-'.Aluno::ARRAY_TURMA[$model->aluno->turma];
+							},
+							'filter' => Aluno::ARRAY_SERIES
+						],					
+						[
+							'attribute' => 'horarioEntrada',
+							'label' => 'Horário de Entrada',
+							'value' =>   function($model){
+								return $model->aluno->horarioEntrada;
+							},
+							
+						],
+						[
+							'attribute' => 'horarioSaida',
+							'label' => 'Horário de Saída',
+							'value' =>   function($model){
+								return $model->aluno->horarioSaida;
+							},
+							 
+						],
+						[
+							'attribute' => 'turno',
+							'label' => 'Turno',
+							'value' =>   function($model){
+								return Aluno::ARRAY_TURNO[$model->aluno->turno];
+							},
+						],
                         [
                             'headerOptions' => ['style' => 'width:200px'],
                             'attribute' => 'idEscola',
@@ -320,12 +434,7 @@ $this->params['breadcrumbs'][] = 'Solicitações Aguardando Atendimento';
                         //         return $model->rotaVolta ? $model->rotaVolta->condutor->telefone : '-';
                         //     }
                         // ],
-                        [
-                           'contentOptions' => ['style' => 'min-width:80px;'],  //Largura coluna 
-                           'class' => 'yii\grid\ActionColumn',
-                           'template' => '{view} ',
-                           'buttons' => []
-                        ]
+                       
                     ]
                 ]); ?>
             </div>
@@ -333,6 +442,60 @@ $this->params['breadcrumbs'][] = 'Solicitações Aguardando Atendimento';
     </div>
 </div>
 <script type="text/javascript">
+
+$(document).on('click', '.irmao', function () {
+	var id = $(this).attr('id');
+	$.ajax({	
+		type: 'POST',
+		url: 'index.php?r=solicitacao-transporte/irmao',
+		dataType: 'json', /* Tipo de transmissão */			
+		data:{
+			  aluno: id
+		},
+		}).done(function(data) {
+			
+			var Texto = "";
+			  Texto = Texto + '<p align="left"> <b>Mãe </b> :'+data[0].nomeMae+' <br>';
+			  Texto = Texto + ' <b>Responsável </b>:'+data[0].nomePai+' <br><br>';
+			  Texto = Texto + ' <b>Irmão(a) </b>:'+data[0].nome+' <br><br>';
+			  if(data[0].idRotaIda){
+				Texto = Texto + ' <b>Rota Ida </b>:'+data[0].idRotaIda+' <br>';  
+			  }else{
+				  Texto = Texto + ' <b>Rota Ida </b>: Sem rota definida <br>';
+			  }			  
+			  if(data[0].descricao_ida){
+				 Texto = Texto + ' <b>Descrição Rota Ida </b>:'+data[0].descricao_ida+' <br><br>';
+			  }
+			  if(data[0].idRotaVolta){
+				Texto = Texto + ' <b>Rota Volta </b>:'+data[0].idRotaVolta+' <br>';  
+			  }else{
+				  Texto = Texto + ' <b>Rota Volta </b>: Sem rota definida <br>';
+			  }
+			  
+			  if(data[0].descricao_volta){
+				Texto = Texto + ' <b>Descrição Rota Volta </b>:'+data[0].descricao_volta+' </p>';
+			  }
+			  
+			  
+			  
+  
+			Swal.fire({
+				width: '600px',
+				title: 'Atenção usuário(a) esse aluno tem irmão(a)',
+				 html: Texto,
+				//text: "Mãe: "+data[0].nomeMae+" \n Pai: "+data[0].nomePai+" \n Irmão(a): "+data[0].nome+" \n Rota Ida: "+data[0].idRotaIda+" \n Descrição Rota Ida: "+data[0].descricao_ida+" \n Rota Volta: "+data[0].idRotaVolta+" \n Descrição Rota Volta: "+data[0].descricao_volta,
+				icon: 'warning',
+				showCancelButton: false,
+				confirmButtonColor: '#3085d6',
+				cancelButtonColor: '#d33',
+				confirmButtonText: 'Ok',
+			}).then((result) => {
+				console.log('OK')
+			});
+						
+	});
+});
+
     function clearInputs(e){
         e.stopPropagation();
         e.preventDefault();

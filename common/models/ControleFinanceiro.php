@@ -81,7 +81,7 @@ class ControleFinanceiro extends \yii\db\ActiveRecord
     {
         return [
             [['diasTrabalhados','sabadoLetivo','diasExcepcionais1','viagemKm1','diasExcepcionais2','viagemKm2','lote'], 'integer'],
-            [['idCondutor','ano','mes','diasTrabalhados','sabadoLetivo','diasExcepcionais1','viagemKm1','diasExcepcionais2','viagemKm2','valorNota','protocoloTESC','protocoloGC','lote','saldoAF'], 'safe'],
+            [['idCondutor','ano','mes','diasTrabalhados','sabadoLetivo','diasExcepcionais1','viagemKm1','diasExcepcionais2','viagemKm2','valorNota','protocoloTESC','protocoloGC','lote','saldoAF','valorViagemKm1'], 'safe'],
         ];
     }
  
@@ -98,6 +98,7 @@ class ControleFinanceiro extends \yii\db\ActiveRecord
             'sabadoLetivo' => '',
             'diasExcepcionais1' => '',
             'viagemKm1' => '',
+			'valorViagemKm1' => '',
             'diasExcepcionais2' => '',
             'viagemKm2' => '',
             'valorNota' => '',

@@ -71,3 +71,53 @@ use kartik\widgets\FileInput;
     <?php ActiveForm::end(); ?>
 
 </div>
+
+<div class="box-body">
+<div class="form-group">
+  <input type="button" id='apagarPendencias' class="btn btn-warning pull-right" name="Apagar Pendências" value="Apagar Pendências"> 				
+ </div>
+</div>
+
+
+<script type="text/javascript">
+
+
+$(document).on('click', '#apagarPendencias', function () {  
+	Swal.fire({
+		title: 'Deseja apagar as pendencias de todos os condutores?',
+        text: "",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'SIM',
+        cancelButtonText: 'NÃO'			
+	}).then((result) => {
+		if(result.value){
+			$.ajax({	
+			type: 'POST',
+			url: 'index.php?r=configuracao/apagar',
+			data:{
+				data: 1,
+			},
+			}).done(function(data) {
+				if(data == 1){		
+					Swal.fire({
+					title: 'Todas as pendências foram apagadas',
+					text: "",
+					icon: 'warning',
+					showCancelButton: false,
+					confirmButtonColor: '#3085d6',
+					cancelButtonColor: '#d33',
+					confirmButtonText: 'Ok',
+				}).then((result) => {
+					
+				});	
+				}						
+			});
+		}
+	});
+});
+
+
+</script>
