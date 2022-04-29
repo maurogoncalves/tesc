@@ -453,8 +453,19 @@ $pdfFooter = [
 						'label' => 'Início do atendimento',
 						'value' => function($model){
 							$data = $model->atendimento->dataCadastro;
-							return ($model && $data != '0000-00-00')?Yii::$app->formatter->asDate($data, 'dd/MM/Y'):'-';
-					
+							//return ($model && $data != '0000-00-00')?Yii::$app->formatter->asDate($data, 'dd/MM/Y'):'-';
+							
+							if($model->id){
+								$sql ='select h.dataCadastro from SolicitacaoStatus h where h.idSolicitacaoTransporte = '.$model->id.' and h.`status` = 6 order by id desc limit 1 ';
+								$sqlTemIrmao = Yii::$app->getDb()->createCommand($sql)->queryAll();
+								if($sqlTemIrmao[0]['dataCadastro']){	
+									return ($sqlTemIrmao[0]['dataCadastro'] != '0000-00-00')?Yii::$app->formatter->asDate($sqlTemIrmao[0]['dataCadastro'], 'dd/MM/Y'):'-';
+								}else{
+									return ($model && $data != '0000-00-00')?Yii::$app->formatter->asDate($data, 'dd/MM/Y'):'-';
+								}
+							}else{
+								return ($model && $data != '0000-00-00')?Yii::$app->formatter->asDate($data, 'dd/MM/Y'):'-';
+							}
 						}
 					],
 		        ],

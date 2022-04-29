@@ -471,7 +471,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             [
                                 'attribute' => 'distanciaEscola',
                                 'format' => 'raw',
-								'label' => 'Distância entre metros',
+								'label' => 'Distância em metros',
                                 'value' => function($model) {
                                     if (!Usuario::permissao(Usuario::PERFIL_TESC_PASSE_ESCOLAR))
                                         return '<div id="val-distancia-escola">'.(($model->distanciaEscola) ? $model->distanciaEscola . ' ' : '-').'</div><div class="input-group margin" style="display:none;" id="distancia-escola"><input id="new-distancia-escola" type="number" class="form-control"><span class="input-group-btn"><button type="button" id="save-distancia-escola" class="btn btn-success btn-flat">Salvar</button></span></div><button id="update-distancia-escola" class="btn btn-primary btn-sm margin pull-right"><span class="glyphicon glyphicon-pencil"></span></button>';

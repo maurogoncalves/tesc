@@ -1681,8 +1681,8 @@ class PainelAtendimentoController extends \yii\web\Controller
 	$rotas = implode(", ", $idsRotas);
 
 			
-	$sql="select a.nome as aluno,e.nome as escola,a.RA,a.RAdigito,a.serie,a.turma,a.turno,a.horarioEntrada,a.horarioSaida,a.tipoLogradouro,a.endereco,a.numeroResidencia, a.bairro,a.telefoneResidencial,a.telefoneResidencial2,a.telefoneCelular,a.telefoneCelular2,n.nome as necessidade from  SolicitacaoTransporte st  join Escola e on st.idEscola = e.id join Aluno a on a.id = st.idAluno left join AlunoNecessidadesEspeciais al on a.id = al.idAluno left join NecessidadesEspeciais n on n.id = al.idNecessidadesEspeciais where st.`status` = 6 and st.`status` <> 2 and st.idRotaIda in ($rotas) or st.idRotaVolta in ($rotas) and st.idRotaIda is not null and st.idRotaVolta is not null order by e.nome,a.turno,a.horarioEntrada,a.horarioSaida";
-	
+	$sql="select a.nome as aluno,e.nome as escola,a.RA,a.RAdigito,a.serie,a.turma,a.turno,a.horarioEntrada,a.horarioSaida,a.tipoLogradouro,a.endereco,a.numeroResidencia, a.bairro,a.telefoneResidencial,a.telefoneResidencial2,a.telefoneCelular,a.telefoneCelular2,n.nome as necessidade,st.idRotaIda,st.idRotaVolta from  SolicitacaoTransporte st  join Escola e on st.idEscola = e.id join Aluno a on a.id = st.idAluno left join AlunoNecessidadesEspeciais al on a.id = al.idAluno left join NecessidadesEspeciais n on n.id = al.idNecessidadesEspeciais where st.`status` = 6 and st.`status` <> 2 and st.idRotaIda in ($rotas) or st.idRotaVolta in ($rotas) and st.idRotaIda is not null and st.idRotaVolta is not null order by e.nome,a.turno,a.horarioEntrada,a.horarioSaida";
+
     $dados = Yii::$app->getDb()->createCommand($sql)->queryAll();
 	
 	$sqlCondutor="select * from Condutor c where c.id = $condutor";
@@ -1723,8 +1723,18 @@ class PainelAtendimentoController extends \yii\web\Controller
             $content .= $this->td(5, $model['RA'] . '-' . $model['RAdigito']);
             $content .= $this->td(7, Aluno::ARRAY_SERIES[$model['serie']] . '/' . Aluno::ARRAY_TURMA[$model['turma']]);
 			$content .= $this->td(7, Aluno::ARRAY_TURNO[$model['turno']]);
-            $content .= $this->td(7, $model['horarioEntrada']);
-            $content .= $this->td(7, $model['horarioSaida']);
+			if (in_array($model['idRotaIda'], $idsRotas)) { 
+				$content .= $this->td(7, $model['horarioEntrada']);
+			}else{
+				$content .= $this->td(7, '-');
+			}
+			if (in_array($model['idRotaVolta'], $idsRotas)) { 
+				 $content .= $this->td(7, $model['horarioSaida']);
+			}else{
+				$content .= $this->td(7, '-');
+			}
+           
+           
             $content .= $this->td(20, $model['tipoLogradouro'] . ' ' . $model['endereco'] . ' Nº ' . $model['numeroResidencia']);
             $content .= $this->td(20, $model['complementoResidencia']);
             $content .= $this->td(10, $model['bairro']);

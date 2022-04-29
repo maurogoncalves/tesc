@@ -78,7 +78,39 @@ $this->params['breadcrumbs'][] = 'Solicitações Aguardando Atendimento';
 									
 								}
 						   ]
-                        ],					
+                        ],
+						 [
+                            'headerOptions' => ['style' => 'width:200px'],
+                            'attribute' => 'idEscola',
+                            'value' => function($model){
+                                return $model->escola->nomeCompleto;//Yii::t('app', $model->escola->nome);
+                            },
+                            'filterType' => GridView::FILTER_SELECT2,
+                            'filter' => ArrayHelper::map(Escola::find()->all(), 'id', 'nomeCompleto'), 
+                            'filterWidgetOptions' => [
+                                'pluginOptions' => ['allowClear' => true],
+                            ],
+                            'filterInputOptions' => [ 
+                                'placeholder' => '-',
+                                
+                            ]
+                        ],	
+						[
+                            'headerOptions' => ['style' => 'width:200px'],
+                            'attribute' => 'grupo',
+                            'value' => function($model){
+                               return UsuarioGrupo::grupoSolicitacao($model);
+                            },
+                            'filterType' => GridView::FILTER_SELECT2,
+                            'filter' => UsuarioGrupo::ARRAY_GRUPOS_SEM_FINANCEIRO, 
+                            'filterWidgetOptions' => [
+                                'pluginOptions' => ['allowClear' => true],
+                            ],
+                            'filterInputOptions' => [ 
+                                'placeholder' => '-',
+                                
+                            ]
+                        ],
                         [
                             'class'=>'\kartik\grid\DataColumn',
                             'attribute'=>'id',
@@ -282,22 +314,7 @@ $this->params['breadcrumbs'][] = 'Solicitações Aguardando Atendimento';
 								return Aluno::ARRAY_TURNO[$model->aluno->turno];
 							},
 						],
-                        [
-                            'headerOptions' => ['style' => 'width:200px'],
-                            'attribute' => 'idEscola',
-                            'value' => function($model){
-                                return $model->escola->nomeCompleto;//Yii::t('app', $model->escola->nome);
-                            },
-                            'filterType' => GridView::FILTER_SELECT2,
-                            'filter' => ArrayHelper::map(Escola::find()->all(), 'id', 'nomeCompleto'), 
-                            'filterWidgetOptions' => [
-                                'pluginOptions' => ['allowClear' => true],
-                            ],
-                            'filterInputOptions' => [ 
-                                'placeholder' => '-',
-                                
-                            ]
-                        ],
+                       
                         [
                             'label' => 'Necessidades especiais',
                             'attribute' => 'necessidadeEspecial',
@@ -312,22 +329,7 @@ $this->params['breadcrumbs'][] = 'Solicitações Aguardando Atendimento';
                                 return implode (',', $listaNecessidade);
                             },
                         ],
-                        [
-                            'headerOptions' => ['style' => 'width:200px'],
-                            'attribute' => 'grupo',
-                            'value' => function($model){
-                               return UsuarioGrupo::grupoSolicitacao($model);
-                            },
-                            'filterType' => GridView::FILTER_SELECT2,
-                            'filter' => UsuarioGrupo::ARRAY_GRUPOS_SEM_FINANCEIRO, 
-                            'filterWidgetOptions' => [
-                                'pluginOptions' => ['allowClear' => true],
-                            ],
-                            'filterInputOptions' => [ 
-                                'placeholder' => '-',
-                                
-                            ]
-                        ],
+                        
                         // [
                         //     'attribute' => 'condutorIdaNome',
                         //     'label' => 'Condutor Ida',
